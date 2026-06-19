@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Geografische Koordinaten – Lernreise</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg:#eef3f9;--card:#fff;--ink:#27324a;--muted:#67738c;
+  --primary:#3f6fb5;--primary-d:#345a93;--accent:#2a9d8f;
+  --lat:#e4572e;--lon:#3a86ff;--gold:#e0a700;
+  --good:#2a9d8f;--bad:#e4572e;--soft:#dde6f2;
+  --shadow:0 8px 24px rgba(40,60,90,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  background:linear-gradient(160deg,#eaf1fb,#eef6f3);color:var(--ink);font-size:18px;line-height:1.55;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--soft);padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.25rem;color:var(--primary-d)}
+.score-pill{margin-left:auto;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+  padding:8px 16px;border-radius:999px;font-weight:700;display:flex;gap:8px;align-items:center;box-shadow:var(--shadow)}
+.score-pill b{font-size:1.15rem}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:10px 16px}
+.nav button{flex:0 0 auto;border:2px solid transparent;padding:8px 16px;border-radius:12px;font-size:.95rem;
+  font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(40,60,90,.06);transition:.2s;white-space:nowrap}
+.nav button.locked{opacity:.4;cursor:not-allowed}
+.nav button.done::after{content:" ✓";font-weight:800}
+main{max-width:920px;margin:0 auto;padding:18px 16px 80px}
+.step{display:none;animation:fade .35s ease}
+.step.show{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+h1{font-size:1.7rem;margin:.1em 0 .5em}
+h2{font-size:1.32rem;color:var(--primary-d);margin-top:1.4em}
+h3{font-size:1.08rem;color:var(--accent)}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem}
+p{margin:.6em 0}ul{margin:.4em 0 .4em 1.1em}li{margin:.3em 0}
+.lat-word{color:var(--lat);font-weight:700}.lon-word{color:var(--lon);font-weight:700}
+.box{border-radius:16px;padding:16px 18px;margin:16px 0;border-left:6px solid var(--primary)}
+.box.info{background:#eef4fc;border-color:var(--primary)}
+.box.tip{background:#eafaf6;border-color:var(--accent)}
+.box.def{background:#fff7ea;border-color:var(--gold)}
+.box h4{margin:.1em 0 .4em;font-size:1rem}
+.globe-wrap{position:relative;width:100%;max-width:480px;margin:10px auto;aspect-ratio:1/1;
+  background:radial-gradient(circle at 35% 30%,#f4f8fd,#d7e3f2);border-radius:24px;overflow:hidden;
+  box-shadow:inset 0 0 40px rgba(60,90,140,.18);touch-action:none}
+.globe-wrap canvas{display:block;width:100%;height:100%}
+.globe-label{position:absolute;transform:translate(-50%,-130%);background:rgba(39,50,74,.92);color:#fff;
+  padding:4px 10px;border-radius:10px;font-size:.85rem;font-weight:700;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.globe-label.lat{background:var(--lat)}
+.globe-label.lon{background:var(--lon)}
+.globe-label.coord{background:var(--gold);color:#3a2e00}
+.globe-static-label{position:absolute;transform:translate(-50%,-50%);font-size:.72rem;font-weight:800;
+  pointer-events:none;white-space:nowrap;z-index:2;
+  text-shadow:0 1px 2px rgba(255,255,255,.95),0 0 4px rgba(255,255,255,.95),0 0 4px rgba(255,255,255,.95)}
+.globe-static-label.lat{color:#c0432a}
+.globe-static-label.lon{color:#2f6fd0}
+.globe-ctrl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+.readout{background:#f3f6fb;border-radius:12px;padding:10px 14px;text-align:center;font-weight:600;margin:8px auto;max-width:480px;min-height:46px}
+.readout small{color:var(--muted);font-weight:500;display:block}
+.readout.measure{background:#fff7ea;border:1px solid #f0dca5}
+button.btn{border:none;background:var(--primary);color:#fff;padding:9px 16px;border-radius:12px;
+  font-weight:700;cursor:pointer;font-size:.95rem;transition:.15s;box-shadow:0 3px 8px rgba(40,60,90,.12)}
+button.btn:hover{filter:brightness(.95)}
+button.btn.ghost{background:#fff;color:var(--primary-d);border:2px solid var(--soft);box-shadow:none}
+button.btn.accent{background:var(--accent)}
+button.btn.gold{background:var(--gold);color:#3a2e00}
+button.btn:disabled{opacity:.45;cursor:not-allowed}
+.taskbox,.quizbox{background:#f7faff;border:1px solid var(--soft);border-radius:16px;padding:18px;margin:14px 0}
+.boxhead{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--primary-d);margin-bottom:6px}
+.boxhead .pts{margin-left:auto;background:var(--gold);color:#3a2e00;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:800}
+.progress{font-size:.85rem;color:var(--muted);font-weight:700;margin-bottom:8px}
+.feedback{margin-top:10px;font-weight:700;min-height:1.2em}
+.feedback.ok{color:var(--good)}.feedback.no{color:var(--bad)}.feedback.hint{color:#b9821a}
+.opt{display:block;padding:10px 13px;border:2px solid var(--soft);border-radius:10px;margin:7px 0;cursor:pointer;transition:.12s;background:#fff}
+.opt:hover{border-color:var(--primary)}
+.opt.sel{border-color:var(--primary);background:#eef4fc}
+.opt.correct{border-color:var(--good);background:#e7f7f3}
+.opt.wrong{border-color:var(--bad);background:#fdeee9}
+.qtext{font-weight:700;margin-bottom:8px}
+input[type=text],input[type=number]{padding:9px 12px;border:2px solid var(--soft);border-radius:10px;font-size:1rem;width:220px;max-width:100%}
+input.mini{width:80px}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px}
+table.scores{width:100%;border-collapse:collapse;margin-top:10px}
+table.scores th,table.scores td{padding:10px;text-align:left;border-bottom:1px solid var(--soft)}
+table.scores th{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+.bar{height:10px;background:var(--soft);border-radius:999px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:999px}
+.badge-box{text-align:center;padding:26px;background:linear-gradient(135deg,#eef4fc,#eafaf6);border-radius:20px}
+.badge-box .emoji{font-size:4rem}
+.badge-box .title{font-size:1.6rem;font-weight:800;color:var(--primary-d);margin:6px 0}
+.svgschema{display:block;margin:14px auto;max-width:340px;width:100%}
+.locked-note{text-align:center;color:var(--muted);padding:40px 10px}
+.locked-note .big{font-size:3rem}
+.hint{font-size:.92rem;color:var(--muted)}
+/* --- Lehrer-Zugang: Button + Modal --- */
+.teacher-row{text-align:center;margin-top:22px}
+.teacher-btn{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px dashed var(--soft);
+  color:var(--muted);padding:9px 16px;border-radius:12px;font-weight:700;cursor:pointer;font-size:.9rem;transition:.15s}
+.teacher-btn:hover{border-color:var(--primary);color:var(--primary-d)}
+.modal-back{position:fixed;inset:0;background:rgba(20,30,50,.55);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal-back.show{display:flex}
+.modal-card{background:#fff;border-radius:20px;padding:26px 24px;max-width:420px;width:100%;
+  box-shadow:0 20px 50px rgba(0,0,0,.3);position:relative;animation:fade .25s ease}
+.modal-card h2{margin-top:0;color:var(--primary-d)}
+.modal-x{position:absolute;top:10px;right:14px;border:none;background:none;font-size:1.7rem;
+  cursor:pointer;color:var(--muted);line-height:1}
+.code-input{font-size:1.6rem;letter-spacing:.4em;text-align:center;width:100%;padding:12px;
+  border:2px solid var(--soft);border-radius:12px;margin:10px 0}
+.jump-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.jump-grid button{padding:14px 10px;border-radius:12px;border:2px solid var(--soft);background:#f7faff;
+  font-weight:700;cursor:pointer;transition:.15s;font-size:.92rem;text-align:left}
+.jump-grid button:hover{background:#eef4fc;filter:brightness(.97)}
+/* --- Profi-Modul: innerer Stepper --- */
+.profi-steps{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+.profi-dot{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--muted);
+  background:#fff;border:2px solid var(--soft);border-radius:999px;padding:5px 11px;cursor:pointer;
+  transition:.2s;user-select:none;touch-action:manipulation}
+.profi-dot .pn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+  border-radius:50%;background:var(--soft);color:#fff;font-size:.72rem}
+.profi-dot.active{border-color:var(--primary);background:#eef4fc;color:var(--primary-d)}
+.profi-dot.active .pn{background:var(--primary)}
+.profi-dot.done .pn{background:var(--good)}
+.profi-panel{display:none;animation:fade .3s ease}
+.profi-panel.show{display:block}
+.profi-ph{border:2px dashed #b8c4d6;border-radius:14px;padding:26px 16px;text-align:center;
+  color:var(--muted);background:#f7faff;margin-top:8px}
+.profi-foot{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.profi-foot .btn{flex:1;min-height:48px}
+/* --- Profi Etappe 1: Problem-Karte --- */
+.prob-svgwrap{background:radial-gradient(circle at 40% 30%,#fbfdff,#eef4fc);border-radius:16px;padding:10px;margin:14px 0;box-shadow:inset 0 0 24px rgba(60,90,140,.10)}
+.prob-svg{display:block;width:100%;max-width:420px;margin:0 auto;height:auto}
+/* --- Profi Etappe 2: 60er-Slider --- */
+.profi-slider{-webkit-appearance:none;appearance:none;width:100%;max-width:420px;height:8px;border-radius:999px;
+  background:linear-gradient(90deg,#e4572e,#e0a700);outline:none;margin:14px auto;display:block;cursor:pointer;touch-action:manipulation}
+.profi-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;
+  background:#fff;border:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}
+.profi-slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--gold);
+  box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:pointer}
+.profi-slider:disabled{opacity:.4;cursor:not-allowed}
+/* --- Profi Etappe 3: Dreisatz-Zeilen --- */
+.ds-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:9px 13px;border-radius:10px;
+  background:#f7faff;border:1px solid var(--soft);margin:7px 0;font-weight:600;
+  opacity:0;transform:translateY(6px);transition:.45s ease}
+.ds-row.in{opacity:1;transform:none}
+.ds-row .ds-mm{color:#2f6fd0;font-weight:800}
+.ds-row .ds-min{color:#c0432a;font-weight:800}
+.ds-row.res{background:#fff7ea;border-color:#f0dca5;font-size:1.05rem;color:#3a2e00}
+/* --- Profi Etappe 4: Eingabe-Zeile --- */
+.sk-inputs{display:flex;flex-wrap:wrap;gap:16px;margin:8px 0}
+.sk-inputs label{font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* --- Profi Etappe 5: Atlas-Messfelder --- */
+.at-field{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7faff;border:1px solid var(--soft);
+  border-radius:12px;padding:11px 14px;margin:9px 0;font-weight:600;font-size:.95rem}
+.at-field .ic{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+  background:var(--primary);color:#fff;font-size:.82rem;font-weight:800;flex:0 0 auto}
+.at-field.lat .ic{background:var(--lat)}
+.at-field.lon .ic{background:var(--lon)}
+.at-field .at-txt{flex:1 1 55%;min-width:160px}
+.at-field .at-num{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto;font-weight:700}
+/* --- Karten-Modul (Abschnitt 5) --- */
+.map-wrap{background:radial-gradient(circle at 40% 30%,#fbfdff,#eef4fc);border-radius:16px;padding:10px;margin:14px 0;box-shadow:inset 0 0 24px rgba(60,90,140,.10)}
+.map-svg{display:block;width:100%;max-width:560px;margin:0 auto;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.gline-lat{stroke:var(--lat);stroke-width:1.3;opacity:.5;cursor:pointer}
+.gline-lon{stroke:var(--lon);stroke-width:1.3;opacity:.5;cursor:pointer}
+.gline-lat.main,.gline-lon.main{opacity:.95;stroke-width:2.6}
+.gline-lat.sel,.gline-lon.sel{stroke:var(--gold);stroke-width:3.8;opacity:1}
+.ghit{stroke:transparent;stroke-width:18;pointer-events:stroke;cursor:pointer}
+.glabel{font-size:11px;font-weight:700}
+.gsub{font-size:9px;fill:#9aa7bd;font-weight:700}
+.gwater{font-size:10px;fill:#9aa6bd;font-weight:800;letter-spacing:.08em}
+.citydot{pointer-events:none;fill:var(--gold);stroke:#7a5b00;stroke-width:1.4}
+.citydot.sel{fill:var(--primary);stroke:var(--primary-d)}
+.citydot.ok{fill:var(--good);stroke:#1c6b60}
+.citydot.bad{fill:var(--bad);stroke:#9e3b1f}
+.cityname{font-size:10px;font-weight:800;fill:#5b4106;paint-order:stroke;stroke:#fffdf5;stroke-width:2.6px;pointer-events:none}
+.readdot{fill:var(--gold);stroke:#7a5b00;stroke-width:1.6;pointer-events:none}
+.readring{fill:none;stroke:var(--gold);stroke-width:2;opacity:.55;pointer-events:none}
+@media(max-width:560px){body{font-size:16px}.card{padding:18px}h1{font-size:1.4rem}.profi-dot .pl{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Koordinaten-Reise</div>
+  <div class="score-pill">⭐ <b id="totalPts">0</b> / <span id="totalMax">0</span></div>
+</header>
+<div class="nav" id="nav"></div>
+<main id="main"></main>
+
+<script>
+/* ====================== HELFER ====================== */
+const latVals=[90,80,60,40,20,0,-20,-40,-60,-80,-90];
+const lonVals=(()=>{const a=[];for(let l=-160;l<=180;l+=20)a.push(l);return a;})();
+function fmtLatShort(v){if(v===0)return"0°";if(v===90)return"90°N";if(v===-90)return"90°S";return Math.abs(v)+"°"+(v>0?"N":"S");}
+function fmtLonShort(v){if(v===0)return"0°";if(Math.abs(v)===180)return"180°";return Math.abs(v)+"°"+(v>0?"E":"W");}
+function nearestLat(l){return latVals.reduce((a,b)=>Math.abs(b-l)<Math.abs(a-l)?b:a);}
+function angDiff(a,b){return Math.abs(((a-b+540)%360)-180);}
+function nearestLon(l){return lonVals.reduce((a,b)=>angDiff(b,l)<angDiff(a,l)?b:a);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function norm(s){return (s||"").toLowerCase().replace(/grad/g,"").replace(/[°'"′″\s]/g,"");}
+function parseNum(s){const t=(s||"").replace(/[.\s]/g,"");const m=t.match(/\d+/);return m?parseInt(m[0],10):NaN;}
+/* STRENGE Koordinatenprüfung: ° ist Pflicht, Breite (N/S) zuerst, dann Länge (E/W) */
+function coordStrict(input,la,lo){
+  const s=(input||"").trim().toLowerCase().replace(/grad/g,"°");
+  if(!s.includes("°"))return false;
+  const m=s.match(/^(\d{1,3})\s*°\s*([nsoew])\s*[,;]?\s*(\d{1,3})\s*°\s*([nsoew])$/);
+  if(!m)return false;
+  const map={o:"e"};
+  let h1=map[m[2]]||m[2],h2=map[m[4]]||m[4];
+  if(!"ns".includes(h1)||!"ew".includes(h2))return false;
+  const latV=(h1==="n"?1:-1)*parseInt(m[1],10);
+  const lonV=(h2==="e"?1:-1)*parseInt(m[3],10);
+  return latV===la&&lonV===lo;
+}
+
+/* ====================== STATE ====================== */
+const SECT=[
+ {id:0,name:"Einstieg",color:"#3a7d7b"},
+ {id:1,name:"Breitenkreise",color:"#e4572e"},
+ {id:2,name:"Längenkreise",color:"#3a86ff"},
+ {id:3,name:"Geografische Lage",color:"#8e5fd0"},
+ {id:4,name:"Karte",color:"#2f9e7a"},
+ {id:5,name:"Profi",color:"#7b5fd0"},
+ {id:6,name:"Ergebnis",color:"#e0a700",result:true},
+];
+let state={pts:{},passed:{},awarded:{},skipped:{}};
+function load(){try{const s=JSON.parse(localStorage.getItem("koordReise3"));if(s)state=Object.assign(state,s);}catch(e){}}
+function save(){try{localStorage.setItem("koordReise3",JSON.stringify(state));}catch(e){}}
+load();
+if(!state.skipped)state.skipped={};
+SECT.forEach(s=>{if(state.pts[s.id]==null)state.pts[s.id]=0;});
+function award(id,sect,pts){if(state.awarded[id])return false;state.awarded[id]=true;
+  if(state.skipped[sect])state.skipped[sect]=false; /* sobald Punkte erzielt werden, zählt der Abschnitt wieder */
+  state.pts[sect]=(state.pts[sect]||0)+pts;save();updateTotals();return true;}
+function totalPts(){return SECT.reduce((a,s)=>a+(state.skipped[s.id]?0:(state.pts[s.id]||0)),0);}
+function totalMax(){return SECT.reduce((a,s)=>a+(state.skipped[s.id]?0:(s.max||0)),0);}
+function updateTotals(){document.getElementById("totalPts").textContent=totalPts();document.getElementById("totalMax").textContent=totalMax();}
+
+/* ====================== 3D GLOBUS ====================== */
+function lonRad(v){return -v*Math.PI/180;}
+function createGlobe(container,mode){
+  if(typeof THREE==="undefined"){container.innerHTML="<div class='locked-note'>3D-Globus konnte nicht geladen werden (Internet?).</div>";return null;}
+  const R=1,LINE=1.006,HI=1.02,MK=1.03;
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(42,1,0.001,20);cam.position.set(0,0,3.3);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));container.appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff,.9));
+  const dl=new THREE.DirectionalLight(0xffffff,.5);dl.position.set(2,1.5,3);scene.add(dl);
+  const group=new THREE.Group();scene.add(group);
+  const sphere=new THREE.Mesh(new THREE.SphereGeometry(R,48,48),
+     new THREE.MeshPhongMaterial({color:0xfdfefe,shininess:6,specular:0x445566}));
+  group.add(sphere);
+
+  const latPts={},lonPts={};
+  function latPoints(v,f){const a=v*Math.PI/180,r=Math.cos(a)*R*f,y=Math.sin(a)*R*f,p=[];
+    if(Math.abs(v)===90)return[new THREE.Vector3(0,y,0)];
+    for(let t=0;t<=64;t++){const th=t/64*Math.PI*2;p.push(new THREE.Vector3(r*Math.cos(th),y,r*Math.sin(th)));}return p;}
+  function lonPoints(v,f){const ang=lonRad(v),p=[];
+    for(let t=-64;t<=64;t++){const la=t/64*Math.PI/2,r=Math.cos(la)*R*f;
+      p.push(new THREE.Vector3(r*Math.cos(ang),Math.sin(la)*R*f,r*Math.sin(ang)));}return p;}
+  function addLine(pts,color,wide){const g=new THREE.BufferGeometry().setFromPoints(pts);
+    const l=new THREE.Line(g,new THREE.LineBasicMaterial({color,linewidth:wide?3:1}));group.add(l);return l;}
+  function tubeLine(pts,radius,color){const curve=new THREE.CatmullRomCurve3(pts);
+    const g=new THREE.TubeGeometry(curve,Math.max(8,pts.length),radius,8,false);
+    return new THREE.Mesh(g,new THREE.MeshBasicMaterial({color}));}
+  function latTorus(v,tube,color,f){const a=v*Math.PI/180,r=Math.max(Math.cos(a)*R*f,0.001);
+    const m=new THREE.Mesh(new THREE.TorusGeometry(r,tube,10,60),new THREE.MeshBasicMaterial({color}));
+    m.rotation.x=Math.PI/2;m.position.y=Math.sin(a)*R*f;return m;}
+  function poleDot(v,size,color,f){const m=new THREE.Mesh(new THREE.SphereGeometry(size,16,16),new THREE.MeshBasicMaterial({color}));m.position.y=Math.sign(v)*R*f;return m;}
+
+  if(mode==="lat"||mode==="both")latVals.forEach(v=>{latPts[v]=latPoints(v,LINE);
+    if(v===0)group.add(latTorus(0,0.015,0xe4572e,LINE));
+    else if(Math.abs(v)===90)group.add(poleDot(v,0.04,0xe4572e,LINE));
+    else addLine(latPts[v],0xe4572e);});
+  if(mode==="lon"||mode==="both")lonVals.forEach(v=>{lonPts[v]=lonPoints(v,LINE);
+    if(v===0)group.add(tubeLine(lonPoints(0,LINE),0.015,0x3a86ff));else addLine(lonPts[v],0x3a86ff);});
+
+  const hi={};
+  function getHi(type,v){const k=type+":"+v;if(hi[k])return hi[k];let m;
+    if(type==="lat"){if(Math.abs(v)===90)m=poleDot(v,0.06,0xe0a700,HI);else m=latTorus(v,0.024,0xe0a700,HI);}
+    else m=tubeLine(lonPoints(v,HI),0.024,0xe0a700);
+    m.visible=false;group.add(m);hi[k]=m;return m;}
+
+  const marker=new THREE.Mesh(new THREE.SphereGeometry(.055,16,16),new THREE.MeshBasicMaterial({color:0xe0a700}));marker.visible=false;group.add(marker);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.06,18,18),new THREE.MeshBasicMaterial({color:0xe0a700}));dot.visible=false;group.add(dot);
+
+  /* Startansicht: Nullmeridian (0°) zeigt nach vorne (zur Kamera) */
+  group.rotation.set(0.32,-Math.PI/2,0);
+  const api={selLat:[],selLon:[],locked:false,mode,onchange:null};
+
+  /* --- Geometrie-Helfer für Positionen (lokal) --- */
+  function pos(la,lo,f){const a=la*Math.PI/180,ang=lonRad(lo),r=Math.cos(a)*R*f;return new THREE.Vector3(r*Math.cos(ang),Math.sin(a)*R*f,r*Math.sin(ang));}
+  function repLocal(pts){let best=null,bz=-9;pts.forEach(p=>{const w=p.clone();group.localToWorld(w);if(w.z>bz){bz=w.z;best=p;}});return best?best.clone():null;}
+
+  /* --- Auswahl-Labels (mit Hintergrund) --- */
+  const labels=[];
+  function clearLabels(){labels.forEach(l=>l.el.remove());labels.length=0;}
+
+  /* --- DAUERHAFTE Beschriftung aller Kreise (Schrift in Kreisfarbe) --- */
+  const staticLabels=[];
+  function makeStatic(local,text,cls){if(!local)return;const el=document.createElement("div");
+    el.className="globe-static-label "+cls;el.textContent=text;container.appendChild(el);staticLabels.push({local,el});}
+  /* Breiten-Globus: Labels am Nullmeridian (vorne); sonst leicht versetzt bei 10° */
+  const ANCHOR_LON=(mode==="lat")?0:10;
+  if(mode==="lat"||mode==="both")latVals.forEach(v=>makeStatic(pos(v,ANCHOR_LON,LINE+0.012),fmtLatShort(v),"lat"));
+  if(mode==="lon"||mode==="both")lonVals.forEach(v=>makeStatic(pos(0,v,LINE+0.012),fmtLonShort(v),"lon"));
+
+  let previewLat=null,previewLon=null;
+  function buildLabels(){clearLabels();
+    function add(local,text,cls){if(!local)return;const el=document.createElement("div");el.className="globe-label "+cls;el.textContent=text;container.appendChild(el);labels.push({local,el});}
+    api.selLat.forEach(v=>add(repLocal(latPts[v]),fmtLatShort(v),"lat"));
+    api.selLon.forEach(v=>add(repLocal(lonPts[v]),fmtLonShort(v),"lon"));
+    if(previewLat!=null&&!api.selLat.includes(previewLat))add(repLocal(latPts[previewLat]),fmtLatShort(previewLat),"lat");
+    if(previewLon!=null&&!api.selLon.includes(previewLon))add(repLocal(lonPts[previewLon]),fmtLonShort(previewLon),"lon");
+    if(mode==="both"&&api.selLat.length&&api.selLon.length){
+      add(pos(api.selLat[0],api.selLon[0],MK+0.06),fmtLatShort(api.selLat[0])+"  "+fmtLonShort(api.selLon[0]),"coord");}
+  }
+  function refresh(){
+    for(const k in hi)hi[k].visible=false;
+    api.selLat.forEach(v=>{getHi("lat",v).visible=true;});
+    api.selLon.forEach(v=>{getHi("lon",v).visible=true;});
+    if(mode==="both"&&api.selLat.length&&api.selLon.length){marker.position.copy(pos(api.selLat[0],api.selLon[0],MK));marker.visible=true;}else marker.visible=false;
+    buildLabels();if(api.onchange)api.onchange();
+  }
+  const ray=new THREE.Raycaster(),m2=new THREE.Vector2();
+  function pick(cx,cy){const r=renderer.domElement.getBoundingClientRect();
+    m2.x=((cx-r.left)/r.width)*2-1;m2.y=-((cy-r.top)/r.height)*2+1;ray.setFromCamera(m2,cam);
+    const hit=ray.intersectObject(sphere);if(!hit.length)return null;
+    const lp=group.worldToLocal(hit[0].point.clone());
+    const la=Math.asin(THREE.MathUtils.clamp(lp.y/R,-1,1))*180/Math.PI;
+    const vlon=-Math.atan2(lp.z,lp.x)*180/Math.PI;
+    const nl=nearestLat(la),no=nearestLon(vlon);
+    if(mode==="lat")return{latV:nl,key:"a"+nl};
+    if(mode==="lon")return{lonV:no,key:"o"+no};
+    const dLat=Math.abs(la-nl),dLon=angDiff(vlon,no)*Math.cos(la*Math.PI/180);
+    const primary=dLat<=dLon?"lat":"lon";
+    return{latV:nl,lonV:no,primary,key:primary+(primary==="lat"?nl:no)};
+  }
+  function setPreview(p){previewLat=p.latV??null;previewLon=p.lonV??null;
+    if(mode==="both"){if(p.primary==="lat")previewLon=null;else previewLat=null;}refresh();}
+  function clearPreview(){previewLat=previewLon=null;}
+  function toggle(arr,v){const i=arr.indexOf(v);if(i>=0)arr.splice(i,1);else arr.push(v);}
+  function commit(p){
+    if(mode==="lat")toggle(api.selLat,p.latV);
+    else if(mode==="lon")toggle(api.selLon,p.lonV);
+    else{if(p.primary==="lat")api.selLat=(api.selLat[0]===p.latV)?[]:[p.latV];
+         else api.selLon=(api.selLon[0]===p.lonV)?[]:[p.lonV];}
+    clearPreview();refresh();
+  }
+  let down=false,moved=false,lx,ly,idle=0;
+  const el=renderer.domElement;el.style.cursor="grab";
+  el.addEventListener("pointerdown",e=>{down=true;moved=false;lx=e.clientX;ly=e.clientY;el.setPointerCapture(e.pointerId);el.style.cursor="grabbing";idle=0;});
+  el.addEventListener("pointermove",e=>{
+    if(!down){if(e.pointerType==="mouse"&&!api.locked){const p=pick(e.clientX,e.clientY);if(p)setPreview(p);else{clearPreview();refresh();}}return;}
+    const dx=e.clientX-lx,dy=e.clientY-ly;if(Math.abs(dx)+Math.abs(dy)>5)moved=true;
+    group.rotation.y+=dx*0.008;group.rotation.x=Math.max(-1.4,Math.min(1.4,group.rotation.x+dy*0.008));lx=e.clientX;ly=e.clientY;});
+  el.addEventListener("pointerup",e=>{down=false;el.style.cursor="grab";idle=0;if(moved||api.locked)return;
+    const p=pick(e.clientX,e.clientY);if(!p)return;
+    /* EIN Tipp/Klick wählt direkt aus – auch im Kombi-Globus (nächstgelegener Breiten- ODER Längenkreis) */
+    commit(p);});
+  el.addEventListener("touchcancel",()=>{down=false;});
+
+  api.reset=function(){api.selLat=[];api.selLon=[];clearPreview();dot.visible=false;refresh();};
+  api.northView=function(){group.rotation.set(Math.PI/2,0,0);};
+  api.standardView=function(){group.rotation.set(0.32,-Math.PI/2,0);};
+  api.showDot=function(la,lo){dot.position.copy(pos(la,lo,MK));dot.visible=true;};
+  api.hideDot=function(){dot.visible=false;};
+  function resize(){const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  function place(L,r){const v=L.local.clone();group.localToWorld(v);const p=v.clone().project(cam);
+    if(v.distanceTo(cam.position)>cam.position.length()||p.z>1){L.el.style.display="none";return;}
+    L.el.style.display="block";L.el.style.left=((p.x*.5+.5)*r.width)+"px";L.el.style.top=((-p.y*.5+.5)*r.height)+"px";}
+  function frame(){requestAnimationFrame(frame);
+    if(!down){idle++;if(idle>200)group.rotation.y+=0.0015;}
+    const r=renderer.domElement.getBoundingClientRect();
+    staticLabels.forEach(L=>place(L,r));
+    labels.forEach(L=>place(L,r));
+    renderer.render(scene,cam);}
+  resize();refresh();frame();window.addEventListener("resize",resize);api._resize=resize;
+  return api;
+}
+
+/* ====================== 2D AFRIKA-KARTE (Abschnitt 5) ====================== */
+function createAfricaMap(container){
+  const SVGNS="http://www.w3.org/2000/svg";
+  const E=t=>document.createElementNS(SVGNS,t);
+  const lonMin=-20,lonMax=55,latMin=-40,latMax=40;
+  const ML=58,MR=58,MT=50,MB=56,VW=600,VH=620;
+  const iW=VW-ML-MR,iH=VH-MT-MB;
+  const px=lon=>ML+(lon-lonMin)/(lonMax-lonMin)*iW;
+  const py=lat=>MT+(latMax-lat)/(latMax-latMin)*iH;
+  const LATS=[-40,-30,-20,-10,0,10,20,30,40];
+  const LONS=[-20,-10,0,10,20,30,40,50];
+  const MAINLAND=[[-6,36],[2,37],[10,37],[20,33],[25,32],[32,31],[34,28],[37,22],[40,15],[43,12],[51,12],[49,4],[42,-2],[40,-11],[35,-18],[33,-26],[27,-33],[20,-35],[18,-34],[13,-17],[9,-1],[6,4],[-2,5],[-8,5],[-13,8],[-17,14],[-16,21],[-12,28],[-9,32],[-6,36]];
+  const MADA=[[49,-12],[50,-15],[48,-24],[45,-25],[44,-20],[46,-14],[49,-12]];
+  const WATER=[{t:"ATLANTIK",lon:-14,lat:2},{t:"INDISCHER OZEAN",lon:48,lat:-30},{t:"MITTELMEER",lon:24,lat:38},{t:"EUROPA",lon:-6,lat:39},{t:"ASIEN",lon:50,lat:30}];
+  const CITIES=[
+    {n:"Casablanca",lo:-8,la:34,dx:7,a:"start"},
+    {n:"Tripolis",lo:13,la:33,dx:7,a:"start"},
+    {n:"Kairo",lo:31,la:30,dx:7,a:"start"},
+    {n:"Dakar",lo:-17,la:15,dx:-7,a:"end"},
+    {n:"Khartum",lo:33,la:16,dx:7,a:"start"},
+    {n:"Addis Abeba",lo:39,la:9,dx:7,a:"start"},
+    {n:"Lagos",lo:3,la:6,dx:7,a:"start"},
+    {n:"Nairobi",lo:37,la:-1,dx:7,a:"start"},
+    {n:"Kinshasa",lo:15,la:-4,dx:-7,a:"end"},
+    {n:"Kapstadt",lo:18,la:-34,dx:7,a:"start"}
+  ];
+  const api={selLat:[],selLon:[],lastCity:null,onchange:null};
+  const svg=E("svg");svg.setAttribute("viewBox","0 0 "+VW+" "+VH);svg.setAttribute("class","map-svg");container.appendChild(svg);
+  const latEls={},lonEls={},cityEls={};
+
+  const bg=E("rect");bg.setAttribute("x",ML);bg.setAttribute("y",MT);bg.setAttribute("width",iW);bg.setAttribute("height",iH);
+  bg.setAttribute("fill","#eaf2fb");bg.setAttribute("stroke","#cbd5e1");svg.appendChild(bg);
+  WATER.forEach(wl=>{const t=E("text");t.setAttribute("x",px(wl.lon));t.setAttribute("y",py(wl.lat));t.setAttribute("text-anchor","middle");t.setAttribute("class","gwater");t.textContent=wl.t;svg.appendChild(t);});
+  const land=E("path");land.setAttribute("d",MAINLAND.map((p,i)=>(i?"L":"M")+px(p[0])+" "+py(p[1])).join(" ")+" Z");
+  land.setAttribute("fill","#d9f0d2");land.setAttribute("stroke","#5b8c4f");land.setAttribute("stroke-width","1.5");svg.appendChild(land);
+  const mada=E("path");mada.setAttribute("d",MADA.map((p,i)=>(i?"L":"M")+px(p[0])+" "+py(p[1])).join(" ")+" Z");
+  mada.setAttribute("fill","#d9f0d2");mada.setAttribute("stroke","#5b8c4f");mada.setAttribute("stroke-width","1.5");svg.appendChild(mada);
+  const af=E("text");af.setAttribute("x",px(20));af.setAttribute("y",py(3));af.setAttribute("text-anchor","middle");af.setAttribute("class","gwater");af.setAttribute("fill","#8ab27e");af.textContent="AFRIKA";svg.appendChild(af);
+
+  LATS.forEach(v=>{
+    const ln=E("line");ln.setAttribute("class","gline-lat"+(v===0?" main":""));
+    ln.setAttribute("x1",ML);ln.setAttribute("x2",ML+iW);ln.setAttribute("y1",py(v));ln.setAttribute("y2",py(v));svg.appendChild(ln);latEls[v]=ln;
+    const hit=E("line");hit.setAttribute("class","ghit");hit.setAttribute("x1",ML);hit.setAttribute("x2",ML+iW);hit.setAttribute("y1",py(v));hit.setAttribute("y2",py(v));
+    hit.addEventListener("pointerdown",e=>{e.stopPropagation();toggleLat(v);});svg.appendChild(hit);
+  });
+  LONS.forEach(v=>{
+    const ln=E("line");ln.setAttribute("class","gline-lon"+(v===0?" main":""));
+    ln.setAttribute("y1",MT);ln.setAttribute("y2",MT+iH);ln.setAttribute("x1",px(v));ln.setAttribute("x2",px(v));svg.appendChild(ln);lonEls[v]=ln;
+    const hit=E("line");hit.setAttribute("class","ghit");hit.setAttribute("y1",MT);hit.setAttribute("y2",MT+iH);hit.setAttribute("x1",px(v));hit.setAttribute("x2",px(v));
+    hit.addEventListener("pointerdown",e=>{e.stopPropagation();toggleLon(v);});svg.appendChild(hit);
+  });
+  LATS.forEach(v=>{const y=py(v)+4;
+    [[ML-9,"end"],[ML+iW+9,"start"]].forEach(([x,an])=>{const t=E("text");t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("text-anchor",an);t.setAttribute("class","glabel");t.setAttribute("fill","#c0432a");t.textContent=fmtLatShort(v);svg.appendChild(t);});
+  });
+  LONS.forEach(v=>{
+    [MT-9,MT+iH+17].forEach(yy=>{const t=E("text");t.setAttribute("x",px(v));t.setAttribute("y",yy);t.setAttribute("text-anchor","middle");t.setAttribute("class","glabel");t.setAttribute("fill","#2f6fd0");t.textContent=fmtLonShort(v);svg.appendChild(t);});
+  });
+
+  CITIES.forEach(c=>{
+    const hit=E("circle");hit.setAttribute("cx",px(c.lo));hit.setAttribute("cy",py(c.la));hit.setAttribute("r",13);hit.setAttribute("fill","transparent");hit.style.cursor="pointer";
+    hit.addEventListener("pointerdown",e=>{e.stopPropagation();selectCity(c.n);});svg.appendChild(hit);
+    const dot=E("circle");dot.setAttribute("cx",px(c.lo));dot.setAttribute("cy",py(c.la));dot.setAttribute("r",5.5);dot.setAttribute("class","citydot");svg.appendChild(dot);cityEls[c.n]=dot;
+    const lbl=E("text");lbl.setAttribute("x",px(c.lo)+c.dx);lbl.setAttribute("y",py(c.la)+3.5);lbl.setAttribute("text-anchor",c.a);lbl.setAttribute("class","cityname");lbl.textContent=c.n;svg.appendChild(lbl);
+  });
+
+  const dotG=E("g");dotG.style.display="none";
+  const ring=E("circle");ring.setAttribute("r",10);ring.setAttribute("class","readring");
+  const dd=E("circle");dd.setAttribute("r",5.5);dd.setAttribute("class","readdot");
+  dotG.appendChild(ring);dotG.appendChild(dd);svg.appendChild(dotG);
+
+  function toggleLat(v){const i=api.selLat.indexOf(v);if(i>=0)api.selLat.splice(i,1);else api.selLat.push(v);api.lastCity=null;clearCityCls();refresh();}
+  function toggleLon(v){const i=api.selLon.indexOf(v);if(i>=0)api.selLon.splice(i,1);else api.selLon.push(v);api.lastCity=null;clearCityCls();refresh();}
+  function clearCityCls(){Object.values(cityEls).forEach(d=>d.classList.remove("sel","ok","bad"));}
+  function selectCity(n){api.lastCity=n;clearCityCls();cityEls[n].classList.add("sel");refresh();}
+
+  function refresh(){
+    LATS.forEach(v=>latEls[v].classList.toggle("sel",api.selLat.includes(v)));
+    LONS.forEach(v=>lonEls[v].classList.toggle("sel",api.selLon.includes(v)));
+    if(api.onchange)api.onchange();
+  }
+  api.refresh=refresh;
+  api.reset=function(){api.selLat=[];api.selLon=[];api.lastCity=null;clearCityCls();dotG.style.display="none";refresh();};
+  api.showDot=function(la,lo){dotG.setAttribute("transform","translate("+px(lo)+","+py(la)+")");dotG.style.display="block";};
+  api.hideDot=function(){dotG.style.display="none";};
+  api.markCity=function(n,ok){if(cityEls[n])cityEls[n].classList.add(ok?"ok":"bad");};
+  refresh();
+  return api;
+}
+
+/* ====================== AUFGABEN-SEQUENZ ====================== */
+function renderTasks(host,sectId,tasks,onDone){
+  host.innerHTML="";
+  const head=document.createElement("div");head.className="boxhead";head.innerHTML='Aufgaben<span class="pts" id="tp_'+sectId+'"></span>';
+  const prog=document.createElement("div");prog.className="progress";
+  const body=document.createElement("div");
+  host.append(head,prog,body);
+  let i=0;
+  function show(){
+    while(i<tasks.length&&state.awarded["task-"+sectId+"-"+i])i++;
+    if(i>=tasks.length){finish();return;}
+    const t=tasks[i];let attempt=0;
+    head.querySelector(".pts").textContent=t.points+" P";
+    prog.textContent="Aufgabe "+(i+1)+" von "+tasks.length;
+    body.innerHTML='<div class="qtext">'+t.q+'</div>'+(t.html||"");
+    const fb=document.createElement("div");fb.className="feedback";
+    const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Prüfen";
+    body.append(btn,fb);
+    if(t.onStart)t.onStart(body);
+    btn.onclick=()=>{
+      const ok=t.check(body);
+      if(ok){const pts=attempt===0?t.points:Math.ceil(t.points/2);
+        const got=award("task-"+sectId+"-"+i,sectId,pts);
+        fb.className="feedback ok";fb.textContent=(t.success||"Richtig!")+(got?(" +"+pts+" Punkte"):"");
+        btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>{i++;show();};
+      }else{attempt++;
+        if(attempt===1){fb.className="feedback hint";fb.textContent="💡 "+t.hint;}
+        else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 "+t.hint;}}
+    };
+  }
+  function finish(){head.querySelector(".pts").style.display="none";prog.textContent="Alle Aufgaben gelöst ✓";
+    body.innerHTML='<div class="feedback ok">Stark! Du hast alle Aufgaben geschafft.</div>';onDone&&onDone();}
+  show();
+}
+
+/* ====================== QUIZ-ENGINE ====================== */
+function renderQuiz(host,sectId,pool,count,onPass){
+  host.innerHTML="";
+  const head=document.createElement("div");head.className="boxhead";head.textContent="Quiz";
+  const prog=document.createElement("div");prog.className="progress";
+  const body=document.createElement("div");host.append(head,prog,body);
+  let bag=shuffle(pool.slice()),lastQ=null,slot=0;
+  function draw(){if(bag.length===0)bag=shuffle(pool.slice());let q=bag.shift();
+    if(q===lastQ&&bag.length){bag.push(q);q=bag.shift();}lastQ=q;return q;}
+  function next(){
+    if(slot>=count){prog.textContent="Quiz abgeschlossen ✓";
+      body.innerHTML='<div class="feedback ok">🎉 Geschafft! Du kannst zum nächsten Abschnitt.</div>';onPass&&onPass();return;}
+    render(draw(),0);
+  }
+  function render(q,attempt){
+    prog.textContent="Frage "+(slot+1)+" von "+count;
+    body.innerHTML='<div class="qtext">'+q.q+'</div>';
+    let sel=null,inp=null;
+    if(q.type==="input"){inp=document.createElement("input");inp.type="text";
+      inp.placeholder=q.coord?"z. B. 12°S 30°W":"Antwort…";body.appendChild(inp);}
+    else{q.options.forEach((op,oi)=>{const o=document.createElement("label");o.className="opt";o.textContent=op;
+      o.onclick=()=>{[...body.querySelectorAll(".opt")].forEach(c=>c.classList.remove("sel"));o.classList.add("sel");sel=oi;};body.appendChild(o);});}
+    const fb=document.createElement("div");fb.className="feedback";
+    const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Antworten";
+    body.append(btn,fb);
+    btn.onclick=()=>{
+      let ok;
+      if(q.type==="input"){
+        if(q.coord)ok=coordStrict(inp.value,q.coord[0],q.coord[1]);
+        else ok=q.answer.some(a=>norm(a)===norm(inp.value));
+      }else ok=sel===q.answer;
+      if(ok){const pts=attempt===0?10:5;const got=award("q-"+sectId+"-"+slot,sectId,pts);
+        fb.className="feedback ok";fb.textContent="Richtig!"+(got?(" +"+pts+" Punkte"):"");
+        if(q.type!=="input"&&sel!=null)body.querySelectorAll(".opt")[sel].classList.add("correct");
+        btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>{slot++;next();};
+      }else{
+        if(q.type!=="input"&&sel!=null)body.querySelectorAll(".opt")[sel].classList.add("wrong");
+        attempt++;
+        if(attempt===1){fb.className="feedback hint";fb.textContent="💡 "+q.hint+" – versuch es nochmal.";}
+        else{fb.className="feedback no";fb.textContent="Leider wieder falsch. Du bekommst eine neue Frage…";
+          setTimeout(()=>render(draw(),0),1100);}
+      }
+    };
+  }
+  next();
+}
+
+/* ====================== NAV / RENDER ====================== */
+let current=0,teacherMode=false;const globes={},nextBtns={},flags={};
+function maxUnlocked(){if(teacherMode)return SECT.length-1;let m=0;for(let i=1;i<SECT.length;i++){if(state.passed[i-1]||state.skipped[i-1]||SECT[i-1].soon||SECT[i-1].result)m=i;else break;}return m;}
+function buildNav(){const nav=document.getElementById("nav");nav.innerHTML="";
+  SECT.forEach(s=>{const b=document.createElement("button");b.textContent=s.name;
+    const open=s.id===0||s.id<=maxUnlocked();const active=s.id===current;
+    b.style.color=active?"#fff":s.color;b.style.background=active?s.color:s.color+"1e";b.style.borderColor=s.color;
+    if(state.passed[s.id])b.classList.add("done");
+    if(!open)b.classList.add("locked");
+    b.onclick=()=>{if(open)show(s.id);};nav.appendChild(b);});}
+function markPassed(id){state.passed[id]=true;save();buildNav();}
+function sectFlag(id,which){flags[id]=flags[id]||{};flags[id][which]=true;
+  const need=id===0?["quiz"]:["tasks","quiz"];
+  if(need.every(k=>flags[id][k])){markPassed(id);if(nextBtns[id])nextBtns[id].disabled=false;}}
+/* Profi-Abschnitt überspringen: zählt nicht zur Wertung (Max + Punkte = 0) */
+function skipProfi(){
+  if(!state.passed[5])state.skipped[5]=true;
+  save();buildNav();updateTotals();
+  if(nextBtns[5])nextBtns[5].disabled=false;
+  show(6);
+}
+function show(id){current=id;buildNav();const main=document.getElementById("main");
+  [...main.children].forEach(c=>c.classList.remove("show"));
+  let el=document.getElementById("step"+id);
+  if(!el){el=builders[id]();el.id="step"+id;el.className="step";main.appendChild(el);}
+  el.classList.add("show");window.scrollTo(0,0);if(globes[id])setTimeout(()=>globes[id]._resize(),60);}
+function footer(id){const f=document.createElement("div");f.className="foot";
+  const back=document.createElement("button");back.className="btn ghost";back.textContent="← Zurück";
+  back.onclick=()=>show(Math.max(0,id-1));back.style.visibility=id===0?"hidden":"visible";
+  const right=document.createElement("div");right.style.display="flex";right.style.gap="10px";right.style.flexWrap="wrap";
+  if(id===5){const skip=document.createElement("button");skip.className="btn ghost";skip.textContent="Überspringen";
+    skip.onclick=()=>skipProfi();right.appendChild(skip);}
+  const next=document.createElement("button");next.className="btn";next.textContent="Weiter →";
+  next.onclick=()=>show(id+1);next.disabled=!state.passed[id];nextBtns[id]=next;
+  right.appendChild(next);
+  f.append(back,right);return f;}
+
+/* ====================== LEHRER-ZUGANG (Modal) ====================== */
+const TEACHER_CODE="4711";
+function setupTeacherModal(){
+  const m=document.createElement("div");m.className="modal-back";m.id="teacherModal";
+  m.innerHTML=`<div class="modal-card">
+    <button class="modal-x" id="tmClose" aria-label="Schließen">×</button>
+    <div id="tmCode">
+      <h2>👩‍🏫 Lehrer-Zugang</h2>
+      <p class="hint">Gib den Zugangscode ein, um direkt zu einer Etappe zu springen.</p>
+      <input type="password" inputmode="numeric" class="code-input" id="tmInput" placeholder="••••" maxlength="6" autocomplete="off">
+      <div class="feedback no" id="tmErr"></div>
+      <button class="btn" id="tmGo" style="width:100%">Freischalten</button>
+    </div>
+    <div id="tmJump" hidden>
+      <h2>Direkt zu einer Etappe</h2>
+      <p class="hint">Alle Abschnitte sind jetzt freigeschaltet. Wähle dein Ziel:</p>
+      <div class="jump-grid" id="tmGrid"></div>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  const codeView=m.querySelector("#tmCode"),jumpView=m.querySelector("#tmJump");
+  const input=m.querySelector("#tmInput"),err=m.querySelector("#tmErr");
+  function close(){m.classList.remove("show");}
+  m.querySelector("#tmClose").onclick=close;
+  m.addEventListener("click",e=>{if(e.target===m)close();});
+  function buildGrid(){const grid=m.querySelector("#tmGrid");grid.innerHTML="";
+    SECT.forEach(s=>{const b=document.createElement("button");
+      b.textContent=(s.id+1)+". "+s.name;b.style.borderColor=s.color;b.style.color=s.color;
+      b.onclick=()=>{close();show(s.id);};grid.appendChild(b);});}
+  function showJump(){codeView.hidden=true;jumpView.hidden=false;buildGrid();}
+  function showCode(){codeView.hidden=false;jumpView.hidden=true;err.textContent="";input.value="";}
+  function check(){
+    if(input.value.trim()===TEACHER_CODE){teacherMode=true;buildNav();showJump();}
+    else{err.textContent="Falscher Code.";input.value="";input.focus();}
+  }
+  m.querySelector("#tmGo").onclick=check;
+  input.addEventListener("keydown",e=>{if(e.key==="Enter")check();});
+  window.openTeacher=()=>{
+    if(teacherMode)showJump();else showCode();
+    m.classList.add("show");setTimeout(()=>{if(!teacherMode)input.focus();},60);
+  };
+}
+
+/* ====================== BUILDERS ====================== */
+const builders={};
+
+/* --- 0 Einstieg --- */
+builders[0]=()=>{const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 1 · Einstieg</div>
+  <h1>Der Hilferuf der Titanic</h1>
+  <p>In der Nacht zum 15. April 1912 rammte die <b>RMS Titanic</b> auf ihrer Jungfernfahrt einen Eisberg im
+  Nordatlantik. Über Funk sendete das Schiff verzweifelte Notrufe – die berühmten Signale <b>CQD</b> und <b>SOS</b>.
+  Doch ein Notruf allein nützt wenig, wenn niemand weiß, <i>wo</i> sich das Schiff befindet.</p>
+  <p>Deshalb funkte die Besatzung eine entscheidende Information mit: ihre <b>Position</b> –
+  <b>41°46′ Nord, 50°14′ West</b>. Anhand dieser zwei Zahlen konnte die <i>RMS Carpathia</i> losfahren und über
+  700 Überlebende bergen.</p>
+  <div class="box info"><h4>Worum geht es?</h4>Mit nur zwei Angaben lässt sich <b>jeder Punkt der Erde</b> eindeutig
+  beschreiben: die <span class="lat-word">geografische Breite</span> und die <span class="lon-word">geografische Länge</span>
+  – zusammen die <b>geografischen Koordinaten</b>.</div>
+  <p>Erst 1985 – über 70 Jahre später – wurde das Wrack in fast 4000 m Tiefe gefunden. Auch dafür waren präzise
+  Koordinaten der Schlüssel. In dieser Lernreise wirst du selbst zum Navigator.</p>
+  <div class="box tip"><h4>Deine Mission</h4>Arbeite dich durch alle Abschnitte. Nach jedem Teil löst du Aufgaben –
+  nur wenn du sie richtig löst, geht es weiter. Sammle Punkte und schalte am Ende dein Abzeichen frei!</div>
+  <h2>Quiz: Einstieg</h2>
+  <div class="quizbox"><div id="q0"></div></div>
+  <div class="teacher-row"><button class="teacher-btn" id="teacherOpen">👩‍🏫 Lehrer-Zugang</button></div>
+  </div>`;
+ w.appendChild(footer(0));
+ setTimeout(()=>{
+   renderQuiz(w.querySelector("#q0"),0,POOL0,6,()=>sectFlag(0,"quiz"));
+   w.querySelector("#teacherOpen").onclick=()=>openTeacher();
+ },30);
+ return w;};
+
+/* --- 1 Breitenkreise --- */
+builders[1]=()=>{const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 2</div><h1>Die Breitenkreise</h1>
+  <p>Der wichtigste Breitenkreis ist der <span class="lat-word">Äquator (0°)</span>. Er teilt die Erde in die
+  <b>Nordhalbkugel (NHK)</b> und die <b>Südhalbkugel (SHK)</b>.</p>
+  <div class="box info"><h4>Eigenschaften</h4><ul>
+   <li>Sie verlaufen <b>parallel</b> zueinander (auch Parallelkreise).</li>
+   <li>Sie sind <b>nicht alle gleich lang</b> – der Äquator ist am längsten, zu den Polen werden sie kürzer.</li>
+   <li>Sie haben <b>immer den gleichen Abstand</b> zueinander.</li>
+   <li><b>Nordpol</b> (90°N) und <b>Südpol</b> (90°S) sind nur noch ein Punkt.</li>
+   <li>Es gibt <b>90 Breitenkreise nach Norden</b> und <b>90 nach Süden</b>.</li></ul></div>
+  <div class="box def"><h4>Definition</h4>Die <span class="lat-word">geografische Breite</span> ist der
+  <b>Abstand eines Ortes zum Äquator</b> – als Winkel von 0° (Äquator) bis 90° (Pol).</div>
+  ${schemaLat()}
+  <h2>Probier es am Globus aus</h2>
+  <p class="hint">Drehen: ziehen · Auswählen: einfach auf einen Breitenkreis tippen oder klicken.</p>
+  <div class="globe-wrap" id="g1"></div>
+  <div class="globe-ctrl">
+   <button class="btn ghost" id="g1n">Nordpol-Ansicht</button>
+   <button class="btn ghost" id="g1s">Standard-Ansicht</button>
+   <button class="btn ghost" id="g1r">Auswahl löschen</button>
+   <button class="btn gold" id="g1m">📏 Distanz messen</button></div>
+  <div class="readout" id="g1read"><small>Aktuelle Auswahl</small>—</div>
+  <div class="readout measure" id="g1mout" style="display:none"></div>
+  <div class="taskbox" id="tb1"></div>
+  <h2>Quiz: Breitenkreise</h2>
+  <div class="quizbox" id="q1"></div></div>`;
+ w.appendChild(footer(1));
+ setTimeout(()=>{
+  const g=createGlobe(w.querySelector("#g1"),"lat");globes[1]=g;if(!g)return;
+  const read=w.querySelector("#g1read");
+  g.onchange=()=>{const s=g.selLat.map(fmtLatShort);read.innerHTML="<small>Aktuelle Auswahl</small>"+(s.length?s.join("  ·  "):"—");};
+  g.onchange();
+  w.querySelector("#g1n").onclick=()=>g.northView();
+  w.querySelector("#g1s").onclick=()=>g.standardView();
+  w.querySelector("#g1r").onclick=()=>g.reset();
+  const mOut=w.querySelector("#g1mout");
+  w.querySelector("#g1m").onclick=()=>{mOut.style.display="block";
+    if(g.selLat.length!==2){mOut.innerHTML="<small>📏 Messwerkzeug</small>Wähle genau <b>zwei</b> Breitenkreise – dann messe ich den Abstand.";return;}
+    const a=g.selLat[0],b=g.selLat[1],d=Math.abs(a-b),km=Math.round(d*111);
+    mOut.innerHTML="<small>📏 Messwerkzeug</small>"+fmtLatShort(a)+" ↔ "+fmtLatShort(b)+":  Δ = <b>"+d+"°</b>  →  "+d+"° × 111 km ≈ <b>"+km+" km</b>";};
+  renderTasks(w.querySelector("#tb1"),1,[
+   {q:"Wähle den Breitenkreis <b>60°N</b> aus.",points:10,onStart:()=>g.reset(),
+    hint:"60°N liegt auf der Nordhalbkugel, zwischen 40°N und 80°N.",
+    check:()=>g.selLat.length===1&&g.selLat[0]===60},
+   {q:"Wähle den <b>Äquator (0°)</b> aus.",points:10,onStart:()=>g.reset(),
+    hint:"Der Äquator ist der dickere rote Kreis genau in der Mitte.",
+    check:()=>g.selLat.length===1&&g.selLat[0]===0},
+   {q:"Schalte auf <b>Nordpol-Ansicht</b> und wähle den <b>Nordpol (90°N)</b> aus.",points:10,onStart:()=>{g.reset();g.northView();},
+    hint:"Der Nordpol ist nur noch ein einziger Punkt ganz oben am Globus.",
+    check:()=>g.selLat.includes(90)},
+   {q:"Wähle <b>20°N</b> und <b>60°N</b>. Welcher Kreis ist <b>länger</b>?",points:10,onStart:()=>{g.reset();g.standardView();},
+    html:`<label class="opt"><input type="radio" name="l1a" value="20"> 20°N</label>
+          <label class="opt"><input type="radio" name="l1a" value="60"> 60°N</label>
+          <label class="opt"><input type="radio" name="l1a" value="g"> beide gleich lang</label>`,
+    hint:"Je näher ein Breitenkreis am Pol liegt, desto kürzer ist er.",
+    check:(b)=>{const v=b.querySelector("input[name=l1a]:checked");return g.selLat.includes(20)&&g.selLat.includes(60)&&v&&v.value==="20";}},
+   {q:"Wähle <b>0°</b> und <b>40°N</b>. Miss mit dem <b>📏 Messwerkzeug</b> und tippe den Abstand (in km) ein:",points:15,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 2220 km">`,
+    success:"Genau – rund 4440 km (40° × 111 km).",
+    hint:"Abstand = Gradunterschied × 111 km. Hier: 40° × 111 km.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLat.length===2&&g.selLat.includes(0)&&g.selLat.includes(40)&&Math.abs(v-4440)<=300;}},
+   {q:"Wähle <b>20°N</b> und <b>80°N</b> und tippe ihren Abstand in km ein:",points:15,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 1110 km">`,
+    success:"Richtig – rund 6660 km (60° × 111 km).",
+    hint:"Der Gradunterschied beträgt 60°. Rechne 60 × 111 km.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLat.length===2&&g.selLat.includes(20)&&g.selLat.includes(80)&&Math.abs(v-6660)<=300;}},
+   {q:"Wähle <b>40°S</b> und <b>40°N</b> und tippe ihren Abstand in km ein:",points:15,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 3330 km">`,
+    success:"Richtig – rund 8880 km (80° × 111 km).",
+    hint:"Von 40°S bis 40°N sind es 80°. Rechne 80 × 111 km.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLat.length===2&&g.selLat.includes(-40)&&g.selLat.includes(40)&&Math.abs(v-8880)<=350;}},
+   {q:"Nordpol-Ansicht: Wähle <b>40°N</b> und <b>80°N</b>. Welcher Kreis ist <b>kürzer</b>?",points:10,onStart:()=>{g.reset();g.northView();},
+    html:`<label class="opt"><input type="radio" name="l1b" value="40"> 40°N</label>
+          <label class="opt"><input type="radio" name="l1b" value="80"> 80°N</label>`,
+    hint:"80°N liegt näher am Pol – Kreise schrumpfen zum Pol hin.",
+    check:(b)=>{const v=b.querySelector("input[name=l1b]:checked");return g.selLat.includes(40)&&g.selLat.includes(80)&&v&&v.value==="80";}},
+  ],()=>sectFlag(1,"tasks"));
+  renderQuiz(w.querySelector("#q1"),1,POOL1,6,()=>sectFlag(1,"quiz"));
+ },40);
+ return w;};
+
+/* --- 2 Längenkreise --- */
+builders[2]=()=>{const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 3</div><h1>Die Längenkreise / Meridiane</h1>
+  <p>Der wichtigste Längenkreis ist der <span class="lon-word">Nullmeridian (0°)</span>. Er teilt die Erde in die
+  <b>Westhalbkugel</b> und die <b>Osthalbkugel</b>.</p>
+  <div class="box info"><h4>Eigenschaften</h4><ul>
+   <li>Sie sind <b>alle gleich lang</b> (jeder läuft vom Nordpol zum Südpol).</li>
+   <li>Sie haben <b>unterschiedliche Abstände</b> – am Äquator weit, an den Polen treffen sie sich.</li>
+   <li>Der <b>Nullmeridian</b> verläuft durch <b>Greenwich (London)</b>.</li>
+   <li>Es gibt <b>180 Längenkreise nach Westen</b> und <b>180 nach Osten</b>.</li></ul></div>
+  <div class="box tip"><h4>Wissenswert: Greenwich</h4>1884 einigte man sich international: Der Nullmeridian läuft durch
+  die Sternwarte von <b>Greenwich</b> bei London. Von dort wird auch die Weltzeit gezählt (GMT).</div>
+  <div class="box def"><h4>Definition</h4>Die <span class="lon-word">geografische Länge</span> ist der
+  <b>Abstand eines Ortes zum Nullmeridian</b> – als Winkel von 0° bis 180° nach Westen (W) oder Osten (E).</div>
+  ${schemaLon()}
+  <h2>Globus mit Längenkreisen</h2>
+  <p class="hint">Drehen: ziehen · Auswählen: einfach auf einen Längenkreis tippen oder klicken. Jeder Meridian läuft vom Nord- zum Südpol.</p>
+  <div class="globe-wrap" id="g2"></div>
+  <div class="globe-ctrl">
+   <button class="btn ghost" id="g2s">Standard-Ansicht</button>
+   <button class="btn ghost" id="g2n">Polar-Ansicht</button>
+   <button class="btn ghost" id="g2r">Auswahl löschen</button>
+   <button class="btn gold" id="g2m">📏 Abstand messen</button></div>
+  <div class="readout" id="g2read"><small>Aktuelle Auswahl</small>—</div>
+  <div class="readout measure" id="g2mout" style="display:none"></div>
+  <div class="taskbox" id="tb2"></div>
+  <h2>Quiz: Längenkreise</h2>
+  <div class="quizbox" id="q2"></div></div>`;
+ w.appendChild(footer(2));
+ setTimeout(()=>{
+  const g=createGlobe(w.querySelector("#g2"),"lon");globes[2]=g;if(!g)return;
+  const read=w.querySelector("#g2read");
+  g.onchange=()=>{const s=g.selLon.map(fmtLonShort);read.innerHTML="<small>Aktuelle Auswahl</small>"+(s.length?s.join("  ·  "):"—");};
+  g.onchange();
+  w.querySelector("#g2n").onclick=()=>g.northView();
+  w.querySelector("#g2s").onclick=()=>g.standardView();
+  w.querySelector("#g2r").onclick=()=>g.reset();
+  const mOut=w.querySelector("#g2mout");
+  w.querySelector("#g2m").onclick=()=>{mOut.style.display="block";
+    if(g.selLon.length!==2){mOut.innerHTML="<small>📏 Messwerkzeug</small>Wähle genau <b>zwei</b> Längenkreise – dann messe ich.";return;}
+    const a=g.selLon[0],b=g.selLon[1],d=Math.round(angDiff(a,b)),km=Math.round(d*111);
+    mOut.innerHTML="<small>📏 Messwerkzeug</small>"+fmtLonShort(a)+" ↔ "+fmtLonShort(b)+":  Δ = <b>"+d+"°</b>  →  am Äquator "+d+"° × 111 km ≈ <b>"+km+" km</b> <span class='hint'>(nur am Äquator gültig!)</span>";};
+  renderTasks(w.querySelector("#tb2"),2,[
+   {q:"Wähle den <b>Nullmeridian (0°)</b> aus.",points:10,onStart:()=>g.reset(),
+    hint:"Der Nullmeridian läuft durch Greenwich – er ist der dickere blaue Kreis.",
+    check:()=>g.selLon.length===1&&g.selLon[0]===0},
+   {q:"Wähle den Längenkreis <b>40°E</b> (Osten) aus.",points:10,onStart:()=>g.reset(),
+    hint:"Östliche Länge zählt vom Nullmeridian aus nach Osten (E = East).",
+    check:()=>g.selLon.length===1&&g.selLon[0]===40},
+   {q:"Wähle den Längenkreis <b>120°W</b> (Westen) aus.",points:10,onStart:()=>g.reset(),
+    hint:"W = West. 120°W liegt weit westlich des Nullmeridians (z. B. über Nordamerika).",
+    check:()=>g.selLon.length===1&&g.selLon[0]===-120},
+   {q:"Wähle den Längenkreis <b>180°</b> (Datumsgrenze) aus.",points:10,onStart:()=>g.reset(),
+    hint:"180° liegt dem Nullmeridian genau gegenüber – auf der Rückseite der Erde.",
+    check:()=>g.selLon.length===1&&g.selLon[0]===180},
+   {q:"Wähle <b>0°</b> und <b>60°E</b>. Wie viele <b>Längengrade</b> liegen dazwischen? (Zahl)",points:15,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 90 °">`,
+    success:"Richtig – 60 Längengrade.",
+    hint:"Zähle einfach den Gradunterschied zwischen den beiden Meridianen.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLon.length===2&&g.selLon.includes(0)&&g.selLon.includes(60)&&Math.abs(v-60)<=1;}},
+   {q:"<b>Am Äquator:</b> Wähle <b>0°</b> und <b>80°E</b> und tippe ihren Abstand (am Äquator) in km ein:",points:15,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 5550 km">`,
+    success:"Richtig – rund 8880 km (80° × 111 km am Äquator).",
+    hint:"Am Äquator gilt: 1° ≈ 111 km. Hier 80° × 111 km.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLon.length===2&&g.selLon.includes(0)&&g.selLon.includes(80)&&Math.abs(v-8880)<=350;}},
+   {q:"Wähle <b>20°W</b> und <b>40°E</b>. Wie viele <b>Längengrade</b> liegen dazwischen? (Zahl)",points:10,onStart:()=>g.reset(),
+    html:`<input type="text" placeholder="z. B. 45 °">`,
+    success:"Richtig – 60 Längengrade (20° + 40°).",
+    hint:"Vom Nullmeridian aus: 20° nach Westen + 40° nach Osten.",
+    check:(b)=>{const v=parseNum(b.querySelector("input").value);return g.selLon.length===2&&g.selLon.includes(-20)&&g.selLon.includes(40)&&Math.abs(v-60)<=1;}},
+   {q:"Wähle den Längenkreis <b>100°E</b> aus.",points:10,onStart:()=>g.reset(),
+    hint:"100°E liegt weit östlich (z. B. über Asien).",
+    check:()=>g.selLon.length===1&&g.selLon[0]===100},
+  ],()=>sectFlag(2,"tasks"));
+  renderQuiz(w.querySelector("#q2"),2,POOL2,6,()=>sectFlag(2,"quiz"));
+ },40);
+ return w;};
+
+/* --- 3 Geografische Lage --- */
+builders[3]=()=>{const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 4</div><h1>Die geografische Lage</h1>
+  <div class="box def"><h4>Definition</h4>Die <b>geografische Lage</b> eines Ortes ist der <b>Kreuzungspunkt</b> aus
+  <span class="lat-word">Breitenkreis (Breitenlage)</span> und <span class="lon-word">Längenkreis (Längenlage)</span> –
+  also die <b>Koordinaten</b>, z. B. <span class="lat-word">45°N</span>&nbsp;<span class="lon-word">6°E</span>.</div>
+  <div class="box tip"><h4>Merkhilfe</h4>Die <span class="lat-word">Breitenlage</span> wird <b>immer zuerst</b>
+  genannt, dann die <span class="lon-word">Längenlage</span>. Eselsbrücke: <i>B vor L</i> – wie im Alphabet.</div>
+  <div class="box info"><h4>Schreibweise</h4>Schreibe Koordinaten immer <b>mit Gradzeichen °</b> und Himmelsrichtung,
+  z. B. <b>45°N 4°E</b>. Erst die Breite (N/S), dann die Länge (E/W).</div>
+  <h2>Globus mit Breiten- und Längenkreisen</h2>
+  <p class="hint">Tippe/klicke nahe an einen Kreis – du wählst mit <b>einem Tipp</b> den nächstgelegenen
+  Breiten- ODER Längenkreis. Erst wenn <b>beide</b> gewählt sind, erscheint die Koordinate.</p>
+  <div class="globe-wrap" id="g3"></div>
+  <div class="globe-ctrl"><button class="btn ghost" id="g3s">Standard-Ansicht</button>
+   <button class="btn ghost" id="g3r">Auswahl löschen</button></div>
+  <div class="readout" id="g3read"><small>Deine Koordinate</small>—</div>
+  <div class="taskbox" id="tb3"></div>
+  <h2>Quiz: Geografische Lage</h2>
+  <div class="quizbox" id="q3"></div></div>`;
+ w.appendChild(footer(3));
+ setTimeout(()=>{
+  const g=createGlobe(w.querySelector("#g3"),"both");globes[3]=g;if(!g)return;
+  const read=w.querySelector("#g3read");
+  g.onchange=()=>{if(g.selLat.length&&g.selLon.length)read.innerHTML="<small>Deine Koordinate</small><b style='color:#e4572e'>"+fmtLatShort(g.selLat[0])+"</b> <b style='color:#3a86ff'>"+fmtLonShort(g.selLon[0])+"</b>";
+    else{const parts=[];if(g.selLat.length)parts.push("<span style='color:#e4572e'>"+fmtLatShort(g.selLat[0])+"</span>");if(g.selLon.length)parts.push("<span style='color:#3a86ff'>"+fmtLonShort(g.selLon[0])+"</span>");
+      read.innerHTML="<small>Deine Koordinate</small>"+(parts.length?parts.join("  +  ")+"  (es fehlt noch ein Kreis)":"—");}};
+  g.onchange();
+  w.querySelector("#g3s").onclick=()=>g.standardView();
+  w.querySelector("#g3r").onclick=()=>{if(!g.locked)g.reset();};
+  renderTasks(w.querySelector("#tb3"),3,[
+   {q:"Stelle am Globus die Koordinate <b>40°N&nbsp;20°E</b> ein (Breitenkreis und Längenkreis wählen).",
+    points:15,onStart:()=>{g.locked=false;g.reset();g.standardView();},
+    hint:"Wähle erst den Breitenkreis 40°N, dann den Längenkreis 20°E (Osten).",
+    check:()=>g.selLat[0]===40&&g.selLon[0]===20},
+   {q:"Stelle die Koordinate <b>60°N&nbsp;100°W</b> ein.",points:15,onStart:()=>{g.locked=false;g.reset();g.standardView();},
+    hint:"100°W liegt westlich des Nullmeridians – drehe den Globus dorthin.",
+    check:()=>g.selLat[0]===60&&g.selLon[0]===-100},
+   {q:"Stelle die Koordinate <b>20°S&nbsp;140°E</b> ein.",points:15,onStart:()=>{g.locked=false;g.reset();g.standardView();},
+    hint:"20°S liegt auf der Südhalbkugel, 140°E weit im Osten.",
+    check:()=>g.selLat[0]===-20&&g.selLon[0]===140},
+   {q:"Der goldene Punkt zeigt einen Ort. <b>Lies seine Koordinate ab</b> und schreibe sie mit Gradzeichen auf.",
+    points:15,onStart:()=>{g.reset();g.standardView();g.showDot(-40,-60);g.locked=true;},
+    html:`<input type="text" placeholder="z. B. 30°N 70°E">`,
+    success:"Korrekt: 40°S 60°W.",
+    hint:"Schreibe mit ° und Himmelsrichtung, Breite zuerst: ...S ...W. Zähle vom Äquator nach unten (S) und vom Nullmeridian nach Westen (W).",
+    check:(b)=>coordStrict(b.querySelector("input").value,-40,-60)},
+   {q:"Noch ein Punkt: <b>Lies die Koordinate ab</b> und schreibe sie mit Gradzeichen auf.",
+    points:15,onStart:()=>{g.reset();g.standardView();g.showDot(60,80);g.locked=true;},
+    html:`<input type="text" placeholder="z. B. 10°S 25°W">`,
+    success:"Korrekt: 60°N 80°E.",
+    hint:"Schreibe mit ° und Himmelsrichtung. Der Punkt liegt oberhalb des Äquators (N) und östlich des Nullmeridians (E).",
+    check:(b)=>coordStrict(b.querySelector("input").value,60,80)},
+  ],()=>{g.locked=false;sectFlag(3,"tasks");});
+  renderQuiz(w.querySelector("#q3"),3,POOL3,6,()=>sectFlag(3,"quiz"));
+ },40);
+ return w;};
+
+/* --- 4 Arbeit mit der Karte --- */
+builders[4]=()=>{const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 5</div><h1>Arbeit mit der Karte</h1>
+  <p>Im Atlas findest du keine Globen, sondern <b>flache Karten</b>. Auch dort hilft dir das Gradnetz,
+  jeden Ort zu finden – du musst nur wissen, <b>wo die Gradzahlen stehen</b> und <b>wie du sie abliest</b>.</p>
+  <div class="box info"><h4>1 · Die Gradangaben ablesen</h4>
+   Die <span class="lat-word">Breitengrade</span> stehen am <b>linken und rechten</b> Rand,
+   die <span class="lon-word">Längengrade</span> stehen <b>oben und unten</b>.
+   Tippe unten auf der Karte einfach auf eine Linie – sie wird golden hervorgehoben.</div>
+  <div class="box def"><h4>2 · Ausdehnung in Grad</h4>
+   Wie weit reicht ein Erdteil? Du liest die äußersten Breiten-/Längengrade ab und bildest die Differenz.
+   <b>Wichtig:</b> Liegt der <span class="lat-word">Äquator</span> bzw. der <span class="lon-word">Nullmeridian</span>
+   dazwischen, musst du die beiden Werte <b>addieren</b> (z. B. 37°N + 35°S = 72°).</div>
+  <h2>Die Karte: Afrika</h2>
+  <p class="hint">Tippe auf eine <b>Linie</b>, um sie auszuwählen (rot = Breite, blau = Länge) ·
+  Tippe auf einen <b>Ortspunkt</b>, um die Stadt zu wählen.</p>
+  <div class="map-wrap"><div id="mapBox"></div></div>
+  <div class="readout" id="mapRead"><small>Aktuelle Auswahl</small>—</div>
+  <div class="globe-ctrl"><button class="btn ghost" id="mapReset">Auswahl löschen</button></div>
+  <div class="taskbox" id="tb4"></div>
+  <h2>Quiz: Arbeit mit der Karte</h2>
+  <div class="quizbox" id="q4"></div></div>`;
+ w.appendChild(footer(4));
+ setTimeout(()=>{
+  const map=createAfricaMap(w.querySelector("#mapBox"));
+  const read=w.querySelector("#mapRead");
+  map.onchange=()=>{
+    if(map.lastCity){read.innerHTML="<small>Ausgewählte Stadt</small><b style='color:#b9821a'>"+map.lastCity+"</b>";return;}
+    const parts=[];
+    map.selLat.forEach(v=>parts.push("<span style='color:#e4572e'>"+fmtLatShort(v)+"</span>"));
+    map.selLon.forEach(v=>parts.push("<span style='color:#3a86ff'>"+fmtLonShort(v)+"</span>"));
+    read.innerHTML="<small>Aktuelle Auswahl</small>"+(parts.length?parts.join("  ·  "):"—");
+  };
+  map.onchange();
+  w.querySelector("#mapReset").onclick=()=>map.reset();
+  renderTasks(w.querySelector("#tb4"),4,[
+   {q:"Wähle den Breitenkreis <b>20°N</b> aus.",points:10,onStart:()=>map.reset(),
+    hint:"Breitenkreise verlaufen waagerecht – ihre Werte stehen links/rechts. 20°N liegt nördlich des Äquators (rote Linie).",
+    check:()=>map.selLat.length===1&&map.selLat[0]===20&&map.selLon.length===0},
+   {q:"Wähle den Längenkreis <b>40°E</b> (Osten) aus.",points:10,onStart:()=>map.reset(),
+    hint:"Längenkreise verlaufen senkrecht – ihre Werte stehen oben/unten. E = Osten, also rechts vom Nullmeridian (blaue Linie).",
+    check:()=>map.selLon.length===1&&map.selLon[0]===40&&map.selLat.length===0},
+   {q:"Welche Stadt liegt ungefähr auf dem Breitenkreis <b>30°N</b>? Tippe sie auf der Karte an.",points:10,onStart:()=>map.reset(),
+    hint:"Suche eine Stadt im Norden Afrikas, nahe der 30°N-Linie (am Nil).",
+    success:"Richtig – Kairo liegt bei rund 30°N.",
+    check:()=>{const ok=map.lastCity==="Kairo";if(map.lastCity)map.markCity(map.lastCity,ok);return ok;}},
+   {q:"Welche dieser Gebiete werden vom <b>Nullmeridian (0°)</b> durchquert? (Mehrfachauswahl)",points:10,
+    onStart:()=>{map.reset();map.selLon=[0];map.refresh();},
+    html:`<label class="opt"><input type="checkbox" data-i="0"> Mittelmeer</label>
+          <label class="opt"><input type="checkbox" data-i="1"> Afrika</label>
+          <label class="opt"><input type="checkbox" data-i="2"> Atlantischer Ozean</label>
+          <label class="opt"><input type="checkbox" data-i="3"> Indischer Ozean</label>
+          <label class="opt"><input type="checkbox" data-i="4"> Rotes Meer</label>`,
+    hint:"Der Nullmeridian ist golden hervorgehoben. Folge ihm von oben nach unten – welche Flächen schneidet er?",
+    success:"Richtig – der Nullmeridian läuft durch Mittelmeer, Westafrika und den Atlantik.",
+    check:(b)=>{const want=[1,1,1,0,0];return [...b.querySelectorAll("input[type=checkbox]")].every((c,i)=>c.checked===!!want[i]);}},
+   {q:"Welche Stadt liegt am Schnittpunkt von <b>34°S</b> und <b>18°E</b>? Tippe sie an.",points:10,onStart:()=>map.reset(),
+    hint:"34°S liegt ganz im Süden Afrikas, 18°E etwas östlich des Nullmeridians.",
+    success:"Richtig – das ist Kapstadt.",
+    check:()=>{const ok=map.lastCity==="Kapstadt";if(map.lastCity)map.markCity(map.lastCity,ok);return ok;}},
+   {q:"Der goldene Punkt zeigt einen Ort. <b>Lies seine Koordinate ab</b> und schreibe sie mit Gradzeichen auf (Breite zuerst).",points:15,
+    onStart:()=>{map.reset();map.showDot(20,10);},
+    html:`<input type="text" placeholder="z. B. 30°N 40°E">`,
+    success:"Korrekt: 20°N 10°E.",
+    hint:"Lies die rote Linie (Breite, links/rechts) und die blaue Linie (Länge, oben/unten) ab. Format: ...°N ...°E.",
+    check:(b)=>coordStrict(b.querySelector("input").value,20,10)},
+   {q:"Afrika reicht im Norden bis etwa <b>37°N</b> und im Süden bis etwa <b>35°S</b>. Berechne die <b>Nord-Süd-Ausdehnung</b> in Grad.",points:15,onStart:()=>map.reset(),
+    html:`<input type="text" placeholder="z. B. 72 °">`,
+    success:"Genau – 37° + 35° = 72° (der Äquator liegt dazwischen, deshalb addieren).",
+    hint:"Der Äquator (0°) liegt zwischen Nord und Süd – addiere beide Werte: 37 + 35.",
+    check:(b)=>Math.abs(parseNum(b.querySelector("input").value)-72)<=3},
+   {q:"Afrika reicht im Westen bis etwa <b>17°W</b> und im Osten bis etwa <b>51°E</b>. Berechne die <b>Ost-West-Ausdehnung</b> in Grad.",points:15,onStart:()=>map.reset(),
+    html:`<input type="text" placeholder="z. B. 68 °">`,
+    success:"Genau – 17° + 51° = 68° (der Nullmeridian liegt dazwischen).",
+    hint:"Der Nullmeridian (0°) liegt zwischen West und Ost – addiere: 17 + 51.",
+    check:(b)=>Math.abs(parseNum(b.querySelector("input").value)-68)<=3},
+  ],()=>sectFlag(4,"tasks"));
+  renderQuiz(w.querySelector("#q4"),4,POOL4,6,()=>sectFlag(4,"quiz"));
+ },40);
+ return w;};
+
+/* --- 5 Koordinaten für Profis --- */
+builders[5]=()=>{
+ const w=document.createElement("div");
+ w.innerHTML=`<div class="card">
+  <div class="kicker">Abschnitt 6 · für Profis</div>
+  <h1>Koordinaten für Profis</h1>
+  <p>Ganze Grade reichen oft nicht aus, um einen Ort wirklich genau zu bestimmen.
+  Hier lernst du <b>Minuten</b> kennen – und wie du sie im Atlas berechnest.</p>
+  <div class="box tip" style="margin-top:10px"><h4>Hinweis</h4>Dieser Abschnitt ist <b>freiwillig</b>. Wenn du ihn überspringst
+  (Button unten), zählt er <b>nicht</b> zur Gesamtpunktzahl – deine mögliche Höchstpunktzahl ist dann entsprechend niedriger.</div>
+  <div class="profi-steps" id="pSteps"></div>
+  <div id="pBody">
+    <div class="profi-panel" data-p="0">
+      <h2>Das Problem</h2>
+      <p>Stell dir vor, du suchst eine Stadt im Atlas. Du weißt nur: Sie liegt ungefähr bei
+      <span class="lat-word">49°N</span> <span class="lon-word">8°E</span>. Aber zwischen den ganzen Gradlinien
+      ist <b>viel Platz</b> – über <b>111 km</b> von einem Breitenkreis zum nächsten!</p>
+      <p>Die echte Stadt liegt <b>mitten im Feld</b>. Tippe auf den Button und sieh, wie weit du danebenliegst,
+      wenn du nur ganze Grade benutzt:</p>
+      <div class="prob-svgwrap">
+        <svg viewBox="0 0 380 290" class="prob-svg">
+          <rect x="70" y="55" width="240" height="180" fill="#eef4fc"/>
+          <line x1="40" y1="55" x2="345" y2="55" stroke="#e4572e" stroke-width="3"/>
+          <line x1="40" y1="235" x2="345" y2="235" stroke="#e4572e" stroke-width="3"/>
+          <line x1="70" y1="25" x2="70" y2="265" stroke="#3a86ff" stroke-width="3"/>
+          <line x1="310" y1="25" x2="310" y2="265" stroke="#3a86ff" stroke-width="3"/>
+          <text x="36" y="59" font-size="13" font-weight="bold" fill="#c0432a" text-anchor="end">50°N</text>
+          <text x="36" y="239" font-size="13" font-weight="bold" fill="#c0432a" text-anchor="end">49°N</text>
+          <text x="70" y="282" font-size="13" font-weight="bold" fill="#2f6fd0" text-anchor="middle">8°E</text>
+          <text x="310" y="282" font-size="13" font-weight="bold" fill="#2f6fd0" text-anchor="middle">9°E</text>
+          <line id="probGap" x1="190" y1="145" x2="190" y2="145" stroke="#777" stroke-width="2.5" stroke-dasharray="6 4" opacity="0"/>
+          <circle id="probGhost" cx="190" cy="145" r="8" fill="none" stroke="#e0a700" stroke-width="2.5" stroke-dasharray="3 3" opacity="0"/>
+          <circle id="probCity" cx="190" cy="145" r="8" fill="#e0a700" stroke="#fff" stroke-width="2.5"/>
+          <text id="probCityLbl" x="190" y="131" font-size="13" font-weight="bold" fill="#3a2e00" text-anchor="middle">Stadt</text>
+          <text id="probGapLbl" x="0" y="0" font-size="12" font-weight="bold" fill="#c0432a" text-anchor="middle" opacity="0"></text>
+        </svg>
+      </div>
+      <div class="globe-ctrl">
+        <button class="btn gold" id="probToggle">Auf ganze Grade runden</button>
+        <button class="btn ghost" id="probReset">Zurücksetzen</button>
+      </div>
+      <div class="readout" id="probRead"></div>
+      <div class="box def"><h4>Die Lösung</h4>Damit wir <b>jeden</b> Punkt genau treffen, teilen wir jeden Grad in
+      kleinere Stücke: die <b>Minuten</b>. Wie das genau funktioniert, siehst du im nächsten Schritt.</div>
+    </div>
+    <div class="profi-panel" data-p="1">
+      <h2>Das 60er-System</h2>
+      <p>Um genauer zu werden, teilen wir jeden Grad in kleinere Stücke – aber nicht in 100, sondern in <b>60</b>!</p>
+      <div class="box info"><h4>Warum ausgerechnet 60?</h4>
+       Schon vor über 4000 Jahren rechneten die <b>Babylonier</b> mit dem <b>60er-System</b>. Die Zahl 60 ist sehr
+       praktisch, weil sie sich durch viele Zahlen <b>ohne Rest</b> teilen lässt (2, 3, 4, 5, 6, 10, 12, 15, 20, 30).
+       Aus dieser uralten Idee stammen noch heute die <b>60 Minuten</b> einer Stunde, die <b>60 Sekunden</b> – und der
+       <b>Vollkreis mit 360°</b>.</div>
+      <div class="box def"><h4>Die Einteilung</h4>
+       <b>1 Grad (°)&nbsp;=&nbsp;60 Minuten (′)</b><br>
+       <b>1 Minute (′)&nbsp;=&nbsp;60 Sekunden (″)</b><br>
+       <span class="hint">Achtung: Diese „Minuten" haben nichts mit der Uhrzeit zu tun – nur der Name ist gleich.</span></div>
+      <h3>Zoome in die Lücke</h3>
+      <p>Zwischen <span class="lat-word">49°N</span> und <span class="lat-word">50°N</span> liegt genau <b>1 Grad</b>.
+      Tippe auf den Button und sieh, wie dieser eine Grad in <b>60 Minutenstriche</b> zerfällt:</p>
+      <div class="prob-svgwrap">
+        <svg viewBox="0 0 400 125" class="prob-svg" id="zoomSvg">
+          <text id="zoomHint" x="200" y="50" font-size="15" font-weight="bold" fill="#67738c" text-anchor="middle">1 Grad = ? Minuten</text>
+          <line x1="30" y1="85" x2="370" y2="85" stroke="#27324a" stroke-width="2"/>
+          <g id="rulerTicks"></g>
+          <g id="minMarker" opacity="0">
+            <line id="mmLine" x1="200" y1="52" x2="200" y2="102" stroke="#e0a700" stroke-width="3"/>
+            <rect id="mmBg" x="170" y="24" width="60" height="22" rx="6" fill="#e0a700"/>
+            <text id="mmLbl" x="200" y="39" font-size="13" font-weight="bold" fill="#3a2e00" text-anchor="middle">49°30′N</text>
+            <circle id="mmDot" cx="200" cy="85" r="7" fill="#e0a700" stroke="#fff" stroke-width="2.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="globe-ctrl">
+        <button class="btn gold" id="zoomBtn">🔍 In die Lücke zoomen</button>
+      </div>
+      <p>Schiebe den Regler und finde heraus, wo z. B. <b>49°30′N</b> liegt:</p>
+      <input type="range" min="0" max="60" value="30" id="minSlider" class="profi-slider" disabled>
+      <div class="readout" id="minRead"><small>Position</small>Zoome zuerst in die Lücke, dann wird der Regler aktiv.</div>
+      <div class="box tip"><h4>Merke</h4>30′ sind ein <b>halber</b> Grad, 15′ ein <b>Viertel</b>. So liegt
+      <b>49°30′N</b> genau in der Mitte zwischen 49° und 50°.</div>
+    </div>
+    <div class="profi-panel" data-p="2">
+      <h2>Übung: Ablesen mit Skala</h2>
+      <p>An den Rändern der Zelle siehst du eine feine <b>60′-Skala</b> (<span class="lat-word">rot = Breite</span>,
+      <span class="lon-word">blau = Länge</span>). Lies die Lage des goldenen Punktes <b>P</b> in
+      <b>Grad und Minuten</b> ab und trage Breite und Länge ein.</p>
+      <div class="prob-svgwrap">
+        <svg viewBox="0 0 360 300" class="prob-svg" id="skSvg">
+          <rect x="70" y="40" width="220" height="220" fill="#eef4fc" stroke="#b8c4d6" stroke-width="1"/>
+          <g id="skLatTicks"></g>
+          <g id="skLonTicks"></g>
+          <line id="skLatGuide" x1="70" x2="290" stroke="#e0a700" stroke-width="1.2" stroke-dasharray="4 3" opacity="0"/>
+          <line id="skLonGuide" y1="40" y2="260" stroke="#e0a700" stroke-width="1.2" stroke-dasharray="4 3" opacity="0"/>
+          <circle id="skPoint" cx="160" cy="150" r="7" fill="#e0a700" stroke="#fff" stroke-width="2.5"/>
+          <text id="skPlbl" x="171" y="155" font-size="14" font-weight="bold" fill="#3a2e00">P</text>
+        </svg>
+      </div>
+      <div class="taskbox">
+        <div class="boxhead">Ablese-Aufgaben<span class="pts" id="skPts"></span></div>
+        <div class="progress" id="skProg"></div>
+        <div id="skForm"></div>
+      </div>
+      <div class="box tip"><h4>So liest du ab</h4>Der <b>Grad</b> ist der Wert der Linie <b>unter</b> dem Punkt
+      (Breite) bzw. <b>links</b> vom Punkt (Länge). Die <b>Minuten</b> zählst du auf der feinen Skala bis zum Punkt.</div>
+    </div>
+    <div class="profi-panel" data-p="3">
+      <h2>So rechne ich im Atlas (Dreisatz)</h2>
+      <p>Im Atlas sind meist nur die <b>ganzen Grade</b> eingezeichnet – die 60 Minutenstriche fehlen.
+      Um trotzdem genau abzulesen, nimmst du ein <b>Lineal</b> und misst <b>zwei Strecken</b> in Millimetern.</p>
+      <div class="box info"><h4>Die Idee</h4>
+       Du misst, wie viele mm der <b>ganze Grad</b> (= 60′) breit ist, und wie viele mm dein <b>Punkt</b> vom
+       unteren Breitenkreis entfernt ist. Mit dem <b>Dreisatz</b> rechnest du die mm dann in Minuten um.</div>
+      <div class="prob-svgwrap">
+        <svg viewBox="0 0 360 250" class="prob-svg" id="d3svg">
+          <rect id="d3strip" x="130" y="40" width="120" height="170" fill="#eef4fc"/>
+          <line x1="60" y1="40" x2="300" y2="40" stroke="#e4572e" stroke-width="3"/>
+          <line x1="60" y1="210" x2="300" y2="210" stroke="#e4572e" stroke-width="3"/>
+          <text x="56" y="44" font-size="13" font-weight="bold" fill="#c0432a" text-anchor="end">50°N</text>
+          <text x="56" y="214" font-size="13" font-weight="bold" fill="#c0432a" text-anchor="end">49°N</text>
+          <line id="d3pline" x1="120" y1="150" x2="190" y2="150" stroke="#e0a700" stroke-width="1.5" stroke-dasharray="4 3" opacity="0"/>
+          <path id="d3brPart" d="" fill="none" stroke="#e0a700" stroke-width="2.5" opacity="0"/>
+          <text id="d3brPartLbl" x="112" y="150" font-size="12" font-weight="bold" fill="#b9821a" text-anchor="end" opacity="0"></text>
+          <path id="d3brTotal" d="M256,40 h6 V210 h-6" fill="none" stroke="#3a86ff" stroke-width="2.5" opacity="0"/>
+          <text id="d3brTotalMm" x="270" y="120" font-size="12" font-weight="bold" fill="#2f6fd0" opacity="0"></text>
+          <text id="d3brTotalMin" x="270" y="136" font-size="12" font-weight="bold" fill="#2f6fd0" opacity="0">= 60′</text>
+          <circle id="d3point" cx="190" cy="150" r="8" fill="#e0a700" stroke="#fff" stroke-width="2.5"/>
+          <text id="d3plbl" x="205" y="154" font-size="14" font-weight="bold" fill="#3a2e00">P</text>
+        </svg>
+      </div>
+      <div class="globe-ctrl">
+        <button class="btn gold" id="d3measure">📏 Messen</button>
+        <button class="btn accent" id="d3calc" disabled>Dreisatz berechnen</button>
+        <button class="btn ghost" id="d3new">Neues Beispiel</button>
+      </div>
+      <div class="readout" id="d3read"><small>Anleitung</small>Tippe auf <b>📏 Messen</b>, um die beiden Strecken mit dem Lineal abzulesen.</div>
+      <div id="d3work"></div>
+      <div class="box tip"><h4>Die Dreisatz-Regel</h4>
+       <b>Schritt 1:</b> ganze Strecke (mm) ≙ 60′ &nbsp;·&nbsp; <b>Schritt 2:</b> auf 1 mm herunterrechnen
+       &nbsp;·&nbsp; <b>Schritt 3:</b> mal die gemessenen mm bis zum Punkt. Fertig sind die Minuten!</div>
+    </div>
+    <div class="profi-panel" data-p="4">
+      <h2>Atlas-Aufgaben</h2>
+      <p>Jetzt arbeitest du mit deinem <b>echten Atlas</b>. Schlage die <b>physische Übersichtskarte von Afrika</b>
+      auf, lege dein <b>Lineal</b> an und miss die geforderten Strecken in <b>Millimetern</b>. Trage deine Messwerte
+      ein – den <b>Dreisatz</b> rechnet das Programm dann automatisch für dich. Danach rechnest du selbst die
+      Minuten zum Hauptkreis und trägst die fertige Koordinate ein.</p>
+      <div class="box info"><h4>📖 So gehst du vor</h4>
+       <b>1.</b> Suche die in der Aufgabe genannte Übersichtskarte in deinem Atlas. &nbsp;
+       <b>2.</b> Lege das Lineal an die Gradlinien und miss in ganzen mm. &nbsp;
+       <b>3.</b> Trage die vier Messwerte ein und drücke auf <b>Überprüfen</b>. &nbsp;
+       <b>4.</b> Rechne die Minuten in Grad+Minuten um, addiere sie zum kleinsten Hauptkreis und trage die Koordinate ein.</div>
+      <div class="taskbox">
+        <div class="boxhead">Atlas-Aufgabe<span class="pts" id="atPts"></span></div>
+        <div class="progress" id="atProg"></div>
+        <div id="atGiven"></div>
+        <div id="atForm"></div>
+        <div id="atSolution"></div>
+      </div>
+      <div class="box tip"><h4>Erinnerung: Dreisatz</h4>
+       <b>1.</b> ganze Strecke messen (mm) ≙ <b>10° = 600′</b> · <b>2.</b> Wert für 1 mm berechnen ·
+       <b>3.</b> Teilstrecke × Wert = Minuten · <b>4.</b> Minuten in Grad+Minuten umrechnen (60′ = 1°) ·
+       <b>5.</b> vom kleinsten genannten Hauptkreis aus in die angegebene Richtung addieren.</div>
+    </div>
+  </div>
+  <div class="profi-foot">
+    <button class="btn ghost" id="pPrev">← Zurück</button>
+    <button class="btn accent" id="pNext">Weiter →</button>
+  </div>
+ </div>`;
+ w.appendChild(footer(5));
+ setTimeout(()=>{
+   const labels=["Problem","60er-System","Übung","Dreisatz","Atlas"];
+   const stepsEl=w.querySelector("#pSteps");
+   const panels=w.querySelectorAll(".profi-panel");
+   const prev=w.querySelector("#pPrev"),next=w.querySelector("#pNext");
+   let pi=0;
+   labels.forEach((lab,i)=>{const d=document.createElement("div");d.className="profi-dot";
+     d.innerHTML='<span class="pn">'+(i+1)+'</span><span class="pl">'+lab+'</span>';
+     d.onclick=()=>go(i);stepsEl.appendChild(d);});
+   function go(i){
+     if(i<0||i>=labels.length)return;pi=i;
+     panels.forEach(p=>p.classList.toggle("show",Number(p.dataset.p)===pi));
+     stepsEl.querySelectorAll(".profi-dot").forEach((d,k)=>{
+       d.classList.toggle("active",k===pi);d.classList.toggle("done",k<pi);});
+     prev.disabled=(pi===0);
+     next.textContent=(pi===labels.length-1)?"Fertig ✓":"Weiter →";
+   }
+   prev.onclick=()=>go(pi-1);
+   next.onclick=()=>{if(pi<labels.length-1)go(pi+1);};
+   go(0);
+
+   /* --- Etappe 1: Problem-Karte (Animation) --- */
+   const REAL={x:190,y:145},ROUND={x:70,y:235};
+   const city=w.querySelector("#probCity"),cityLbl=w.querySelector("#probCityLbl");
+   const gap=w.querySelector("#probGap"),gapLbl=w.querySelector("#probGapLbl"),ghost=w.querySelector("#probGhost");
+   const pread=w.querySelector("#probRead"),ptog=w.querySelector("#probToggle");
+   let rounded=false;
+   function moveTo(circle,lbl,x,y,cb){
+     const sx=parseFloat(circle.getAttribute("cx")),sy=parseFloat(circle.getAttribute("cy"));
+     const t0=performance.now(),dur=650;
+     function step(t){let k=Math.min(1,(t-t0)/dur);k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+       const cx=sx+(x-sx)*k,cy=sy+(y-sy)*k;
+       circle.setAttribute("cx",cx);circle.setAttribute("cy",cy);
+       lbl.setAttribute("x",cx);lbl.setAttribute("y",cy-14);
+       if(k<1)requestAnimationFrame(step);else cb&&cb();}
+     requestAnimationFrame(step);
+   }
+   function showReal(){rounded=false;
+     gap.setAttribute("opacity","0");gapLbl.setAttribute("opacity","0");ghost.setAttribute("opacity","0");
+     moveTo(city,cityLbl,REAL.x,REAL.y);
+     ptog.textContent="Auf ganze Grade runden";
+     pread.innerHTML="<small>Echte Lage</small>Die Stadt liegt mitten im Feld – etwa bei <b>49,5°N&nbsp;8,5°E</b>.";}
+   function showRound(){rounded=true;
+     ghost.setAttribute("cx",REAL.x);ghost.setAttribute("cy",REAL.y);ghost.setAttribute("opacity","1");
+     moveTo(city,cityLbl,ROUND.x,ROUND.y,()=>{
+       gap.setAttribute("x1",ROUND.x);gap.setAttribute("y1",ROUND.y);
+       gap.setAttribute("x2",REAL.x);gap.setAttribute("y2",REAL.y);gap.setAttribute("opacity","1");
+       gapLbl.setAttribute("x",(ROUND.x+REAL.x)/2+34);
+       gapLbl.setAttribute("y",(ROUND.y+REAL.y)/2+4);
+       gapLbl.textContent="≈ 66 km daneben";gapLbl.setAttribute("opacity","1");});
+     ptog.textContent="Echte Lage zeigen";
+     pread.innerHTML="<small>Nur ganze Grade</small>Gerundet auf <b>49°N&nbsp;8°E</b> – das liegt rund <b>66 km</b> von der echten Stadt entfernt!";}
+   ptog.onclick=()=>rounded?showReal():showRound();
+   w.querySelector("#probReset").onclick=showReal;
+   showReal();
+
+   /* --- Etappe 2: 60er-System – Zoom-Ruler --- */
+   const zX0=30,zX1=370,zBaseY=85,NS="http://www.w3.org/2000/svg";
+   const ticksG=w.querySelector("#rulerTicks");
+   const tickEls=[];
+   for(let m=0;m<=60;m++){
+     const x=zX0+(zX1-zX0)*m/60, major=(m%10===0);
+     const ln=document.createElementNS(NS,"line");
+     ln.setAttribute("x1",x);ln.setAttribute("x2",x);
+     ln.setAttribute("y1",zBaseY);ln.setAttribute("y2",zBaseY-(major?17:7));
+     ln.setAttribute("stroke",major?"#e4572e":"#9aa7bd");
+     ln.setAttribute("stroke-width",major?2.5:1.2);
+     ln.setAttribute("opacity","0");
+     ticksG.appendChild(ln);tickEls.push(ln);
+     if(major){
+       const tx=document.createElementNS(NS,"text");
+       tx.setAttribute("x",x);tx.setAttribute("y",zBaseY+17);
+       tx.setAttribute("font-size","11");tx.setAttribute("font-weight","bold");
+       tx.setAttribute("text-anchor","middle");tx.setAttribute("opacity","0");
+       tx.setAttribute("fill",(m===0||m===60)?"#c0432a":"#67738c");
+       tx.textContent=(m===0)?"49°N":((m===60)?"50°N":m+"′");
+       ticksG.appendChild(tx);tickEls.push(tx);
+     }
+   }
+   const zSlider=w.querySelector("#minSlider"),zMarker=w.querySelector("#minMarker");
+   const mmLine=w.querySelector("#mmLine"),mmDot=w.querySelector("#mmDot"),mmBg=w.querySelector("#mmBg"),mmLbl=w.querySelector("#mmLbl");
+   const minRead=w.querySelector("#minRead"),zoomHint=w.querySelector("#zoomHint");
+   function updMin(){
+     const v=+zSlider.value, x=zX0+(zX1-zX0)*v/60;
+     mmLine.setAttribute("x1",x);mmLine.setAttribute("x2",x);
+     mmDot.setAttribute("cx",x);mmBg.setAttribute("x",x-30);mmLbl.setAttribute("x",x);
+     const lbl=(v<60)?("49°"+v+"′N"):"50°0′N";
+     mmLbl.textContent=lbl;
+     let note;
+     if(v===0)note="Genau auf dem Breitenkreis <b>49°N</b> (0 Minuten).";
+     else if(v===60)note="60′ sind ein voller Grad – das ist schon <b>50°N</b>!";
+     else if(v===30)note="<b>49°30′N</b> liegt genau in der <b>Mitte</b> – ein halber Grad.";
+     else if(v===15)note="<b>49°15′N</b> – ein <b>Viertel</b> des Wegs nach oben.";
+     else if(v===45)note="<b>49°45′N</b> – <b>drei Viertel</b> des Wegs.";
+     else note="<b>"+lbl+"</b> – das sind "+v+" von 60 Minuten zwischen 49° und 50°.";
+     minRead.innerHTML="<small>Position</small>"+note;
+   }
+   zSlider.addEventListener("input",updMin);
+   let zoomed=false;
+   w.querySelector("#zoomBtn").onclick=function(){
+     if(zoomed)return;zoomed=true;this.disabled=true;this.textContent="✓ In 60 Minuten geteilt";
+     if(zoomHint)zoomHint.setAttribute("opacity","0");
+     tickEls.forEach((el,i)=>setTimeout(()=>el.setAttribute("opacity","1"),i*10));
+     setTimeout(()=>{zMarker.setAttribute("opacity","1");zSlider.disabled=false;updMin();},tickEls.length*10+200);
+   };
+
+   /* --- Etappe 4: Dreisatz im Atlas (Demo) --- */
+   const d3ex=[
+     {total:40,pmm:26},{total:40,pmm:18},{total:50,pmm:25},{total:50,pmm:35},
+     {total:30,pmm:21},{total:60,pmm:33},{total:40,pmm:34},{total:50,pmm:15}
+   ];
+   let d3i=Math.floor(Math.random()*d3ex.length),d3measured=false;
+   const d3point=w.querySelector("#d3point"),d3plbl=w.querySelector("#d3plbl");
+   const d3pline=w.querySelector("#d3pline");
+   const d3brPart=w.querySelector("#d3brPart"),d3brPartLbl=w.querySelector("#d3brPartLbl");
+   const d3brTotal=w.querySelector("#d3brTotal"),d3brTotalMm=w.querySelector("#d3brTotalMm"),d3brTotalMin=w.querySelector("#d3brTotalMin");
+   const d3read=w.querySelector("#d3read"),d3work=w.querySelector("#d3work"),d3calc=w.querySelector("#d3calc");
+   const fpD=n=>String(n).replace(".",",");
+   function d3geom(){
+     const ex=d3ex[d3i],yBot=210,H=170;
+     const yP=yBot-(ex.pmm/ex.total)*H;
+     d3point.setAttribute("cy",yP);d3plbl.setAttribute("y",yP+4);
+     d3pline.setAttribute("y1",yP);d3pline.setAttribute("y2",yP);
+     d3brPart.setAttribute("d","M126,"+yBot+" h-6 V"+yP+" h6");
+     d3brPartLbl.setAttribute("y",(yBot+yP)/2+4);
+     d3brPartLbl.textContent=ex.pmm+" mm";
+     d3brTotalMm.textContent=ex.total+" mm";
+   }
+   function d3reset(){
+     d3measured=false;d3calc.disabled=true;d3work.innerHTML="";
+     [d3pline,d3brPart,d3brPartLbl,d3brTotal,d3brTotalMm,d3brTotalMin].forEach(e=>e.setAttribute("opacity","0"));
+     d3geom();
+     d3read.innerHTML="<small>Anleitung</small>Tippe auf <b>📏 Messen</b>, um die beiden Strecken mit dem Lineal abzulesen.";
+   }
+   w.querySelector("#d3measure").onclick=()=>{
+     if(d3measured)return;d3measured=true;d3calc.disabled=false;
+     const ex=d3ex[d3i];
+     [d3brTotal,d3brTotalMm,d3brTotalMin].forEach(e=>e.setAttribute("opacity","1"));
+     setTimeout(()=>{[d3pline,d3brPart,d3brPartLbl].forEach(e=>e.setAttribute("opacity","1"));},350);
+     d3read.innerHTML="<small>Gemessen</small>Der ganze Grad ist <b style='color:#2f6fd0'>"+ex.total+" mm</b> breit (= 60′). Der Punkt P liegt <b style='color:#b9821a'>"+ex.pmm+" mm</b> über 49°N. Jetzt den <b>Dreisatz</b> rechnen!";
+   };
+   d3calc.onclick=()=>{
+     const ex=d3ex[d3i],perMm=60/ex.total,mins=Math.round(ex.pmm*perMm);
+     d3work.innerHTML=
+       '<div class="ds-row" data-r="0"><b>1.</b>&nbsp;<span class="ds-mm">'+ex.total+' mm</span>&nbsp;≙&nbsp;<span class="ds-min">60′</span>&nbsp;<span class="hint">(ganzer Grad)</span></div>'+
+       '<div class="ds-row" data-r="1"><b>2.</b>&nbsp;<span class="ds-mm">1 mm</span>&nbsp;≙&nbsp;60′ ÷ '+ex.total+'&nbsp;=&nbsp;<span class="ds-min">'+fpD(perMm)+'′</span></div>'+
+       '<div class="ds-row" data-r="2"><b>3.</b>&nbsp;<span class="ds-mm">'+ex.pmm+' mm</span>&nbsp;≙&nbsp;'+ex.pmm+' × '+fpD(perMm)+'′&nbsp;=&nbsp;<span class="ds-min">'+mins+'′</span></div>'+
+       '<div class="ds-row res" data-r="3">➜ Der Punkt P liegt bei&nbsp;<b>49°'+mins+'′N</b></div>';
+     const rows=d3work.querySelectorAll(".ds-row");
+     rows.forEach((r,k)=>setTimeout(()=>r.classList.add("in"),200+k*650));
+   };
+   w.querySelector("#d3new").onclick=()=>{let n;do{n=Math.floor(Math.random()*d3ex.length);}while(n===d3i&&d3ex.length>1);d3i=n;d3reset();};
+   d3reset();
+
+   /* --- Etappe 3: Übung – Ablesen mit Skala --- */
+   const skEx=[
+     {baseLat:49,baseLon:8,latMin:30,lonMin:20,pts:15},
+     {baseLat:51,baseLon:6,latMin:15,lonMin:45,pts:15},
+     {baseLat:47,baseLon:11,latMin:50,lonMin:25,pts:20},
+     {baseLat:53,baseLon:9,latMin:40,lonMin:10,pts:20},
+     {baseLat:48,baseLon:2,latMin:5,lonMin:35,pts:20},
+   ];
+   const SKX0=70,SKX1=290,SKY0=40,SKY1=260,NS3="http://www.w3.org/2000/svg";
+   const skLatTicks=w.querySelector("#skLatTicks"),skLonTicks=w.querySelector("#skLonTicks");
+   const skPoint=w.querySelector("#skPoint"),skPlbl=w.querySelector("#skPlbl");
+   const skLatGuide=w.querySelector("#skLatGuide"),skLonGuide=w.querySelector("#skLonGuide");
+   const skPtsEl=w.querySelector("#skPts"),skProg=w.querySelector("#skProg"),skForm=w.querySelector("#skForm");
+   function skLatY(m){return SKY1-(SKY1-SKY0)*(m/60);}
+   function skLonX(m){return SKX0+(SKX1-SKX0)*(m/60);}
+   function clearG(g){while(g.firstChild)g.removeChild(g.firstChild);}
+   function mkLine(p,x1,y1,x2,y2,col,wd){const l=document.createElementNS(NS3,"line");
+     l.setAttribute("x1",x1);l.setAttribute("y1",y1);l.setAttribute("x2",x2);l.setAttribute("y2",y2);
+     l.setAttribute("stroke",col);l.setAttribute("stroke-width",wd);p.appendChild(l);}
+   function mkText(p,x,y,txt,col,anchor,size){const t=document.createElementNS(NS3,"text");
+     t.setAttribute("x",x);t.setAttribute("y",y);t.setAttribute("fill",col);
+     t.setAttribute("text-anchor",anchor);t.setAttribute("font-size",size);
+     t.setAttribute("font-weight","bold");t.textContent=txt;p.appendChild(t);}
+   function skBuildScale(ex){
+     clearG(skLatTicks);clearG(skLonTicks);
+     for(let m=0;m<=60;m++){
+       const major=(m%10===0),med=(m%5===0),len=major?14:(med?9:5);
+       const y=skLatY(m);
+       mkLine(skLatTicks,SKX0,y,SKX0-len,y,major?"#e4572e":"#9aa7bd",major?2.2:1.1);
+       if(major){
+         if(m===0)mkText(skLatTicks,SKX0-17,y+4,ex.baseLat+"°N","#c0432a","end","11");
+         else if(m===60)mkText(skLatTicks,SKX0-17,y+4,(ex.baseLat+1)+"°N","#c0432a","end","11");
+         else mkText(skLatTicks,SKX0-17,y+4,m+"′","#67738c","end","9");
+       }
+       const x=skLonX(m);
+       mkLine(skLonTicks,x,SKY1,x,SKY1+len,major?"#3a86ff":"#9aa7bd",major?2.2:1.1);
+       if(major){
+         if(m===0)mkText(skLonTicks,x,SKY1+28,ex.baseLon+"°E","#2f6fd0","middle","11");
+         else if(m===60)mkText(skLonTicks,x,SKY1+28,(ex.baseLon+1)+"°E","#2f6fd0","middle","11");
+         else mkText(skLonTicks,x,SKY1+22,m+"′","#67738c","middle","9");
+       }
+     }
+   }
+   let ski=0;
+   function skShow(){
+     while(ski<skEx.length&&state.awarded["profi4-"+ski])ski++;
+     if(ski>=skEx.length){skFinish();return;}
+     const ex=skEx[ski];let attempt=0;
+     skBuildScale(ex);
+     const px=skLonX(ex.lonMin),py=skLatY(ex.latMin);
+     skPoint.setAttribute("cx",px);skPoint.setAttribute("cy",py);
+     skPlbl.setAttribute("x",px+11);skPlbl.setAttribute("y",py+5);
+     skLatGuide.setAttribute("opacity","0");skLonGuide.setAttribute("opacity","0");
+     skPtsEl.style.display="";skPtsEl.textContent=ex.pts+" P";
+     skProg.textContent="Aufgabe "+(ski+1)+" von "+skEx.length;
+     skForm.innerHTML=
+       '<div class="sk-inputs">'+
+       '<label>Breite: <input type="number" class="mini" id="skLatD"> °'+
+       ' <input type="number" class="mini" id="skLatM"> ′ N</label>'+
+       '<label>Länge: <input type="number" class="mini" id="skLonD"> °'+
+       ' <input type="number" class="mini" id="skLonM"> ′ E</label></div>';
+     const fb=document.createElement("div");fb.className="feedback";
+     const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Prüfen";
+     skForm.append(btn,fb);
+     btn.onclick=()=>{
+       const lad=parseInt(w.querySelector("#skLatD").value,10);
+       const lam=parseInt(w.querySelector("#skLatM").value,10);
+       const lod=parseInt(w.querySelector("#skLonD").value,10);
+       const lom=parseInt(w.querySelector("#skLonM").value,10);
+       const ok=(lad===ex.baseLat)&&(lod===ex.baseLon)&&
+                (Math.abs(lam-ex.latMin)<=1)&&(Math.abs(lom-ex.lonMin)<=1);
+       if(ok){
+         skLatGuide.setAttribute("y1",py);skLatGuide.setAttribute("y2",py);skLatGuide.setAttribute("opacity","1");
+         skLonGuide.setAttribute("x1",px);skLonGuide.setAttribute("x2",px);skLonGuide.setAttribute("opacity","1");
+         const pts=attempt===0?ex.pts:Math.ceil(ex.pts/2);
+         const got=award("profi4-"+ski,5,pts);
+         fb.className="feedback ok";
+         fb.textContent="Richtig: "+ex.baseLat+"°"+ex.latMin+"′N  "+ex.baseLon+"°"+ex.lonMin+"′E"+(got?(" +"+pts+" Punkte"):"");
+         btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>{ski++;skShow();};
+         profiCheckDone();
+       }else{
+         attempt++;
+         if(attempt===1){fb.className="feedback hint";
+           fb.textContent="💡 Der Grad ist die Linie UNTER dem Punkt (Breite) bzw. LINKS davon (Länge). Zähle dann die feinen Striche bis zum Punkt – große Striche sind 10′.";}
+         else{fb.className="feedback no";
+           fb.textContent="Noch nicht ganz. Tipp: Breite "+ex.baseLat+"°…′N, Länge "+ex.baseLon+"°…′E – nur die Minuten genau ablesen.";}
+       }
+     };
+   }
+   function skFinish(){
+     skPtsEl.style.display="none";skProg.textContent="Alle Ablese-Aufgaben gelöst ✓";
+     skForm.innerHTML='<div class="feedback ok">Super – du kannst jetzt Koordinaten minutengenau ablesen! 🎯</div>';
+   }
+   skShow();
+
+   /* --- Etappe 5: Atlas-Aufgaben (Lineal-Messung + Dreisatz + eigene Koordinate) ---
+      Wichtig: Bezug IMMER vom kleinsten Hauptkreis aus + Beträge addieren.
+      Die Himmelsrichtung ergibt sich aus dem Vorzeichen (latSign/lonSign). */
+   const atlasEx=[
+     {name:"Kinshasa",map:"physische Übersichtskarte von Afrika",
+      latBracket:"0° und 10°S",lonBracket:"10°E und 20°E",
+      latTot:30,lonTot:30,latPart:14,lonPart:17,
+      latRefLabel:"0°",latDir:"südlich",latRefMin:0,latSign:-1,
+      lonRefLabel:"10°E",lonDir:"östlich",lonRefMin:600,lonSign:1,pts:30},
+     {name:"Paris",map:"physische Übersichtskarte von Europa",
+      latBracket:"40°N und 50°N",lonBracket:"0°E und 10°E",
+      latTot:28,lonTot:23,latPart:25,lonPart:5,
+      latRefLabel:"40°N",latDir:"nördlich",latRefMin:2400,latSign:1,
+      lonRefLabel:"0°E",lonDir:"östlich",lonRefMin:0,lonSign:1,pts:30},
+     {name:"Madrid",map:"physische Übersichtskarte von Europa",
+      latBracket:"40°N und 50°N",lonBracket:"0° und 10°W",
+      latTot:29,lonTot:24,latPart:1,lonPart:9,
+      latRefLabel:"40°N",latDir:"nördlich",latRefMin:2400,latSign:1,
+      lonRefLabel:"0°",lonDir:"westlich",lonRefMin:0,lonSign:-1,pts:30}
+   ];
+   const atPtsEl=w.querySelector("#atPts"),atProg=w.querySelector("#atProg");
+   const atGiven=w.querySelector("#atGiven"),atForm=w.querySelector("#atForm"),atSolution=w.querySelector("#atSolution");
+   const r1=n=>fpD(Math.round(n*100)/100);
+   function atDreisatz(ex,latTot,lonTot,latPart,lonPart){
+     const latPerMm=600/latTot,lonPerMm=600/lonTot;
+     const latArc=Math.round(latPart*latPerMm),lonArc=Math.round(lonPart*lonPerMm);
+     return ''+
+      '<h4 style="color:#c0432a;margin:14px 0 2px">Breite</h4>'+
+      '<div class="ds-row" data-r="0"><b>1.</b>&nbsp;<span class="ds-mm">'+latTot+' mm</span>&nbsp;≙&nbsp;10° = <span class="ds-min">600′</span></div>'+
+      '<div class="ds-row" data-r="1"><b>2.</b>&nbsp;<span class="ds-mm">1 mm</span>&nbsp;≙&nbsp;600′ ÷ '+latTot+' = <span class="ds-min">'+r1(latPerMm)+'′</span></div>'+
+      '<div class="ds-row" data-r="2"><b>3.</b>&nbsp;<span class="ds-mm">'+latPart+' mm</span>&nbsp;≙&nbsp;'+latPart+' × '+r1(latPerMm)+'′ = <span class="ds-min">'+latArc+'′</span></div>'+
+      '<div class="ds-row" data-r="3"><b>4.</b>&nbsp;'+ex.name+' liegt <b>'+latArc+'′</b> '+ex.latDir+' von '+ex.latRefLabel+'</div>'+
+      '<h4 style="color:#2f6fd0;margin:14px 0 2px">Länge</h4>'+
+      '<div class="ds-row" data-r="4"><b>1.</b>&nbsp;<span class="ds-mm">'+lonTot+' mm</span>&nbsp;≙&nbsp;10° = <span class="ds-min">600′</span></div>'+
+      '<div class="ds-row" data-r="5"><b>2.</b>&nbsp;<span class="ds-mm">1 mm</span>&nbsp;≙&nbsp;600′ ÷ '+lonTot+' = <span class="ds-min">'+r1(lonPerMm)+'′</span></div>'+
+      '<div class="ds-row" data-r="6"><b>3.</b>&nbsp;<span class="ds-mm">'+lonPart+' mm</span>&nbsp;≙&nbsp;'+lonPart+' × '+r1(lonPerMm)+'′ = <span class="ds-min">'+lonArc+'′</span></div>'+
+      '<div class="ds-row" data-r="7"><b>4.</b>&nbsp;'+ex.name+' liegt <b>'+lonArc+'′</b> '+ex.lonDir+' von '+ex.lonRefLabel+'</div>';
+   }
+   function atAnimate(){atSolution.querySelectorAll(".ds-row").forEach((r,k)=>setTimeout(()=>r.classList.add("in"),120+k*300));}
+   let ati=0;
+   function buildPhaseB(ex,lt,lo,lp,op){
+     const latArc=Math.round(lp*600/lt),lonArc=Math.round(op*600/lo);
+     const finalLatMin=ex.latRefMin+ex.latSign*latArc;
+     const finalLonMin=ex.lonRefMin+ex.lonSign*lonArc;
+     const latHemi=finalLatMin>=0?"N":"S",lonHemi=finalLonMin>=0?"E":"W";
+     const aLat=Math.abs(finalLatMin),latDeg=Math.floor(aLat/60),latMin=aLat%60;
+     const aLon=Math.abs(finalLonMin),lonDeg=Math.floor(aLon/60),lonMin=aLon%60;
+     const box=document.createElement("div");box.className="box def";box.style.marginTop="16px";
+     box.innerHTML='<h4>🧮 Jetzt bist du dran</h4>Wandle die errechneten Minuten in <b>Grad und Minuten</b> um '+
+       '(<b>60′ = 1°</b> oder z. B. <b>140′ = 2°20′</b>) und addiere sie zum kleinsten <b>Haupt-Breitenkreis</b> / '+
+       '<b>Haupt-Längenkreis</b> (Bsp: Hauptlängenkreis = 10° + errechnete Grade und Minuten = 2°20′ → <b>12°20′</b>). '+
+       'Bestimme dann – ausgehend vom kleinsten Hauptkreis – die genaue geografische Lage von <b>'+ex.name+'</b>:'+
+       '<div class="sk-inputs" style="margin-top:12px">'+
+       '<label>Breite: <input type="number" class="mini" id="atCLatD"> ° <input type="number" class="mini" id="atCLatM"> ′ '+latHemi+'</label>'+
+       '<label>Länge: <input type="number" class="mini" id="atCLonD"> ° <input type="number" class="mini" id="atCLonM"> ′ '+lonHemi+'</label></div>';
+     atSolution.appendChild(box);
+     const fb2=document.createElement("div");fb2.className="feedback";
+     const btn2=document.createElement("button");btn2.className="btn accent";btn2.textContent="Koordinate prüfen";
+     box.appendChild(btn2);box.appendChild(fb2);
+     let attempt2=0;
+     btn2.onclick=()=>{
+       const ld=parseInt(w.querySelector("#atCLatD").value,10),lm=parseInt(w.querySelector("#atCLatM").value,10);
+       const od=parseInt(w.querySelector("#atCLonD").value,10),om=parseInt(w.querySelector("#atCLonM").value,10);
+       if([ld,lm,od,om].some(v=>isNaN(v))){fb2.className="feedback hint";fb2.textContent="💡 Bitte trage Grad und Minuten für Breite und Länge ein.";return;}
+       const ok=(ld===latDeg)&&(Math.abs(lm-latMin)<=1)&&(od===lonDeg)&&(Math.abs(om-lonMin)<=1);
+       if(ok){
+         const cpts=attempt2===0?Math.round(ex.pts/2):Math.ceil(ex.pts/4);
+         const got=award("profi5-"+ati+"-c",5,cpts);
+         fb2.className="feedback ok";
+         fb2.textContent="Perfekt: "+ex.name+" liegt bei "+latDeg+"°"+latMin+"′"+latHemi+"  "+lonDeg+"°"+lonMin+"′"+lonHemi+(got?(" +"+cpts+" Punkte"):"");
+         btn2.textContent="Nächste Aufgabe →";btn2.className="btn";btn2.onclick=()=>{ati++;atShow();};
+         profiCheckDone();
+       }else{
+         attempt2++;
+         if(attempt2===1){fb2.className="feedback hint";
+           fb2.textContent="💡 Teile die Minuten durch 60 und trage sie vom kleinsten Hauptkreis aus ab: Breite vom "+ex.latRefLabel+" "+ex.latDir+", Länge vom "+ex.lonRefLabel+" "+ex.lonDir+".";}
+         else{fb2.className="feedback no";
+           fb2.textContent="Noch nicht. Breite: "+latArc+"′ = "+Math.floor(latArc/60)+"°"+(latArc%60)+"′ "+ex.latDir+" von "+ex.latRefLabel+" → "+latDeg+"°"+latMin+"′"+latHemi+". Länge: "+lonArc+"′ = "+Math.floor(lonArc/60)+"°"+(lonArc%60)+"′ "+ex.lonDir+" von "+ex.lonRefLabel+" → "+lonDeg+"°"+lonMin+"′"+lonHemi+".";}
+       }
+     };
+   }
+   function atShow(){
+     while(ati<atlasEx.length&&state.awarded["profi5-"+ati+"-m"]&&state.awarded["profi5-"+ati+"-c"])ati++;
+     if(ati>=atlasEx.length){atFinish();return;}
+     const ex=atlasEx[ati];let attempt=0;
+     atPtsEl.style.display="";atPtsEl.textContent=ex.pts+" P";
+     atProg.textContent="Aufgabe "+(ati+1)+" von "+atlasEx.length;
+     atGiven.innerHTML='<div class="box info" style="margin:10px 0"><h4>📍 Rechne die geografische Lage von '+ex.name+'</h4>'+
+       'Schlage in deinem Atlas die <b>'+ex.map+'</b> auf. '+ex.name+' liegt zwischen <b>'+ex.latBracket+'</b> und zwischen <b>'+ex.lonBracket+'</b>.<br>'+
+       '• Kleinster <b style="color:#c0432a">Breitenkreis</b>: <b>'+ex.latRefLabel+'</b> ('+ex.name+' liegt '+ex.latDir+' davon)<br>'+
+       '• Kleinster <b style="color:#2f6fd0">Längenkreis</b>: <b>'+ex.lonRefLabel+'</b> ('+ex.name+' liegt '+ex.lonDir+' davon)</div>';
+     atForm.innerHTML=
+       '<p class="hint" style="margin:4px 0 8px"><b>📏 Deine Lineal-Messung</b> (in ganzen mm eintragen):</p>'+
+       '<div class="at-field lat"><span class="ic">1</span><span class="at-txt">Abstand der beiden Breitenkreise ('+ex.latBracket+')</span><span class="at-num"><input type="number" id="atLatTot" class="mini"> mm</span></div>'+
+       '<div class="at-field lon"><span class="ic">2</span><span class="at-txt">Abstand der beiden Längenkreise ('+ex.lonBracket+')</span><span class="at-num"><input type="number" id="atLonTot" class="mini"> mm</span></div>'+
+       '<div class="at-field lat"><span class="ic">3</span><span class="at-txt">Abstand '+ex.name+' ↔ kleinster Breitenkreis ('+ex.latRefLabel+')</span><span class="at-num"><input type="number" id="atLatPart" class="mini"> mm</span></div>'+
+       '<div class="at-field lon"><span class="ic">4</span><span class="at-txt">Abstand '+ex.name+' ↔ kleinster Längenkreis ('+ex.lonRefLabel+')</span><span class="at-num"><input type="number" id="atLonPart" class="mini"> mm</span></div>';
+     atSolution.innerHTML="";
+     const fb=document.createElement("div");fb.className="feedback";
+     const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Überprüfen";
+     atForm.append(btn,fb);
+     btn.onclick=()=>{
+       const lt=parseFloat(w.querySelector("#atLatTot").value);
+       const lo=parseFloat(w.querySelector("#atLonTot").value);
+       const lp=parseFloat(w.querySelector("#atLatPart").value);
+       const op=parseFloat(w.querySelector("#atLonPart").value);
+       if([lt,lo,lp,op].some(v=>isNaN(v))){fb.className="feedback hint";fb.textContent="💡 Bitte fülle alle vier Felder mit deinen Messwerten aus.";return;}
+       const TOL=3,wrong=[];
+       if(Math.abs(lt-ex.latTot)>TOL)wrong.push("1");
+       if(Math.abs(lo-ex.lonTot)>TOL)wrong.push("2");
+       if(Math.abs(lp-ex.latPart)>TOL)wrong.push("3");
+       if(Math.abs(op-ex.lonPart)>TOL)wrong.push("4");
+       if(wrong.length===0){
+         const mpts=attempt===0?Math.round(ex.pts/2):Math.ceil(ex.pts/4);
+         const got=award("profi5-"+ati+"-m",5,mpts);
+         fb.className="feedback ok";fb.textContent="Richtig gemessen! ✓ Hier ist dein Dreisatz:"+(got?(" +"+mpts+" Punkte"):"");
+         atSolution.innerHTML=atDreisatz(ex,lt,lo,lp,op);atAnimate();
+         btn.disabled=true;
+         ["atLatTot","atLonTot","atLatPart","atLonPart"].forEach(id=>{const e2=w.querySelector("#"+id);if(e2)e2.disabled=true;});
+         const rows=atSolution.querySelectorAll(".ds-row").length;
+         setTimeout(()=>buildPhaseB(ex,lt,lo,lp,op),120+rows*300+300);
+         profiCheckDone();
+       }else{
+         attempt++;
+         fb.className="feedback no";
+         fb.textContent="Noch nicht ganz – prüfe deine Messung bei Feld "+wrong.join(", ")+". Tipp: Lineal genau an die Gradlinien anlegen und in ganzen Millimetern ablesen (Toleranz ±3 mm).";
+       }
+     };
+   }
+   function atFinish(){
+     atPtsEl.style.display="none";atProg.textContent="Alle Atlas-Aufgaben gelöst ✓";
+     atGiven.innerHTML="";atSolution.innerHTML="";
+     atForm.innerHTML='<div class="feedback ok">Glückwunsch – du beherrschst die Atlas-Methode mit Dreisatz! 🧭</div>';
+   }
+   atShow();
+
+   /* --- Bestehen des Profi-Abschnitts: ALLE Aufgaben aus Übung UND Atlas (Messung + Koordinate) --- */
+   function profiCheckDone(){
+     let done=true;
+     for(let i=0;i<skEx.length;i++)if(!state.awarded["profi4-"+i])done=false;
+     for(let i=0;i<atlasEx.length;i++)if(!state.awarded["profi5-"+i+"-m"]||!state.awarded["profi5-"+i+"-c"])done=false;
+     if(done){markPassed(5);if(nextBtns[5])nextBtns[5].disabled=false;}
+   }
+   profiCheckDone();
+ },30);
+ return w;
+};
+
+/* --- 6 Ergebnis --- */
+builders[6]=()=>{const w=document.createElement("div");w.innerHTML=`<div class="card" id="rc"></div>`;
+ setTimeout(()=>renderResult(w.querySelector("#rc")),20);return w;};
+function renderResult(host){const tp=totalPts(),tm=totalMax(),pc=tm?Math.round(tp/tm*100):0;
+  let emoji="⚓",title="Matrose";
+  if(pc>=90){emoji="🧭";title="Koordinaten-Kapitän";}else if(pc>=70){emoji="🧭";title="Navigator";}
+  else if(pc>=50){emoji="🗺️";title="Entdecker";}
+  let rows="";SECT.filter(s=>!s.result).forEach(s=>{if((s.max||0)===0)return;
+    if(state.skipped[s.id]){
+      rows+=`<tr><td>${s.name}</td><td class="hint">übersprungen</td><td><div class="bar"></div></td><td class="hint">Nicht bearbeitet – zählt nicht zur Wertung.</td></tr>`;return;}
+    const p=state.pts[s.id]||0,mx=s.max,perc=mx?Math.round(p/mx*100):0;
+    const advice=perc>=70?"Sehr gut!":(perc>0?"Wiederhole die Theorie dieses Abschnitts.":"Noch nicht bearbeitet.");
+    rows+=`<tr><td>${s.name}</td><td>${p} / ${mx}</td><td><div class="bar"><i style="width:${perc}%"></i></div></td><td class="hint">${advice}</td></tr>`;});
+  const skipNote=state.skipped[5]?`<p class="hint" style="text-align:center">ℹ️ Der Profi-Abschnitt wurde übersprungen und zählt nicht zur Höchstpunktzahl.</p>`:"";
+  host.innerHTML=`<div class="kicker">Ergebnis</div><h1>Deine Auswertung</h1>
+   <div class="badge-box"><div class="emoji">${emoji}</div><div class="title">${title}</div>
+    <p>Du hast <b>${tp}</b> von <b>${tm}</b> Punkten erreicht (${pc}%).</p></div>
+   ${skipNote}
+   <h2>Punkte pro Abschnitt</h2>
+   <table class="scores"><tr><th>Abschnitt</th><th>Punkte</th><th>Fortschritt</th><th>Tipp</th></tr>${rows}</table>
+   <div class="foot"><button class="btn ghost" onclick="show(0)">↩ Zur Reise</button>
+    <button class="btn" onclick="resetAll()">Fortschritt zurücksetzen</button></div>`;}
+function resetAll(){try{localStorage.removeItem("koordReise3");}catch(e){}location.reload();}
+
+/* ====================== SCHEMATA (statische Globen) ====================== */
+function schemaLat(){return `<svg class="svgschema" viewBox="0 0 320 340">
+ <defs>
+  <clipPath id="clipLat"><circle cx="160" cy="175" r="120"/></clipPath>
+  <marker id="ahLat" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#555"/></marker>
+ </defs>
+ <g clip-path="url(#clipLat)">
+  <rect x="40" y="55" width="240" height="120" fill="#fdeee9"/>
+  <rect x="40" y="175" width="240" height="120" fill="#e8f1ff"/>
+ </g>
+ <circle cx="160" cy="175" r="120" fill="none" stroke="#b9c7dc" stroke-width="2"/>
+ <line x1="119" y1="62" x2="201" y2="62" stroke="#e4572e" stroke-width="1.4"/>
+ <line x1="68" y1="98" x2="252" y2="98" stroke="#e4572e" stroke-width="1.4"/>
+ <line x1="40" y1="175" x2="280" y2="175" stroke="#e4572e" stroke-width="4"/>
+ <line x1="68" y1="252" x2="252" y2="252" stroke="#e4572e" stroke-width="1.4"/>
+ <line x1="119" y1="288" x2="201" y2="288" stroke="#e4572e" stroke-width="1.4"/>
+ <text x="205" y="59" font-size="10" fill="#c0432a">70°N</text>
+ <text x="256" y="101" font-size="10" fill="#c0432a">40°N</text>
+ <text x="244" y="171" font-size="11" font-weight="bold" fill="#c0432a">0° Äquator</text>
+ <text x="256" y="255" font-size="10" fill="#c0432a">40°S</text>
+ <text x="205" y="291" font-size="10" fill="#c0432a">70°S</text>
+ <text x="160" y="138" font-size="13" font-weight="bold" fill="#c0432a" text-anchor="middle">Nordhalbkugel (NHK)</text>
+ <text x="160" y="222" font-size="13" font-weight="bold" fill="#3566b0" text-anchor="middle">Südhalbkugel (SHK)</text>
+ <circle cx="160" cy="55" r="3" fill="#27324a"/>
+ <text x="160" y="44" font-size="11" fill="#27324a" text-anchor="middle">Nordpol (90° N)</text>
+ <circle cx="160" cy="295" r="3" fill="#27324a"/>
+ <text x="160" y="316" font-size="11" fill="#27324a" text-anchor="middle">Südpol (90° S)</text>
+ <text x="2" y="84" font-size="10.5" font-weight="bold" fill="#444">Breitenkreis</text>
+ <line x1="30" y1="89" x2="66" y2="97" stroke="#555" stroke-width="1.3" marker-end="url(#ahLat)"/>
+</svg>`;}
+function schemaLon(){return `<svg class="svgschema" viewBox="0 0 320 340">
+ <defs>
+  <clipPath id="clipLon"><circle cx="160" cy="175" r="120"/></clipPath>
+  <marker id="ahLon" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#555"/></marker>
+ </defs>
+ <g clip-path="url(#clipLon)">
+  <rect x="40" y="55" width="120" height="240" fill="#e8f1ff"/>
+  <rect x="160" y="55" width="120" height="240" fill="#eafaf6"/>
+ </g>
+ <circle cx="160" cy="175" r="120" fill="none" stroke="#b9c7dc" stroke-width="2"/>
+ <path d="M160,55 Q60,175 160,295" fill="none" stroke="#3a86ff" stroke-width="1.4"/>
+ <path d="M160,55 Q108,175 160,295" fill="none" stroke="#3a86ff" stroke-width="1.4"/>
+ <line x1="160" y1="55" x2="160" y2="295" stroke="#3a86ff" stroke-width="4"/>
+ <path d="M160,55 Q212,175 160,295" fill="none" stroke="#3a86ff" stroke-width="1.4"/>
+ <path d="M160,55 Q260,175 160,295" fill="none" stroke="#3a86ff" stroke-width="1.4"/>
+ <circle cx="160" cy="55" r="3" fill="#27324a"/>
+ <text x="160" y="44" font-size="11" fill="#27324a" text-anchor="middle">Nordpol</text>
+ <circle cx="160" cy="295" r="3" fill="#27324a"/>
+ <text x="160" y="316" font-size="11" fill="#27324a" text-anchor="middle">Südpol</text>
+ <text x="96" y="168" font-size="12" font-weight="bold" fill="#3566b0" text-anchor="middle">westliche</text>
+ <text x="96" y="184" font-size="12" font-weight="bold" fill="#3566b0" text-anchor="middle">Länge (W)</text>
+ <text x="226" y="168" font-size="12" font-weight="bold" fill="#2a8c7d" text-anchor="middle">östliche</text>
+ <text x="226" y="184" font-size="12" font-weight="bold" fill="#2a8c7d" text-anchor="middle">Länge (E)</text>
+ <text x="166" y="80" font-size="9.5" font-weight="bold" fill="#1f5fd0">Nullmeridian 0°</text>
+ <text x="234" y="106" font-size="10.5" font-weight="bold" fill="#444">Längenkreis</text>
+ <line x1="232" y1="110" x2="204" y2="126" stroke="#555" stroke-width="1.3" marker-end="url(#ahLon)"/>
+</svg>`;}
+
+/* ====================== FRAGEN-POOLS ====================== */
+const POOL0=[
+ {q:"Wie viele Angaben braucht man, um einen Ort auf der Erde eindeutig zu bestimmen?",type:"mc",
+  options:["Eine","Zwei","Vier"],answer:1,hint:"Eine für Nord/Süd, eine für Ost/West."},
+ {q:"Wie nennt man diese beiden Angaben zusammen?",type:"mc",
+  options:["Postleitzahl","Geografische Koordinaten","Himmelsrichtungen"],answer:1,hint:"Breite + Länge ergeben die ..."},
+ {q:"Warum konnte die Carpathia die Titanic überhaupt erreichen?",type:"mc",
+  options:["Sie sah die Lichter am Horizont","Die Titanic funkte ihre genauen Koordinaten","Sie folgte zufällig der gleichen Route"],
+  answer:1,hint:"Ein SOS allein verrät noch nicht den Ort."},
+ {q:"In welchem Jahr wurde das Wrack der Titanic gefunden?",type:"mc",
+  options:["1912","1958","1985"],answer:2,hint:"Über 70 Jahre nach dem Unglück."},
+ {q:"Was bedeutet das Notsignal SOS?",type:"mc",
+  options:["Ein internationales Seenotsignal","Der Name des Kapitäns","Eine Schiffsklasse"],answer:0,hint:"Es ist ein Notrufsignal."},
+ {q:"Welche zwei Angaben bilden zusammen die Koordinaten?",type:"mc",
+  options:["Höhe und Tiefe","Breite und Länge","Datum und Uhrzeit"],answer:1,hint:"Eine Linie nach Norden/Süden, eine nach Osten/Westen."},
+ {q:"Wie tief liegt das Wrack der Titanic ungefähr?",type:"mc",
+  options:["40 m","400 m","fast 4000 m"],answer:2,hint:"Sehr tief unten im Atlantik."},
+ {q:"Warum reicht ein Notruf ohne Positionsangabe nicht aus?",type:"mc",
+  options:["Weil niemand weiß, wohin er fahren soll","Weil das Funkgerät kaputtgeht","Weil SOS verboten ist"],answer:0,hint:"Helfer müssen wissen, WO das Schiff ist."},
+];
+const POOL1=[
+ {q:"Welchen Breitengrad hat der Äquator?",type:"mc",options:["90°","45°","0°"],answer:2,hint:"Er ist der Ausgangspunkt der Zählung."},
+ {q:"Wie viele Breitenkreise gibt es nach Norden?",type:"input",answer:["90","90°"],hint:"Vom Äquator bis zum Nordpol."},
+ {q:"Welche Aussage über die Länge der Breitenkreise stimmt?",type:"mc",
+  options:["Alle sind gleich lang","Zum Pol hin werden sie kürzer","Zum Pol hin werden sie länger"],answer:1,hint:"Am Pol schrumpfen sie zu einem Punkt."},
+ {q:"Wodurch wird die Erde in Nord- und Südhalbkugel geteilt?",type:"mc",
+  options:["Nullmeridian","Äquator","Wendekreis"],answer:1,hint:"Der wichtigste Breitenkreis."},
+ {q:"Die geografische Breite gibt den Abstand zu welcher Linie an?",type:"mc",options:["Zum Nordpol","Zum Äquator","Zu Greenwich"],answer:1,hint:"Gemessen wird ab 0°."},
+ {q:"Welcher Breitenkreis ist am längsten?",type:"mc",options:["Der Äquator","Der 45.","Der am Pol"],answer:0,hint:"Der mit dem größten Umfang."},
+ {q:"Wie groß ist ungefähr der Abstand zwischen zwei Breitenkreisen, die 1° auseinanderliegen?",type:"mc",
+  options:["ca. 11 km","ca. 111 km","ca. 1110 km"],answer:1,hint:"40000 km Umfang geteilt durch 360°."},
+ {q:"Ein Ort liegt auf 40°S. Auf welcher Halbkugel befindet er sich?",type:"mc",options:["Nordhalbkugel","Südhalbkugel"],answer:1,hint:"S steht für Süd."},
+ {q:"Wo befindet sich ein Ort mit der Breite 90°N?",type:"mc",options:["Am Äquator","Am Nordpol","Am Südpol"],answer:1,hint:"90° ist der höchstmögliche Breitenwert."},
+ {q:"Wie groß ist der Abstand (in km) zwischen 0° und 30°N ungefähr?",type:"mc",
+  options:["ca. 333 km","ca. 3330 km","ca. 33300 km"],answer:1,hint:"30° × 111 km."},
+];
+const POOL2=[
+ {q:"Durch welche Stadt verläuft der Nullmeridian?",type:"mc",options:["Paris","Greenwich (London)","New York"],answer:1,hint:"Dort steht eine berühmte Sternwarte."},
+ {q:"Welche Aussage über die Längenkreise stimmt?",type:"mc",options:["Sie sind alle gleich lang","Sie werden zum Pol hin kürzer","Der Nullmeridian ist der längste"],answer:0,hint:"Jeder läuft von Pol zu Pol."},
+ {q:"Wie viele Längenkreise gibt es nach Osten?",type:"input",answer:["180","180°"],hint:"Genauso viele wie nach Westen."},
+ {q:"Der Nullmeridian teilt die Erde in ...",type:"mc",options:["Nord- und Südhalbkugel","West- und Osthalbkugel"],answer:1,hint:"Längenkreise unterscheiden Ost und West."},
+ {q:"Wo treffen sich alle Längenkreise?",type:"mc",options:["Am Äquator","An den beiden Polen","Bei Greenwich"],answer:1,hint:"Dort, wo die Breitenkreise zu Punkten werden."},
+ {q:"Wo ist der Abstand zwischen zwei Längenkreisen am größten?",type:"mc",options:["Am Äquator","In der Mitte zwischen Äquator und Pol","Am Pol"],answer:0,hint:"Dort ist der Erdumfang am größten."},
+ {q:"Die geografische Länge gibt den Abstand zu welcher Linie an?",type:"mc",options:["Zum Äquator","Zum Nullmeridian","Zum Nordpol"],answer:1,hint:"Gezählt wird ab 0° (Greenwich)."},
+ {q:"Welcher Längenkreis liegt dem Nullmeridian genau gegenüber?",type:"input",answer:["180","180°"],hint:"Auf der Rückseite der Erde."},
+ {q:"Wo verläuft ungefähr die Datumsgrenze?",type:"mc",options:["Beim Nullmeridian","Etwa beim 180. Längengrad","Am Äquator"],answer:1,hint:"Gegenüber von Greenwich."},
+ {q:"Längenkreise heißen auch ...",type:"mc",options:["Parallelkreise","Meridiane","Wendekreise"],answer:1,hint:"Vom lateinischen Wort fuer Mittag."},
+];
+const POOL3=[
+ {q:"Was wird bei Koordinaten immer zuerst genannt?",type:"mc",options:["Die Längenlage","Die Breitenlage"],answer:1,hint:"Merksatz: B vor L."},
+ {q:"Die geografische Lage ist der Kreuzungspunkt von ...",type:"mc",options:["zwei Breitenkreisen","Breiten- und Längenkreis","zwei Längenkreisen"],answer:1,hint:"Ein roter und ein blauer Kreis kreuzen sich."},
+ {q:"Schreibe die Koordinate (mit ° und Himmelsrichtung): 50 Grad Nord, 8 Grad Ost.",type:"input",
+  coord:[50,8],hint:"Format mit Gradzeichen, Breite zuerst: ...°N ...°E"},
+ {q:"Welche Schreibweise ist korrekt?",type:"mc",options:["6°E 45°N","45°N 6°E"],answer:1,hint:"Breitenlage steht vorne."},
+ {q:"Wo liegt der Ort mit den Koordinaten 0° 0°?",type:"mc",
+  options:["Am Nordpol","Wo sich Äquator und Nullmeridian kreuzen","In Greenwich"],answer:1,hint:"Beide Grundlinien sind 0°."},
+ {q:"Ein Ort hat 30°S 150°E. Auf welcher Erdhälfte (oben/unten) liegt er?",type:"mc",
+  options:["Nordhalbkugel","Südhalbkugel"],answer:1,hint:"Achte auf das S."},
+ {q:"Schreibe die Koordinate (mit ° und Himmelsrichtung): 20 Grad Süd, 140 Grad Ost.",type:"input",
+  coord:[-20,140],hint:"Format mit Gradzeichen, Breite zuerst: ...°S ...°E"},
+ {q:"Ein Schiff meldet 41°N 50°W. Auf welcher Erdhälfte (Ost/West) liegt es?",type:"mc",
+  options:["Osthalbkugel","Westhalbkugel"],answer:1,hint:"W = West."},
+ {q:"Was beschreibt die erste Zahl der Koordinate 48°N 9°E?",type:"mc",
+  options:["Die Längenlage","Die Breitenlage","Die Höhe über dem Meer"],answer:1,hint:"B vor L."},
+ {q:"Welche Koordinate liegt am weitesten nördlich?",type:"mc",
+  options:["10°S 20°E","30°N 20°E","60°N 20°E"],answer:2,hint:"Je größer die Nordbreite, desto weiter nördlich."},
+];
+const POOL4=[
+ {q:"Wo stehen auf einer Karte die <b>Breitengrade</b>?",type:"mc",
+  options:["Am oberen und unteren Rand","Am linken und rechten Rand","Nur in der Mitte"],answer:1,hint:"Breitenkreise verlaufen waagerecht – ihre Werte stehen seitlich."},
+ {q:"Wo stehen auf einer Karte die <b>Längengrade</b>?",type:"mc",
+  options:["Am oberen und unteren Rand","Am linken und rechten Rand","In jeder Ecke"],answer:0,hint:"Längenkreise verlaufen senkrecht – ihre Werte stehen oben/unten."},
+ {q:"Afrika reicht etwa von 37°N bis 35°S. Wie groß ist die <b>Nord-Süd-Ausdehnung</b> in Grad? (Zahl)",type:"input",answer:["72","72°"],hint:"Über den Äquator hinweg ADDIEREN: 37 + 35."},
+ {q:"Warum addiert man bei der Ausdehnung über den Äquator die beiden Werte?",type:"mc",
+  options:["Weil der Äquator 0° ist und man von ihm nach beiden Seiten zählt","Weil Afrika sehr groß ist","Das ist nur eine Faustregel"],answer:0,hint:"Der Äquator (0°) liegt dazwischen – Nordwert + Südwert."},
+ {q:"Welche Stadt liegt ungefähr auf dem Breitenkreis 30°N?",type:"mc",
+  options:["Kapstadt","Kairo","Nairobi"],answer:1,hint:"Im Norden Afrikas, am Nil."},
+ {q:"Eine Stadt liegt am Schnittpunkt von 34°S und 18°E. Welche ist es?",type:"mc",
+  options:["Lagos","Dakar","Kapstadt"],answer:2,hint:"Ganz im Süden Afrikas."},
+ {q:"Schreibe die abgelesene Koordinate (mit ° und Himmelsrichtung): 20 Grad Nord, 10 Grad Ost.",type:"input",coord:[20,10],hint:"Breite zuerst: ...°N ...°E"},
+ {q:"Ein Kontinent reicht von 10°W bis 50°E. Wie groß ist die Ost-West-Ausdehnung in Grad? (Zahl)",type:"input",answer:["60","60°"],hint:"Über den Nullmeridian: 10 + 50."},
+ {q:"Welcher Bezugskreis liegt zwischen West- und Ostwerten, sodass man addieren muss?",type:"mc",
+  options:["Der Äquator","Der Nullmeridian","Die Datumsgrenze"],answer:1,hint:"0° der Länge = Nullmeridian."},
+ {q:"Die nördlichste Spitze Afrikas liegt bei etwa 37°N. Welcher gezeichnete 10°-Breitenkreis liegt am nächsten?",type:"mc",
+  options:["30°N","40°N","20°N"],answer:1,hint:"37 ist näher an 40 als an 30."},
+];
+
+/* ====================== MAX-PUNKTE & START ====================== */
+SECT[0].max=6*10;
+SECT[1].max=(10+10+10+10+15+15+15+10)+6*10;
+SECT[2].max=(10+10+10+10+15+15+10+10)+6*10;
+SECT[3].max=(15+15+15+15+15)+6*10;
+SECT[4].max=(10+10+10+10+10+15+15+15)+6*10; /* Karten-Aufgaben (95) + Quiz (60) = 155 */
+SECT[5].max=(15+15+20+20+20)+(30*3); /* Übung (90) + Atlas (3×30 = je 15 Messung + 15 Koordinate) = 180 */
+SECT[6].max=0;
+updateTotals();setupTeacherModal();buildNav();show(0);
+window.show=show;window.resetAll=resetAll;
+</script>
+</body>
+</html>
