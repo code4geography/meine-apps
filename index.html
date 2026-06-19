@@ -2,13 +2,14 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=2.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Code 4 Geography</title>
 <style>
   :root {
-    --akzent: #16a34a;
-    --akzent-hell: #22c55e;
-    --pastellgruen: #d7f0dd;
+    --hintergrund: #eef2f7;     /* neutrales Hell-Graublau, passt zu allen Akzenten */
+    --blau: #6b9bd1;            /* weiches Blau */
+    --rot: #d98a8a;             /* weiches Rot/Altrosa */
+    --gruen: #82b894;           /* weiches Grün */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,16 +18,16 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     color: #1e293b;
-    background: var(--pastellgruen);
+    background: var(--hintergrund);
   }
 
   /* ===== BANNER OBEN (Bild + Schriftzug) ===== */
   .banner {
     position: relative;
     width: 100%;
-    height: 20vh;          /* max. 20% der Bildschirmhöhe */
-    max-height: 220px;     /* Begrenzung für große Monitore */
-    min-height: 120px;     /* damit der Text auf Handys lesbar bleibt */
+    height: 20vh;
+    max-height: 220px;
+    min-height: 120px;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -36,7 +37,6 @@
     background-position: center;
   }
 
-  /* Dunkler Schleier, damit weiße Schrift auf jedem Bild lesbar bleibt */
   .banner::after {
     content: "";
     position: absolute;
@@ -57,6 +57,19 @@
     font-weight: 800;
     letter-spacing: -0.5px;
     text-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.18em;
+  }
+
+  /* die große "4" */
+  .banner-text h1 .vier {
+    font-size: 1.9em;
+    font-weight: 900;
+    line-height: 0.8;
+    color: #ffd966;          /* leicht hervorgehoben; auf #fff setzen, falls neutral gewünscht */
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
   }
 
   .banner-text p {
@@ -73,79 +86,78 @@
     padding: 32px 16px 60px;
   }
 
-  .liste {
-    display: grid;
-    gap: 16px;
-  }
-
-  .karte {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  /* ===== KATEGORIE-BOX ===== */
+  .kategorie {
     background: #ffffff;
     border-radius: 16px;
-    padding: 18px 20px;
-    text-decoration: none;
-    color: inherit;
-    box-shadow: 0 4px 14px rgba(22, 101, 52, 0.12);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-    border: 1px solid rgba(22, 163, 74, 0.15);
+    border-left: 8px solid #ccc;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(100, 116, 139, 0.12);
   }
 
-  .karte:hover, .karte:focus-visible {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 24px rgba(22, 101, 52, 0.22);
+  .kategorie.geographie { border-left-color: var(--blau); }
+  .kategorie.geschichte { border-left-color: var(--rot); }
+  .kategorie.andere     { border-left-color: var(--gruen); }
+
+  .kategorie h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+
+  .kategorie.geographie h2 { color: var(--blau); }
+  .kategorie.geschichte h2 { color: var(--rot); }
+  .kategorie.andere     h2 { color: var(--gruen); }
+
+  /* ===== APP-LINK innerhalb einer Box ===== */
+  .app-liste {
+    display: grid;
+    gap: 10px;
+  }
+
+  .app-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .app-link:hover, .app-link:focus-visible {
+    transform: translateX(4px);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     outline: none;
   }
 
-  .icon {
+  .app-link .titel { font-weight: 600; font-size: 1rem; }
+  .app-link .beschreibung { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+
+  .app-link .pfeil {
     flex-shrink: 0;
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--akzent), var(--akzent-hell));
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    transition: transform 0.15s ease;
   }
-
-  .text { flex-grow: 1; min-width: 0; }
-
-  .text h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
-
-  .text p {
-    font-size: 0.9rem;
-    color: #64748b;
-    line-height: 1.4;
-  }
-
-  .pfeil {
-    flex-shrink: 0;
-    color: var(--akzent);
-    font-size: 1.4rem;
-    transition: transform 0.18s ease;
-  }
-
-  .karte:hover .pfeil { transform: translateX(4px); }
+  .app-link:hover .pfeil { transform: translateX(3px); }
 
   footer {
     text-align: center;
-    color: #4b7256;
+    color: #64748b;
     font-size: 0.85rem;
     margin-top: 40px;
   }
 
   @media (max-width: 480px) {
-    .karte { padding: 14px 16px; gap: 12px; }
-    .icon { width: 44px; height: 44px; font-size: 1.25rem; }
-    .text h2 { font-size: 1.02rem; }
+    .kategorie { padding: 16px 18px; }
+    .app-link { padding: 10px 14px; }
   }
 </style>
 </head>
@@ -154,83 +166,99 @@
   <!-- ===== BANNER ===== -->
   <div class="banner">
     <div class="banner-text">
-      <h1>Meine Lernapps</h1>
+      <h1>Code <span class="vier">4</span> Geography</h1>
       <p>Interaktive Lernanwendungen – einfach anklicken und loslegen.</p>
     </div>
   </div>
 
   <!-- ===== INHALT ===== -->
-  <div class="container">
-    <main class="liste" id="liste"></main>
+  <div class="container" id="inhalt"></div>
 
-    <footer>
-      <p>© 2026 · Erstellt für den Unterricht</p>
-    </footer>
-  </div>
+  <footer>
+    <p>© 2026 · Erstellt für den Unterricht</p>
+  </footer>
 
 <script>
   /* =========================================================
      HIER DEINE APPS EINTRAGEN
      ---------------------------------------------------------
-     datei   = der echte Dateiname (z.B. "jahreszeiten.html")
-     titel   = der angezeigte Name (frei wählbar)
-     text    = kurze Beschreibung (optional, "" für keine)
-     icon    = Buchstabe oder Emoji für das Symbol (optional)
+     Jede Kategorie hat eine Liste von Apps.
+     datei = echter Dateiname  |  titel = Anzeigename  |  text = Beschreibung (optional)
+     Leere Felder ("") einfach später ausfüllen.
      ========================================================= */
-  const apps = [
+  const kategorien = [
     {
-      datei: "jahreszeiten.html",
-      titel: "Die Jahreszeiten",
-      text: "Interaktives 3D-Modell zur Entstehung der Jahreszeiten.",
-      icon: "🌍"
+      name: "Geographie",
+      klasse: "geographie",
+      apps: [
+        { datei: "", titel: "Platzhalter Geographie 1", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Geographie 2", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Geographie 3", text: "Beschreibung hier eintragen." }
+      ]
     },
     {
-      datei: "mondphasen.html",
-      titel: "Mondphasen",
-      text: "Erkunde die acht Phasen des Mondes mit Schieberegler.",
-      icon: "🌙"
+      name: "Geschichte",
+      klasse: "geschichte",
+      apps: [
+        { datei: "", titel: "Platzhalter Geschichte 1", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Geschichte 2", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Geschichte 3", text: "Beschreibung hier eintragen." }
+      ]
     },
     {
-      datei: "beispiel.html",
-      titel: "Weitere Lernapp",
-      text: "Hier kannst du eine Beschreibung einfügen.",
-      icon: "📘"
+      name: "Andere",
+      klasse: "andere",
+      apps: [
+        { datei: "", titel: "Platzhalter Andere 1", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Andere 2", text: "Beschreibung hier eintragen." },
+        { datei: "", titel: "Platzhalter Andere 3", text: "Beschreibung hier eintragen." }
+      ]
     }
   ];
 
   /* --- Ab hier nichts mehr ändern --- */
-  const liste = document.getElementById("liste");
+  const inhalt = document.getElementById("inhalt");
 
-  apps.forEach(app => {
-    const a = document.createElement("a");
-    a.className = "karte";
-    a.href = app.datei;
-
-    const icon = document.createElement("div");
-    icon.className = "icon";
-    icon.textContent = app.icon || "📄";
-
-    const text = document.createElement("div");
-    text.className = "text";
+  kategorien.forEach(kat => {
+    const box = document.createElement("section");
+    box.className = "kategorie " + kat.klasse;
 
     const h2 = document.createElement("h2");
-    h2.textContent = app.titel;
-    text.appendChild(h2);
+    h2.textContent = kat.name;
+    box.appendChild(h2);
 
-    if (app.text) {
-      const p = document.createElement("p");
-      p.textContent = app.text;
-      text.appendChild(p);
-    }
+    const liste = document.createElement("div");
+    liste.className = "app-liste";
 
-    const pfeil = document.createElement("div");
-    pfeil.className = "pfeil";
-    pfeil.textContent = "→";
+    kat.apps.forEach(app => {
+      const a = document.createElement("a");
+      a.className = "app-link";
+      a.href = app.datei || "#";
 
-    a.appendChild(icon);
-    a.appendChild(text);
-    a.appendChild(pfeil);
-    liste.appendChild(a);
+      const textWrap = document.createElement("div");
+      const titel = document.createElement("div");
+      titel.className = "titel";
+      titel.textContent = app.titel;
+      textWrap.appendChild(titel);
+
+      if (app.text) {
+        const beschreibung = document.createElement("div");
+        beschreibung.className = "beschreibung";
+        beschreibung.textContent = app.text;
+        textWrap.appendChild(beschreibung);
+      }
+
+      const pfeil = document.createElement("div");
+      pfeil.className = "pfeil";
+      pfeil.textContent = "→";
+
+      a.appendChild(textWrap);
+      a.appendChild(pfeil);
+      liste.appendChild(a);
+    });
+
+    box.appendChild(liste);
+    inhalt.appendChild(box);
   });
 </script>
 </body>
