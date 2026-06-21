@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Erde-Sonne System - Asymmetrischer Orbit & Gags</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            display: block;
+            touch-action: none;
+        }
+        #canvas-container canvas {
+            touch-action: none;
+            display: block;
+        }
+
+        button,
+        input[type=range],
+        input[type=checkbox],
+        label {
+            touch-action: manipulation;
+        }
+        
+        /* UI Panel Styling — FIX: top + bottom statt max-height */
+        #ui-panel {
+            position: absolute;
+            top: 60px;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            max-width: 90vw;
+            overflow-y: auto;
+            background: rgba(20, 25, 35, 0.95);
+            color: #e0e0e0;
+            border-radius: 12px;
+            padding: 20px 20px 40px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease-in-out;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        #ui-panel.collapsed {
+            transform: translateX(calc(100% + 40px));
+        }
+        
+        #toggle-panel-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 25, 35, 0.95);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 20;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        #toggle-panel-btn:hover {
+            background: rgba(40, 50, 70, 0.95);
+        }
+        
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            outline: none;
+            margin: 8px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4da6ff;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #4da6ff;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        input[type=range]::-moz-range-track {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        button.pos-btn {
+            background: rgba(77, 166, 255, 0.2);
+            border: 1px solid #4da6ff;
+            color: #ffffff;
+            padding: 12px 8px;
+            min-height: 44px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        button.pos-btn:hover {
+            background: rgba(77, 166, 255, 0.4);
+        }
+
+        button.gag-btn {
+            background: rgba(255, 100, 100, 0.2);
+            border: 1px solid #ff6666;
+            color: #ffffff;
+            padding: 10px;
+            min-height: 44px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        button.gag-btn:hover {
+            background: rgba(255, 100, 100, 0.4);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            min-height: 28px;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+            accent-color: #4da6ff;
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+        .checkbox-group label {
+            cursor: pointer;
+            line-height: 1.3;
+        }
+        
+        #hud {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .hud-value {
+            color: #4da6ff;
+            font-weight: bold;
+            float: right;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    
+    <button id="toggle-panel-btn">☰ Menü</button>
+
+    <div id="ui-panel">
+        <h2>Steuerung & Info</h2>
+        
+        <div class="control-group">
+            <label for="day-slider">Datum (Tag: <span id="day-display">1</span>)</label>
+            <input type="range" id="day-slider" min="1" max="365" value="1" step="0.1">
+        </div>
+
+        <div class="btn-grid">
+            <button class="pos-btn" onclick="setDay(1)">Sommersonnenwende</button>
+            <button class="pos-btn" onclick="setDay(92.25)">Herbst-Equinox</button>
+            <button class="pos-btn" onclick="setDay(183.5)">Wintersonnenwende</button>
+            <button class="pos-btn" onclick="setDay(274.75)">Frühlings-Equinox</button>
+        </div>
+
+        <div class="control-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-rotation">
+                <label for="toggle-rotation">Erdrotation</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-labels" checked>
+                <label for="toggle-labels">Beschriftungen</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-line-summer" checked>
+                <label for="toggle-line-summer">Distanzlinie Sommer (Aphel)</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-line-winter" checked>
+                <label for="toggle-line-winter">Distanzlinie Winter (Perihel)</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-ray-mid" checked>
+                <label for="toggle-ray-mid">Mittlerer Sonnenstrahl</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="toggle-ray-topbot" checked>
+                <label for="toggle-ray-topbot">Oberer/Unterer Strahl</label>
+            </div>
+        </div>
+
+        <div id="hud">
+            <div>Datum: <span id="hud-date" class="hud-value">21. Juni</span></div>
+            <div>Position: <span id="hud-pos" class="hud-value">Sommersonnenwende</span></div>
+            <div>Jahreszeit (Nord): <span id="hud-season" class="hud-value">Sommer</span></div>
+            <div>Sonnenzenit: <span id="hud-zenith" class="hud-value">23.5° N</span></div>
+        </div>
+
+        <h2>Gag-Bereich</h2>
+        <button class="gag-btn" id="toggle-planets-btn">Innere Planeten (An/Aus)</button>
+        <button class="gag-btn" id="launch-rocket-btn" style="background: rgba(255, 165, 0, 0.2); border-color: #ffa500;">🚀 Raketenstart!</button>
+        <button class="gag-btn" id="solar-storm-btn" style="background: rgba(255, 50, 50, 0.2); border-color: #ff3333;">☀️ Sonnensturm!</button>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let earthGroup, earthMesh, earthAtmosphere, sun, sunCoronas = [];
+        let middleRay, topRay, bottomRay;
+        let lineSummer, lineWinter;
+        let labels = [];
+        let polarMarker;
+        
+        let orbitMarkers = [];
+        let orbitRings = [];
+        
+        let innerPlanetsGroup;
+        let venusGroup, mercuryGroup;
+        let venusAura, mercuryAura;
+        let planetsVisible = false;
+        
+        let rocketGroup, explosionMesh;
+        let rocketActive = false;
+        let rocketPhase = 0;
+        let rocketTimer = 0;
+
+        let stormGroup;
+        let stormActive = false;
+        let stormX = 0;
+        let mercuryExploded = false;
+        let venusExploded = false;
+        let mercuryExplosion, venusExplosion;
+        let earthShieldActive = false;
+        let earthShieldTimer = 0;
+        
+        let day = 1;
+        let isRotating = false;
+        
+        const ORBIT_A = 75;         
+        const ORBIT_B = 60;         
+        const LEFT_STRETCH = 12;    
+        
+        const EARTH_RADIUS = 4;
+        const ATMOSPHERE_RADIUS = 5.2;
+        const SUN_RADIUS = 8;
+        const TILT_ANGLE = -23.5 * Math.PI / 180;
+        
+        function getOrbitPosition(angle, a = ORBIT_A, b = ORBIT_B, stretch = LEFT_STRETCH) {
+            let c = Math.cos(angle);
+            let x = -a * c;
+            if (c > 0) x -= stretch * (c * c);
+            const z = b * Math.sin(angle);
+            return new THREE.Vector3(x, 0, z);
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.001, 20000);
+            camera.position.set(0, 80, 140);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            createOrbitLine();
+            createOrbitMarkers(); 
+            createSun();
+            createEarth();
+            createRays();
+            createDistanceLines();
+            createMarkersAndLabels();
+            
+            createInnerPlanets();
+            createRocket();
+            createSolarStorm();
+
+            window.addEventListener('resize', onWindowResize, false);
+            document.getElementById('day-slider').addEventListener('input', (e) => {
+                day = parseFloat(e.target.value);
+                updateHUD();
+            });
+            
+            document.getElementById('toggle-panel-btn').addEventListener('click', () => {
+                document.getElementById('ui-panel').classList.toggle('collapsed');
+            });
+            
+            document.getElementById('toggle-rotation').addEventListener('change', (e) => {
+                isRotating = e.target.checked;
+            });
+            
+            document.getElementById('toggle-labels').addEventListener('change', (e) => {
+                labels.forEach(l => l.visible = e.target.checked);
+            });
+
+            document.getElementById('toggle-line-summer').addEventListener('change', (e) => lineSummer.visible = e.target.checked);
+            document.getElementById('toggle-line-winter').addEventListener('change', (e) => lineWinter.visible = e.target.checked);
+            document.getElementById('toggle-ray-mid').addEventListener('change', (e) => middleRay.visible = e.target.checked);
+            document.getElementById('toggle-ray-topbot').addEventListener('change', (e) => {
+                topRay.visible = e.target.checked;
+                bottomRay.visible = e.target.checked;
+            });
+
+            document.getElementById('toggle-planets-btn').addEventListener('click', () => {
+                planetsVisible = !planetsVisible;
+                innerPlanetsGroup.visible = planetsVisible;
+            });
+
+            document.getElementById('launch-rocket-btn').addEventListener('click', () => {
+                setDay(1); 
+                if(!planetsVisible) {
+                    planetsVisible = true;
+                    innerPlanetsGroup.visible = true;
+                }
+                startRocketSequence();
+            });
+
+            document.getElementById('solar-storm-btn').addEventListener('click', () => {
+                setDay(1); 
+                if(!planetsVisible) {
+                    planetsVisible = true;
+                    innerPlanetsGroup.visible = true;
+                }
+                startSolarStorm();
+            });
+
+            updateHUD();
+            animate();
+        }
+
+        function createOrbitLine() {
+            const orbitPoints = [];
+            for (let i = 0; i <= 128; i++) {
+                const angle = (i / 128) * Math.PI * 2;
+                const pos = getOrbitPosition(angle);
+                orbitPoints.push(pos);
+            }
+            const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+            const orbitMat = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+            const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
+            scene.add(orbitLine);
+        }
+
+        function createOrbitMarkers() {
+            const angles = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+            
+            angles.forEach(angle => {
+                const pos = getOrbitPosition(angle);
+                
+                const markerGeo = new THREE.SphereGeometry(1.5, 16, 16);
+                const markerMat = new THREE.MeshBasicMaterial({ color: 0x00aa00 });
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.position.copy(pos);
+                scene.add(marker);
+                orbitMarkers.push(marker);
+
+                const ringGeo = new THREE.SphereGeometry(1.5, 32, 32);
+                const ringMat = new THREE.MeshBasicMaterial({ 
+                    color: 0x00ff00, 
+                    transparent: true, 
+                    opacity: 0.8 
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.position.copy(pos);
+                scene.add(ring);
+                orbitRings.push(ring);
+            });
+        }
+
+        function createSun() {
+            const sunGeo = new THREE.SphereGeometry(SUN_RADIUS, 64, 64);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+            sun = new THREE.Mesh(sunGeo, sunMat);
+            sun.position.set(0, 0, 0);
+            scene.add(sun);
+
+            for (let i = 0; i < 4; i++) {
+                const ringGeo = new THREE.RingGeometry(SUN_RADIUS + 0.2, SUN_RADIUS + 0.6, 64);
+                const ringMat = new THREE.MeshBasicMaterial({ 
+                    color: 0xffaa00, 
+                    transparent: true, 
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.scale.setScalar(1 + (i * 0.05));
+                sunCoronas.push(ring);
+                scene.add(ring);
+            }
+        }
+
+        function createEarth() {
+            earthGroup = new THREE.Group();
+            scene.add(earthGroup);
+
+            const earthGeo = new THREE.SphereGeometry(EARTH_RADIUS, 64, 64);
+            
+            const earthUniforms = {
+                sunPosition: { value: new THREE.Vector3(0, 0, 0) },
+                earthColor: { value: new THREE.Color(0x2266cc) },
+                nightColor: { value: new THREE.Color(0x0a1e3f) }
+            };
+            
+            const earthMat = new THREE.ShaderMaterial({
+                uniforms: earthUniforms,
+                vertexShader: `
+                    varying vec3 vNormal;
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        vNormal = normalize(mat3(modelMatrix) * normal);
+                        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                        vWorldPosition = worldPosition.xyz;
+                        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 sunPosition;
+                    uniform vec3 earthColor;
+                    uniform vec3 nightColor;
+                    varying vec3 vNormal;
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        vec3 lightDir = normalize(sunPosition - vWorldPosition);
+                        float intensity = dot(vNormal, lightDir);
+                        float factor = smoothstep(-0.05, 0.05, intensity); 
+                        vec3 finalColor = mix(nightColor, earthColor, factor);
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `
+            });
+
+            earthMesh = new THREE.Mesh(earthGeo, earthMat);
+            earthGroup.add(earthMesh);
+
+            function createThickLatLine(lat, colorHex) {
+                const r = EARTH_RADIUS + 0.02;
+                const radiusAtLat = Math.cos(lat * Math.PI / 180) * r;
+                const y = Math.sin(lat * Math.PI / 180) * r;
+                
+                const thickness = 0.05; 
+                const tubeGeo = new THREE.TorusGeometry(radiusAtLat, thickness, 8, 64);
+                const tubeMat = new THREE.MeshBasicMaterial({ color: colorHex });
+                const ring = new THREE.Mesh(tubeGeo, tubeMat);
+                
+                ring.rotation.x = Math.PI / 2;
+                ring.position.y = y;
+                earthMesh.add(ring);
+            }
+
+            createThickLatLine(0, 0xffffff);       
+            createThickLatLine(23.5, 0xffaa00);    
+            createThickLatLine(-23.5, 0xffaa00);   
+            createThickLatLine(66.5, 0x00ffff);    
+            createThickLatLine(-66.5, 0x00ffff);   
+
+            const markerGeo = new THREE.SphereGeometry(0.25, 16, 16);
+            const markerMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); 
+            polarMarker = new THREE.Mesh(markerGeo, markerMat);
+            
+            const markerLat = 66.5;
+            const markerR = EARTH_RADIUS + 0.03;
+            const markerY = Math.sin(markerLat * Math.PI / 180) * markerR;
+            const markerRadiusAtLat = Math.cos(markerLat * Math.PI / 180) * markerR;
+            polarMarker.position.set(markerRadiusAtLat, markerY, 0);
+            earthMesh.add(polarMarker);
+
+            const atmosGeo = new THREE.SphereGeometry(ATMOSPHERE_RADIUS, 64, 64);
+            const atmosMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.2 });
+            earthAtmosphere = new THREE.Mesh(atmosGeo, atmosMat);
+            earthGroup.add(earthAtmosphere);
+
+            const axisGeo = new THREE.CylinderGeometry(0.15, 0.15, EARTH_RADIUS * 3.5, 16);
+            const axisMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const axis = new THREE.Mesh(axisGeo, axisMat);
+            earthGroup.add(axis);
+
+            earthGroup.rotation.z = TILT_ANGLE;
+            
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1.5, 1000);
+            scene.add(pointLight);
+        }
+
+        function createRayGroup(yOffset, isMiddle) {
+            const group = new THREE.Group();
+            group.position.set(0, yOffset, 0);
+            
+            let redLength = isMiddle ? ATMOSPHERE_RADIUS - EARTH_RADIUS : Math.sqrt(Math.pow(ATMOSPHERE_RADIUS, 2) - Math.pow(EARTH_RADIUS, 2));
+
+            const yellowGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 16);
+            yellowGeo.rotateX(Math.PI / 2);
+            const yellowMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
+            const yellowCyl = new THREE.Mesh(yellowGeo, yellowMat);
+            group.add(yellowCyl);
+
+            const redGeo = new THREE.CylinderGeometry(0.3, 0.3, redLength, 16);
+            redGeo.rotateX(Math.PI / 2);
+            const redMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const redCyl = new THREE.Mesh(redGeo, redMat);
+            group.add(redCyl);
+
+            group.userData = { yellowCyl, redCyl, redLength, isMiddle };
+            scene.add(group);
+            return group;
+        }
+
+        function createRays() {
+            middleRay = createRayGroup(0, true);
+            topRay = createRayGroup(EARTH_RADIUS, false);
+            bottomRay = createRayGroup(-EARTH_RADIUS, false);
+        }
+
+        function createDistanceLines() {
+            const mat = new THREE.LineDashedMaterial({ color: 0x0066ff, dashSize: 2, gapSize: 2 });
+            
+            const posSummer = getOrbitPosition(0);
+            const geoSummer = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), posSummer]);
+            lineSummer = new THREE.Line(geoSummer, mat);
+            lineSummer.computeLineDistances();
+            scene.add(lineSummer);
+
+            const posWinter = getOrbitPosition(Math.PI);
+            const geoWinter = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), posWinter]);
+            lineWinter = new THREE.Line(geoWinter, mat);
+            lineWinter.computeLineDistances();
+            scene.add(lineWinter);
+        }
+
+        function createMarkersAndLabels() {
+            const posSummer = getOrbitPosition(0);
+            const posAutumn = getOrbitPosition(Math.PI / 2);
+            const posWinter = getOrbitPosition(Math.PI);
+            const posSpring = getOrbitPosition(Math.PI * 1.5);
+
+            const textSummer = "Sommersonnenwende (21. Juni)\nZenit der Sonne über dem nördl. Wendekreis\nMaximale Erwärmung auf der NHK\nPolartag am Nordpol";
+            const textAutumn = "Herbst-Equinox (23. September)\nZenit der Sonne über dem Äquator\nMaximale Erwärmung der Äquatorregion\nTag und Nacht gleich lang";
+            const textWinter = "Wintersonnenwende (21. Dezember)\nZenit der Sonne über dem südlichen Wendekreis\nMaximale Erwärmung auf der SHK\nPolarnacht am Nordpol";
+            const textSpring = "Frühlings-Equinox (20. März)\nZenit der Sonne über dem Äquator\nMaximale Erwärmung der Äquatorregion\nTag und Nacht gleich lang";
+
+            labels.push(makeTextSprite(textSummer, posSummer.x - 35, 0, 0));
+            labels.push(makeTextSprite(textAutumn, posAutumn.x, 0, posAutumn.z + 35));
+            labels.push(makeTextSprite(textWinter, posWinter.x + 35, 0, 0));
+            labels.push(makeTextSprite(textSpring, posSpring.x, 0, posSpring.z - 35));
+
+            labels.forEach(l => scene.add(l));
+        }
+
+        function makeTextSprite(message, x, y, z) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 700; canvas.height = 260;
+            
+            context.fillStyle = 'rgba(20, 25, 35, 0.85)';
+            context.roundRect(0, 0, canvas.width, canvas.height, 20);
+            context.fill();
+            
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            
+            const lines = message.split('\n');
+            const lineHeight = 36;
+            const startY = (canvas.height - (lines.length - 1) * lineHeight) / 2;
+            
+            for (let i = 0; i < lines.length; i++) {
+                if(i === 0) {
+                    context.fillStyle = "#4da6ff"; context.font = "bold 30px Arial";
+                } else {
+                    context.fillStyle = "#e0e0e0"; context.font = "24px Arial";
+                }
+                context.fillText(lines[i], canvas.width/2, startY + i * lineHeight);
+            }
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.set(x, y, z);
+            sprite.scale.set(38, 14, 1);
+            return sprite;
+        }
+
+        function createInnerPlanets() {
+            innerPlanetsGroup = new THREE.Group();
+            innerPlanetsGroup.visible = false;
+            scene.add(innerPlanetsGroup);
+
+            const venusOrbitGeo = new THREE.BufferGeometry().setFromPoints(
+                Array.from({length: 129}, (_, i) => getOrbitPosition((i/128)*Math.PI*2, 50, 40, 6))
+            );
+            const venusOrbitLine = new THREE.LineLoop(venusOrbitGeo, new THREE.LineBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.5 }));
+            innerPlanetsGroup.add(venusOrbitLine);
+
+            venusGroup = new THREE.Group();
+            const venusMesh = new THREE.Mesh(new THREE.SphereGeometry(2.5, 32, 32), new THREE.MeshLambertMaterial({ color: 0xeebb88 }));
+            venusGroup.add(venusMesh);
+            
+            const vAuraGeo = new THREE.SphereGeometry(2.5, 32, 32);
+            venusAura = new THREE.Mesh(vAuraGeo, new THREE.MeshBasicMaterial({ color: 0xffaa55, transparent: true, opacity: 0.7 }));
+            venusGroup.add(venusAura);
+            innerPlanetsGroup.add(venusGroup);
+
+            const mercuryOrbitGeo = new THREE.BufferGeometry().setFromPoints(
+                Array.from({length: 129}, (_, i) => getOrbitPosition((i/128)*Math.PI*2, 25, 20, 3))
+            );
+            const mercuryOrbitLine = new THREE.LineLoop(mercuryOrbitGeo, new THREE.LineBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.5 }));
+            innerPlanetsGroup.add(mercuryOrbitLine);
+
+            mercuryGroup = new THREE.Group();
+            const mercuryMesh = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+            mercuryGroup.add(mercuryMesh);
+
+            const mAuraGeo = new THREE.SphereGeometry(1.5, 32, 32);
+            mercuryAura = new THREE.Mesh(mAuraGeo, new THREE.MeshBasicMaterial({ color: 0xdddddd, transparent: true, opacity: 0.7 }));
+            mercuryGroup.add(mercuryAura);
+            innerPlanetsGroup.add(mercuryGroup);
+        }
+
+        function createRocket() {
+            rocketGroup = new THREE.Group();
+            rocketGroup.visible = false;
+            scene.add(rocketGroup);
+
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 2, 16), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+            body.rotation.x = Math.PI / 2;
+            rocketGroup.add(body);
+
+            const tip = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 16), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+            tip.rotation.x = Math.PI / 2;
+            tip.position.z = 1.5;
+            rocketGroup.add(tip);
+
+            for(let i=0; i<3; i++) {
+                const fin = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.8), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+                fin.position.z = -0.6;
+                fin.position.y = Math.sin(i * Math.PI * 2 / 3) * 0.5;
+                fin.position.x = Math.cos(i * Math.PI * 2 / 3) * 0.5;
+                fin.rotation.z = i * Math.PI * 2 / 3;
+                rocketGroup.add(fin);
+            }
+
+            explosionMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 32, 32),
+                new THREE.MeshBasicMaterial({ color: 0xff5500, transparent: true, opacity: 0.8 })
+            );
+            explosionMesh.visible = false;
+            scene.add(explosionMesh);
+        }
+
+        function createSolarStorm() {
+            stormGroup = new THREE.Group();
+            stormGroup.visible = false;
+            scene.add(stormGroup);
+
+            const domeGeo = new THREE.SphereGeometry(4.5, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+            const domeMat = new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true, opacity: 0.95 });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.rotation.z = Math.PI / 2;
+            stormGroup.add(dome);
+
+            const tailGeo = new THREE.ConeGeometry(4.5, 14, 32);
+            const tailMat = new THREE.MeshBasicMaterial({ color: 0xcc2200, transparent: true, opacity: 0.85 });
+            const tail = new THREE.Mesh(tailGeo, tailMat);
+            tail.rotation.z = -Math.PI / 2;
+            tail.position.x = 7; 
+            stormGroup.add(tail);
+
+            const coreGeo = new THREE.SphereGeometry(3.5, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 1.0 });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.rotation.z = Math.PI / 2;
+            core.position.x = 0.5;
+            stormGroup.add(core);
+
+            const expGeo = new THREE.SphereGeometry(1, 32, 32);
+            const expMat = new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 1.0 });
+            
+            mercuryExplosion = new THREE.Mesh(expGeo, expMat.clone());
+            mercuryExplosion.visible = false;
+            scene.add(mercuryExplosion);
+
+            venusExplosion = new THREE.Mesh(expGeo, expMat.clone());
+            venusExplosion.visible = false;
+            scene.add(venusExplosion);
+        }
+
+        function startRocketSequence() {
+            rocketActive = true;
+            rocketPhase = 1;
+            rocketTimer = 0;
+            rocketGroup.visible = true;
+            explosionMesh.visible = false;
+            explosionMesh.scale.setScalar(1);
+        }
+
+        function startSolarStorm() {
+            mercuryGroup.visible = true;
+            venusGroup.visible = true;
+            mercuryExploded = false;
+            venusExploded = false;
+            
+            mercuryExplosion.visible = false;
+            mercuryExplosion.scale.setScalar(1);
+            mercuryExplosion.material.opacity = 1.0;
+            
+            venusExplosion.visible = false;
+            venusExplosion.scale.setScalar(1);
+            venusExplosion.material.opacity = 1.0;
+
+            stormActive = true;
+            stormX = -SUN_RADIUS;
+            stormGroup.position.set(stormX, 0, 0);
+            stormGroup.scale.setScalar(1);
+            stormGroup.visible = true;
+            earthShieldActive = false;
+        }
+
+        function getRocketPosition(phase, t) {
+            let pos = new THREE.Vector3();
+            let E_x = earthGroup.position.x; 
+            let V_x = venusGroup.position.x; 
+            let M_x = mercuryGroup.position.x; 
+
+            if (phase === 1) {
+                let angle = t * 1.5 * Math.PI; 
+                pos.set(E_x + Math.cos(angle)*5.5, 0, Math.sin(angle)*5.5);
+            } else if (phase === 2) {
+                let start = new THREE.Vector3(E_x, 0, -5.5);
+                let end = new THREE.Vector3(V_x, 0, -3.5);
+                pos.lerpVectors(start, end, t);
+            } else if (phase === 3) {
+                let angle = -Math.PI/2 + t * 2 * Math.PI; 
+                pos.set(V_x + Math.cos(angle)*3.5, 0, Math.sin(angle)*3.5);
+            } else if (phase === 4) {
+                let start = new THREE.Vector3(V_x, 0, -3.5);
+                let end = new THREE.Vector3(M_x, 0, -2.5);
+                pos.lerpVectors(start, end, t);
+            } else if (phase === 5) {
+                let angle = -Math.PI/2 + t * 2 * Math.PI; 
+                pos.set(M_x + Math.cos(angle)*2.5, 0, Math.sin(angle)*2.5);
+            } else if (phase === 6) {
+                let start = new THREE.Vector3(M_x, 0, -2.5);
+                let end = new THREE.Vector3(-8.22, 0, -2.5); 
+                pos.lerpVectors(start, end, t);
+            }
+            return pos;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const angle = ((day - 1) / 365) * 2 * Math.PI;
+            const pos = getOrbitPosition(angle);
+            earthGroup.position.copy(pos);
+
+            if (isRotating) {
+                earthMesh.rotation.y += 0.02;
+            }
+
+            orbitRings.forEach(ring => {
+                ring.scale.addScalar(0.005);
+                if (ring.scale.x > 1.5) ring.scale.setScalar(1.0);
+                ring.material.opacity = 0.6 - ((ring.scale.x - 1.0) / 0.5) * 0.6;
+            });
+
+            const angleVenus = ((day - 1) / 225) * 2 * Math.PI; 
+            const posVenus = getOrbitPosition(angleVenus, 50, 40, 6);
+            venusGroup.position.copy(posVenus);
+
+            const angleMercury = ((day - 1) / 88) * 2 * Math.PI;
+            const posMercury = getOrbitPosition(angleMercury, 25, 20, 3);
+            mercuryGroup.position.copy(posMercury);
+
+            if (planetsVisible) {
+                venusAura.scale.addScalar(0.005);
+                if(venusAura.scale.x > 1.3) venusAura.scale.setScalar(1.0);
+                venusAura.material.opacity = 0.6 - ((venusAura.scale.x - 1.0) / 0.3) * 0.6;
+
+                mercuryAura.scale.addScalar(0.005);
+                if(mercuryAura.scale.x > 1.4) mercuryAura.scale.setScalar(1.0);
+                mercuryAura.material.opacity = 0.6 - ((mercuryAura.scale.x - 1.0) / 0.4) * 0.6;
+            }
+
+            if (rocketActive) {
+                const speed = 0.12; 
+                const phaseDistances = { 1: 25.9, 2: 31.1, 3: 22.0, 4: 28.0, 5: 15.7, 6: 19.8 };
+
+                if (rocketPhase < 7) {
+                    rocketTimer += speed / phaseDistances[rocketPhase];
+
+                    if (rocketTimer >= 1.0) {
+                        rocketPhase++;
+                        rocketTimer = 0;
+
+                        if (rocketPhase === 7) {
+                            rocketGroup.visible = false;
+                            explosionMesh.position.copy(getRocketPosition(6, 1));
+                            explosionMesh.visible = true;
+                        }
+                    }
+                }
+
+                if (rocketPhase < 7) {
+                    let currentPos = getRocketPosition(rocketPhase, rocketTimer);
+                    let nextPos = getRocketPosition(rocketPhase, rocketTimer + 0.01); 
+                    
+                    rocketGroup.position.copy(currentPos);
+                    rocketGroup.lookAt(nextPos);
+                } else if (rocketPhase === 7) {
+                    explosionMesh.scale.addScalar(0.4);
+                    explosionMesh.material.opacity -= 0.015;
+                    if (explosionMesh.material.opacity <= 0) {
+                        rocketActive = false;
+                        explosionMesh.visible = false;
+                    }
+                }
+            }
+
+            if (stormActive) {
+                stormX -= 0.15;
+                stormGroup.position.x = stormX;
+                
+                const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
+                stormGroup.scale.setScalar(pulse);
+
+                if (stormX <= mercuryGroup.position.x + 2 && !mercuryExploded) {
+                    mercuryExploded = true;
+                    mercuryGroup.visible = false;
+                    mercuryExplosion.position.copy(mercuryGroup.position);
+                    mercuryExplosion.scale.setScalar(1.5);
+                    mercuryExplosion.material.opacity = 1.0;
+                    mercuryExplosion.visible = true;
+                }
+
+                if (stormX <= venusGroup.position.x + 3 && !venusExploded) {
+                    venusExploded = true;
+                    venusGroup.visible = false;
+                    venusExplosion.position.copy(venusGroup.position);
+                    venusExplosion.scale.setScalar(2.5);
+                    venusExplosion.material.opacity = 1.0;
+                    venusExplosion.visible = true;
+                }
+
+                if (stormX <= earthGroup.position.x + ATMOSPHERE_RADIUS + 2) {
+                    stormActive = false;
+                    stormGroup.visible = false;
+                    earthShieldActive = true;
+                    earthShieldTimer = 1.0;
+                }
+            }
+
+            [mercuryExplosion, venusExplosion].forEach(exp => {
+                if (exp.visible) {
+                    exp.scale.addScalar(0.3);
+                    exp.material.opacity -= 0.015; 
+                    if (exp.material.opacity <= 0) exp.visible = false;
+                }
+            });
+
+            if (earthShieldActive) {
+                earthShieldTimer -= 0.015;
+                earthAtmosphere.material.opacity = 0.2 + (earthShieldTimer * 0.7);
+                earthAtmosphere.material.color.setHex(0x00ffff);
+                if (earthShieldTimer <= 0) {
+                    earthShieldActive = false;
+                    earthAtmosphere.material.opacity = 0.2;
+                    earthAtmosphere.material.color.setHex(0x88ccff);
+                }
+            }
+
+            const distToSun = Math.sqrt(Math.pow(earthGroup.position.x, 2) + Math.pow(earthGroup.position.z, 2));
+            [middleRay, topRay, bottomRay].forEach(ray => {
+                ray.lookAt(earthGroup.position.x, ray.position.y, earthGroup.position.z);
+                const redLen = ray.userData.redLength;
+                const yellowLen = distToSun - (ray.userData.isMiddle ? ATMOSPHERE_RADIUS : redLen);
+                ray.userData.yellowCyl.scale.z = yellowLen;
+                ray.userData.yellowCyl.position.z = yellowLen / 2;
+                ray.userData.redCyl.position.z = yellowLen + redLen / 2;
+            });
+
+            sunCoronas.forEach((ring) => {
+                ring.lookAt(camera.position);
+                ring.scale.addScalar(0.003);
+                if (ring.scale.x > 1.25) ring.scale.setScalar(1.0);
+                ring.material.opacity = 1.0 - ((ring.scale.x - 1.0) / 0.25);
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.setDay = function(d) {
+            day = d;
+            document.getElementById('day-slider').value = day;
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('day-display').innerText = day.toFixed(1);
+            
+            const startDate = new Date(2026, 5, 21);
+            startDate.setDate(startDate.getDate() + (day - 1));
+            const options = { day: 'numeric', month: 'long' };
+            document.getElementById('hud-date').innerText = startDate.toLocaleDateString('de-DE', options);
+
+            let posName = "-";
+            let season = "";
+            if (day >= 1 && day < 92) { season = "Sommer"; if(day === 1) posName = "Sommersonnenwende"; }
+            else if (day >= 92 && day < 183) { season = "Herbst"; if(Math.abs(day - 92.25) < 1) posName = "Herbst-Equinox"; }
+            else if (day >= 183 && day < 274) { season = "Winter"; if(Math.abs(day - 183.5) < 1) posName = "Wintersonnenwende"; }
+            else { season = "Frühling"; if(Math.abs(day - 274.75) < 1) posName = "Frühlings-Equinox"; }
+            
+            document.getElementById('hud-pos').innerText = posName;
+            document.getElementById('hud-season').innerText = season;
+
+            const angle = ((day - 1) / 365) * 2 * Math.PI;
+            const zenithLat = 23.5 * Math.cos(angle);
+            const dir = zenithLat >= 0 ? "N" : "S";
+            document.getElementById('hud-zenith').innerText = `${Math.abs(zenithLat).toFixed(1)}° ${dir}`;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+    </script>
+</body>
+</html>
