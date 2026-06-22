@@ -29,6 +29,7 @@ const PALETTE = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2
 const DOC_TYPES = [
   { key: 'text', label: 'Fließtext', icon: 'book', hasWords: true },
   { key: 'statistik', label: 'Statistik / Diagramm', icon: 'bar' },
+  { key: 'schema', label: 'Schema / Funktionsabbildung', icon: 'workflow' },
   { key: 'karte', label: 'Karte', icon: 'map' },
   { key: 'foto', label: 'Foto / Bild', icon: 'image' },
   { key: 'karikatur', label: 'Karikatur', icon: 'drama' },
@@ -45,7 +46,7 @@ function makeExam(name, color) {
 }
 
 const DEFAULT_SETTINGS = {
-  wpm: 110, tStatistik: 3, tKarte: 4, tFoto: 2.5, tKarikatur: 3.5,
+  wpm: 110, tStatistik: 3, tSchema: 4, tKarte: 4, tFoto: 2.5, tKarikatur: 3.5,
   minPerPoint: 1.0, minPerQuestion: 0.75, totalTime: 150, totalPoints: 60,
 };
 
@@ -61,6 +62,7 @@ function Icon({ name, size = 16, className = '' }) {
     case 'alert': return <svg {...c}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
     case 'book': return <svg {...c}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
     case 'bar': return <svg {...c}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
+    case 'workflow': return <svg {...c}><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v3a3 3 0 0 0 3 3h3"/><path d="M15 18h-3"/></svg>;
     case 'map': return <svg {...c}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>;
     case 'image': return <svg {...c}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
     case 'drama': return <svg {...c}><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
@@ -187,6 +189,7 @@ function ExamComparator() {
     e.docs.forEach(d => {
       if (d.type === 'text') reading += (d.words || 0) / settings.wpm;
       else if (d.type === 'statistik') reading += (d.count || 0) * settings.tStatistik;
+      else if (d.type === 'schema') reading += (d.count || 0) * settings.tSchema;
       else if (d.type === 'karte') reading += (d.count || 0) * settings.tKarte;
       else if (d.type === 'foto') reading += (d.count || 0) * settings.tFoto;
       else if (d.type === 'karikatur') reading += (d.count || 0) * settings.tKarikatur;
@@ -250,6 +253,7 @@ function ExamComparator() {
               {[
                 ['wpm', 'Lesetempo (Wörter/Min)'],
                 ['tStatistik', 'Statistik (Min/Stück)'],
+                ['tSchema', 'Schema (Min/Stück)'],
                 ['tKarte', 'Karte (Min/Stück)'],
                 ['tFoto', 'Foto (Min/Stück)'],
                 ['tKarikatur', 'Karikatur (Min/Stück)'],
@@ -432,6 +436,10 @@ function ExamComparator() {
             </div>
             <div className="space-y-4 text-sm leading-relaxed text-slate-700">
               <p>Die App misst, wie anspruchsvoll ein Examen ist – aus zwei Blickwinkeln: Wie viel Zeit kostet es, und wie viel Denkleistung verlangt es?</p>
+              <div>
+                <h3 className="mb-1 font-semibold text-slate-900">Dokumenttypen</h3>
+                <p>Jeder Materialtyp kostet unterschiedlich viel Erfassungszeit. Ein <em>Schema</em> (z. B. eine Abbildung zum Funktionsprinzip des Frackings) verlangt, die dargestellte Wirkkette gedanklich nachzuvollziehen, und ist deshalb in der Kalibrierung mit einem eigenen Zeitwert hinterlegt.</p>
+              </div>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Benötigte Zeit</h3>
                 <p>Geschätzte Zeit, um das Examen vollständig zu bearbeiten – aus dem Lesen der Dokumente, dem Beantworten der Aufgaben und einem festen Aufwand pro Aufgabe (für das Lesen und Erfassen jeder Aufgabenstellung). So schlägt sich auch die reine <em>Anzahl der Aufgaben</em> in der Zeit nieder: Mehr Aufgaben bedeuten mehr Aufwand, selbst bei gleicher Punktzahl. Aufgaben aus höheren Anforderungsbereichen (AFB II und III) bekommen zusätzlich mehr Zeit. Beantwortet: <em>Wie lange dauert das Examen realistisch?</em></p>
