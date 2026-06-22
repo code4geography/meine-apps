@@ -7,7 +7,8 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script><style>
+<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+<style>
   .print-only { display: none; }
   @media print {
     .no-print { display: none !important; }
@@ -40,12 +41,12 @@ let uid = 100;
 const nextId = () => ++uid;
 
 function makeExam(name, color) {
-  return { id: nextId(), name, color, docs: [], pAFB1: 0, pAFB2: 0, pAFB3: 0, synth: 0 };
+  return { id: nextId(), name, color, docs: [], questions: 12, pAFB1: 0, pAFB2: 0, pAFB3: 0, synth: 0 };
 }
 
 const DEFAULT_SETTINGS = {
   wpm: 110, tStatistik: 3, tKarte: 4, tFoto: 2.5, tKarikatur: 3.5,
-  minPerPoint: 1.0, totalTime: 150, totalPoints: 60,
+  minPerPoint: 1.0, minPerQuestion: 0.75, totalTime: 150, totalPoints: 60,
 };
 
 // --- Icon-Komponente (Inline-SVG) ---
@@ -64,6 +65,7 @@ function Icon({ name, size = 16, className = '' }) {
     case 'image': return <svg {...c}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
     case 'drama': return <svg {...c}><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
     case 'filedown': return <svg {...c}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>;
+    case 'list': return <svg {...c}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
     case 'help': return <svg {...c}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
     case 'x': return <svg {...c}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     default: return null;
@@ -148,14 +150,14 @@ function ExamComparator() {
       { id: nextId(), type: 'text', count: 1, words: 1500 },
       { id: nextId(), type: 'karte', count: 1, words: 0 },
     ];
-    a.pAFB1 = 15; a.pAFB2 = 20; a.pAFB3 = 10; a.synth = 15;
+    a.questions = 16; a.pAFB1 = 15; a.pAFB2 = 20; a.pAFB3 = 10; a.synth = 15;
     const b = makeExam('Examen B', PALETTE[1]);
     b.docs = [
       { id: nextId(), type: 'text', count: 1, words: 600 },
       { id: nextId(), type: 'statistik', count: 2, words: 0 },
       { id: nextId(), type: 'karikatur', count: 1, words: 0 },
     ];
-    b.pAFB1 = 8; b.pAFB2 = 18; b.pAFB3 = 14; b.synth = 20;
+    b.questions = 12; b.pAFB1 = 8; b.pAFB2 = 18; b.pAFB3 = 14; b.synth = 20;
     return [a, b];
   });
 
@@ -191,15 +193,16 @@ function ExamComparator() {
     });
     const answering = (e.pAFB1 * AFB_TIME[1] + e.pAFB2 * AFB_TIME[2] +
       (e.pAFB3 + e.synth) * AFB_TIME[3]) * settings.minPerPoint;
-    const T = reading + answering;
+    const questionOverhead = (e.questions || 0) * settings.minPerQuestion;
+    const T = reading + answering + questionOverhead;
     const R = T / settings.totalTime;
     const totalPts = e.pAFB1 + e.pAFB2 + e.pAFB3 + e.synth;
     const C = totalPts > 0 ? (e.pAFB1 * AFB_COG[1] + e.pAFB2 * AFB_COG[2] +
       (e.pAFB3 + e.synth) * AFB_COG[3]) / totalPts : 0;
     const D = (w1 / 100) * R + (w2 / 100) * (C / 3);
     const synthShare = totalPts > 0 ? e.synth / totalPts : 0;
-    return { id: e.id, name: e.name, color: e.color, reading, answering, T, R, C, D,
-      totalPts, synthShare, overload: R > 1, pointsOk: totalPts === settings.totalPoints };
+    return { id: e.id, name: e.name, color: e.color, reading, answering, questionOverhead, T, R, C, D,
+      totalPts, questions: e.questions || 0, synthShare, overload: R > 1, pointsOk: totalPts === settings.totalPoints };
   }), [exams, settings, w1, w2]);
 
   const ranked = [...results].sort((a, b) => b.D - a.D);
@@ -251,6 +254,7 @@ function ExamComparator() {
                 ['tFoto', 'Foto (Min/Stück)'],
                 ['tKarikatur', 'Karikatur (Min/Stück)'],
                 ['minPerPoint', 'Antwortzeit (Min/Punkt)'],
+                ['minPerQuestion', 'Aufwand pro Aufgabe (Min)'],
                 ['totalTime', 'Gesamtzeit (Min)'],
                 ['totalPoints', 'Gesamtpunkte'],
               ].map(([key, label]) => (
@@ -316,7 +320,14 @@ function ExamComparator() {
                 </div>
 
                 <div className="mb-3">
-                  <h3 className="mb-2 text-sm font-semibold text-slate-700">Punkte nach Anforderungsbereich</h3>
+                  <h3 className="mb-2 text-sm font-semibold text-slate-700">Umfang & Punkte</h3>
+                  <div className="mb-2 flex items-center gap-2 rounded-md bg-slate-50 px-3 py-2">
+                    <span className="shrink-0 text-slate-400"><Icon name="list" /></span>
+                    <label className="flex-1 text-xs font-medium text-slate-600">Anzahl Aufgaben</label>
+                    <input type="number" min="0" value={exam.questions}
+                      onChange={e => updateExam(exam.id, { questions: Number(e.target.value) })}
+                      className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"/>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       ['pAFB1', 'AFB I (Reproduktion)'],
@@ -383,6 +394,7 @@ function ExamComparator() {
               <thead>
                 <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-500">
                   <th className="py-2 pr-2">#</th><th className="py-2 pr-2">Examen</th>
+                  <th className="py-2 pr-2">Aufg.</th>
                   <th className="py-2 pr-2">Zeit (Min)</th><th className="py-2 pr-2">R</th>
                   <th className="py-2 pr-2">C</th><th className="py-2 pr-2">Synth.</th><th className="py-2 pr-2">D</th>
                 </tr>
@@ -396,6 +408,7 @@ function ExamComparator() {
                         <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.color }}></span>{r.name}
                       </span>
                     </td>
+                    <td className="py-2 pr-2">{r.questions}</td>
                     <td className="py-2 pr-2">{Math.round(r.T)}</td>
                     <td className={`py-2 pr-2 ${r.overload ? 'font-bold text-red-600' : ''}`}>{r.R.toFixed(2)}</td>
                     <td className="py-2 pr-2">{r.C.toFixed(2)}</td>
@@ -421,7 +434,7 @@ function ExamComparator() {
               <p>Die App misst, wie anspruchsvoll ein Examen ist – aus zwei Blickwinkeln: Wie viel Zeit kostet es, und wie viel Denkleistung verlangt es?</p>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Benötigte Zeit</h3>
-                <p>Geschätzte Zeit, um das Examen vollständig zu bearbeiten – aus dem Lesen der Dokumente und dem Beantworten der Aufgaben. Aufgaben aus höheren Anforderungsbereichen (AFB II und III) bekommen automatisch mehr Zeit. Beantwortet: <em>Wie lange dauert das Examen realistisch?</em></p>
+                <p>Geschätzte Zeit, um das Examen vollständig zu bearbeiten – aus dem Lesen der Dokumente, dem Beantworten der Aufgaben und einem festen Aufwand pro Aufgabe (für das Lesen und Erfassen jeder Aufgabenstellung). So schlägt sich auch die reine <em>Anzahl der Aufgaben</em> in der Zeit nieder: Mehr Aufgaben bedeuten mehr Aufwand, selbst bei gleicher Punktzahl. Aufgaben aus höheren Anforderungsbereichen (AFB II und III) bekommen zusätzlich mehr Zeit. Beantwortet: <em>Wie lange dauert das Examen realistisch?</em></p>
               </div>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Arbeitslast (R)</h3>
@@ -429,7 +442,7 @@ function ExamComparator() {
               </div>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Kognitiver Anspruch (C)</h3>
-                <p>Zeigt auf einer Skala von 1 bis 3, wie viel Denkleistung verlangt wird. Viele AFB-I-Punkte ergeben einen Wert nahe 1, viele AFB-III-Punkte einen Wert nahe 3. Beantwortet: <em>Wie anspruchsvoll ist das Examen inhaltlich?</em></p>
+                <p>Zeigt auf einer Skala von 1 bis 3, wie viel Denkleistung verlangt wird. Viele AFB-I-Punkte ergeben einen Wert nahe 1, viele AFB-III-Punkte einen Wert nahe 3. Die Anzahl der Aufgaben spielt hier bewusst keine Rolle – sie wirkt nur auf die Arbeitslast. Beantwortet: <em>Wie anspruchsvoll ist das Examen inhaltlich?</em></p>
               </div>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Gesamt-Index (D)</h3>
