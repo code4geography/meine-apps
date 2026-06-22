@@ -1,18 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Plus, Trash2, Settings, Copy, AlertTriangle, BookOpen, BarChart3, Map, Image, Drama, FileDown, HelpCircle, X } from 'lucide-react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, LabelList, ReferenceArea } from 'recharts';
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Examen-Schwierigkeitsvergleich</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  .print-only { display: none; }
+  @media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    body { background: #ffffff !important; }
+    .print-keep { box-shadow: none !important; border-color: #cbd5e1 !important; break-inside: avoid; }
+  }
+</style>
+</head>
+<body class="bg-slate-50">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
 
 const PALETTE = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
 
 const DOC_TYPES = [
-  { key: 'text', label: 'Fließtext', icon: BookOpen, hasWords: true },
-  { key: 'statistik', label: 'Statistik / Diagramm', icon: BarChart3 },
-  { key: 'karte', label: 'Karte', icon: Map },
-  { key: 'foto', label: 'Foto / Bild', icon: Image },
-  { key: 'karikatur', label: 'Karikatur', icon: Drama },
+  { key: 'text', label: 'Fließtext', icon: 'book', hasWords: true },
+  { key: 'statistik', label: 'Statistik / Diagramm', icon: 'bar' },
+  { key: 'karte', label: 'Karte', icon: 'map' },
+  { key: 'foto', label: 'Foto / Bild', icon: 'image' },
+  { key: 'karikatur', label: 'Karikatur', icon: 'drama' },
 ];
 
-// AFB-Faktoren: Zeitaufwand und kognitives Gewicht
 const AFB_TIME = { 1: 1.0, 2: 1.3, 3: 1.6 };
 const AFB_COG = { 1: 1, 2: 2, 3: 3 };
 
@@ -20,34 +41,108 @@ let uid = 100;
 const nextId = () => ++uid;
 
 function makeExam(name, color) {
-  return {
-    id: nextId(),
-    name,
-    color,
-    docs: [],
-    pAFB1: 0,
-    pAFB2: 0,
-    pAFB3: 0,
-    synth: 0,
-  };
+  return { id: nextId(), name, color, docs: [], pAFB1: 0, pAFB2: 0, pAFB3: 0, synth: 0 };
 }
 
 const DEFAULT_SETTINGS = {
-  wpm: 110,
-  tStatistik: 3,
-  tKarte: 4,
-  tFoto: 2.5,
-  tKarikatur: 3.5,
-  minPerPoint: 1.0,
-  totalTime: 150,
-  totalPoints: 60,
+  wpm: 110, tStatistik: 3, tKarte: 4, tFoto: 2.5, tKarikatur: 3.5,
+  minPerPoint: 1.0, totalTime: 150, totalPoints: 60,
 };
 
-export default function ExamComparator() {
+// --- Icon-Komponente (Inline-SVG) ---
+function Icon({ name, size = 16, className = '' }) {
+  const c = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+    stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', className };
+  switch (name) {
+    case 'plus': return <svg {...c}><line x1="5" y1="12" x2="19" y2="12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>;
+    case 'trash': return <svg {...c}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
+    case 'copy': return <svg {...c}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
+    case 'settings': return <svg {...c}><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>;
+    case 'alert': return <svg {...c}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+    case 'book': return <svg {...c}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+    case 'bar': return <svg {...c}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
+    case 'map': return <svg {...c}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>;
+    case 'image': return <svg {...c}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+    case 'drama': return <svg {...c}><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+    case 'filedown': return <svg {...c}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>;
+    case 'help': return <svg {...c}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+    case 'x': return <svg {...c}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    default: return null;
+  }
+}
+
+// --- Eigenes SVG-Streudiagramm ---
+function ScatterPlot({ results }) {
+  const W = 640, H = 420;
+  const padL = 60, padR = 30, padT = 20, padB = 50;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const xMax = Math.max(1.5, ...results.map(r => r.R + 0.3));
+  const yMin = 1, yMax = 3;
+  const xScale = (R) => padL + (R / xMax) * plotW;
+  const yScale = (C) => padT + (1 - (C - yMin) / (yMax - yMin)) * plotH;
+
+  const x1 = xScale(1);
+  const y2 = yScale(2);
+  const xLeft = padL, xRight = padL + plotW;
+  const yTop = padT, yBottom = padT + plotH;
+
+  const xTicks = [];
+  for (let v = 0; v <= xMax + 0.001; v += 0.5) xTicks.push(Number(v.toFixed(1)));
+  const yTicks = [1, 1.5, 2, 2.5, 3];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+      {/* Quadranten */}
+      <rect x={xLeft} y={y2} width={x1 - xLeft} height={yBottom - y2} fill="#dcfce7" opacity="0.6"/>
+      <rect x={x1} y={y2} width={xRight - x1} height={yBottom - y2} fill="#fef9c3" opacity="0.6"/>
+      <rect x={xLeft} y={yTop} width={x1 - xLeft} height={y2 - yTop} fill="#ffedd5" opacity="0.6"/>
+      <rect x={x1} y={yTop} width={xRight - x1} height={y2 - yTop} fill="#fee2e2" opacity="0.6"/>
+
+      {/* Gitter / Ticks */}
+      {xTicks.map((t, i) => (
+        <g key={'x' + i}>
+          <line x1={xScale(t)} y1={yTop} x2={xScale(t)} y2={yBottom} stroke="#e2e8f0" strokeDasharray="3 3"/>
+          <text x={xScale(t)} y={yBottom + 18} textAnchor="middle" fontSize="11" fill="#64748b">{t.toFixed(1)}</text>
+        </g>
+      ))}
+      {yTicks.map((t, i) => (
+        <g key={'y' + i}>
+          <line x1={xLeft} y1={yScale(t)} x2={xRight} y2={yScale(t)} stroke="#e2e8f0" strokeDasharray="3 3"/>
+          <text x={xLeft - 8} y={yScale(t) + 4} textAnchor="end" fontSize="11" fill="#64748b">{t.toFixed(1)}</text>
+        </g>
+      ))}
+
+      {/* Referenzlinien */}
+      <line x1={x1} y1={yTop} x2={x1} y2={yBottom} stroke="#94a3b8" strokeDasharray="4 4"/>
+      <line x1={xLeft} y1={y2} x2={xRight} y2={y2} stroke="#94a3b8" strokeDasharray="4 4"/>
+
+      {/* Achsen */}
+      <line x1={xLeft} y1={yBottom} x2={xRight} y2={yBottom} stroke="#475569"/>
+      <line x1={xLeft} y1={yTop} x2={xLeft} y2={yBottom} stroke="#475569"/>
+      <text x={padL + plotW / 2} y={H - 6} textAnchor="middle" fontSize="12" fill="#334155">Arbeitslast R</text>
+      <text x={16} y={padT + plotH / 2} textAnchor="middle" fontSize="12" fill="#334155"
+        transform={`rotate(-90 16 ${padT + plotH / 2})`}>Anspruch C</text>
+
+      {/* Punkte */}
+      {results.map(r => (
+        <g key={r.id}>
+          <circle cx={xScale(Math.min(r.R, xMax))} cy={yScale(Math.max(1, Math.min(3, r.C)))} r="7" fill={r.color} stroke="#fff" strokeWidth="2">
+            <title>{`${r.name}\nR: ${r.R.toFixed(2)}\nC: ${r.C.toFixed(2)}\nD: ${r.D.toFixed(2)}`}</title>
+          </circle>
+          <text x={xScale(Math.min(r.R, xMax))} y={yScale(Math.max(1, Math.min(3, r.C))) - 12}
+            textAnchor="middle" fontSize="11" fill="#334155" fontWeight="600">{r.name}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function ExamComparator() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
-  const [w1, setW1] = useState(50); // Gewicht Arbeitslast in %
+  const [w1, setW1] = useState(50);
   const [exams, setExams] = useState(() => {
     const a = makeExam('Examen A', PALETTE[0]);
     a.docs = [
@@ -67,172 +162,84 @@ export default function ExamComparator() {
 
   const w2 = 100 - w1;
 
-  const updateExam = (id, patch) =>
-    setExams(es => es.map(e => (e.id === id ? { ...e, ...patch } : e)));
-
+  const updateExam = (id, patch) => setExams(es => es.map(e => (e.id === id ? { ...e, ...patch } : e)));
   const addExam = () => {
     const color = PALETTE[exams.length % PALETTE.length];
     setExams(es => [...es, makeExam(`Examen ${String.fromCharCode(65 + es.length)}`, color)]);
   };
-
   const removeExam = id => setExams(es => es.filter(e => e.id !== id));
+  const duplicateExam = id => setExams(es => {
+    const src = es.find(e => e.id === id);
+    const copy = { ...src, id: nextId(), name: src.name + ' (Kopie)',
+      color: PALETTE[es.length % PALETTE.length], docs: src.docs.map(d => ({ ...d, id: nextId() })) };
+    return [...es, copy];
+  });
+  const addDoc = examId => setExams(es => es.map(e =>
+    e.id === examId ? { ...e, docs: [...e.docs, { id: nextId(), type: 'text', count: 1, words: 500 }] } : e));
+  const updateDoc = (examId, docId, patch) => setExams(es => es.map(e =>
+    e.id === examId ? { ...e, docs: e.docs.map(d => (d.id === docId ? { ...d, ...patch } : d)) } : e));
+  const removeDoc = (examId, docId) => setExams(es => es.map(e =>
+    e.id === examId ? { ...e, docs: e.docs.filter(d => d.id !== docId) } : e));
 
-  const duplicateExam = id =>
-    setExams(es => {
-      const src = es.find(e => e.id === id);
-      const copy = {
-        ...src,
-        id: nextId(),
-        name: src.name + ' (Kopie)',
-        color: PALETTE[es.length % PALETTE.length],
-        docs: src.docs.map(d => ({ ...d, id: nextId() })),
-      };
-      return [...es, copy];
+  const results = useMemo(() => exams.map(e => {
+    let reading = 0;
+    e.docs.forEach(d => {
+      if (d.type === 'text') reading += (d.words || 0) / settings.wpm;
+      else if (d.type === 'statistik') reading += (d.count || 0) * settings.tStatistik;
+      else if (d.type === 'karte') reading += (d.count || 0) * settings.tKarte;
+      else if (d.type === 'foto') reading += (d.count || 0) * settings.tFoto;
+      else if (d.type === 'karikatur') reading += (d.count || 0) * settings.tKarikatur;
     });
-
-  const addDoc = examId =>
-    setExams(es =>
-      es.map(e =>
-        e.id === examId
-          ? { ...e, docs: [...e.docs, { id: nextId(), type: 'text', count: 1, words: 500 }] }
-          : e
-      )
-    );
-
-  const updateDoc = (examId, docId, patch) =>
-    setExams(es =>
-      es.map(e =>
-        e.id === examId
-          ? { ...e, docs: e.docs.map(d => (d.id === docId ? { ...d, ...patch } : d)) }
-          : e
-      )
-    );
-
-  const removeDoc = (examId, docId) =>
-    setExams(es =>
-      es.map(e => (e.id === examId ? { ...e, docs: e.docs.filter(d => d.id !== docId) } : e))
-    );
-
-  // Berechnungen
-  const results = useMemo(() => {
-    return exams.map(e => {
-      let reading = 0;
-      e.docs.forEach(d => {
-        if (d.type === 'text') reading += (d.words || 0) / settings.wpm;
-        else if (d.type === 'statistik') reading += (d.count || 0) * settings.tStatistik;
-        else if (d.type === 'karte') reading += (d.count || 0) * settings.tKarte;
-        else if (d.type === 'foto') reading += (d.count || 0) * settings.tFoto;
-        else if (d.type === 'karikatur') reading += (d.count || 0) * settings.tKarikatur;
-      });
-      const answering =
-        (e.pAFB1 * AFB_TIME[1] +
-          e.pAFB2 * AFB_TIME[2] +
-          (e.pAFB3 + e.synth) * AFB_TIME[3]) *
-        settings.minPerPoint;
-      const T = reading + answering;
-      const R = T / settings.totalTime;
-      const totalPts = e.pAFB1 + e.pAFB2 + e.pAFB3 + e.synth;
-      const C =
-        totalPts > 0
-          ? (e.pAFB1 * AFB_COG[1] +
-              e.pAFB2 * AFB_COG[2] +
-              (e.pAFB3 + e.synth) * AFB_COG[3]) /
-            totalPts
-          : 0;
-      const D = (w1 / 100) * R + (w2 / 100) * (C / 3);
-      const synthShare = totalPts > 0 ? e.synth / totalPts : 0;
-      return {
-        id: e.id,
-        name: e.name,
-        color: e.color,
-        reading,
-        answering,
-        T,
-        R,
-        C,
-        D,
-        totalPts,
-        synthShare,
-        overload: R > 1,
-        pointsOk: totalPts === settings.totalPoints,
-      };
-    });
-  }, [exams, settings, w1, w2]);
+    const answering = (e.pAFB1 * AFB_TIME[1] + e.pAFB2 * AFB_TIME[2] +
+      (e.pAFB3 + e.synth) * AFB_TIME[3]) * settings.minPerPoint;
+    const T = reading + answering;
+    const R = T / settings.totalTime;
+    const totalPts = e.pAFB1 + e.pAFB2 + e.pAFB3 + e.synth;
+    const C = totalPts > 0 ? (e.pAFB1 * AFB_COG[1] + e.pAFB2 * AFB_COG[2] +
+      (e.pAFB3 + e.synth) * AFB_COG[3]) / totalPts : 0;
+    const D = (w1 / 100) * R + (w2 / 100) * (C / 3);
+    const synthShare = totalPts > 0 ? e.synth / totalPts : 0;
+    return { id: e.id, name: e.name, color: e.color, reading, answering, T, R, C, D,
+      totalPts, synthShare, overload: R > 1, pointsOk: totalPts === settings.totalPoints };
+  }), [exams, settings, w1, w2]);
 
   const ranked = [...results].sort((a, b) => b.D - a.D);
-
-  const numInput =
-    'w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
+  const numInput = 'w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500';
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 p-4 text-slate-800">
-      {/* Druck-CSS */}
-      <style>{`
-        .print-only { display: none; }
-        @media print {
-          .no-print { display: none !important; }
-          .print-only { display: block !important; }
-          body { background: #ffffff !important; }
-          .print-keep { box-shadow: none !important; border-color: #cbd5e1 !important; break-inside: avoid; }
-        }
-      `}</style>
-
+    <div className="min-h-screen w-full p-4 text-slate-800">
       <div className="mx-auto max-w-6xl">
-        {/* Nur im Druck sichtbarer Titel */}
-        <h1 className="print-only mb-4 text-2xl font-bold text-slate-900">
-          Schwierigkeitsvergleich Abschlussexamen
-        </h1>
+        <h1 className="print-only mb-4 text-2xl font-bold text-slate-900">Schwierigkeitsvergleich Abschlussexamen</h1>
 
         <header className="mb-6 no-print">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-slate-900">Examen-Schwierigkeitsvergleich</h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Trennt Arbeitslast (Zeitdruck) von kognitivem Anspruch (AFB). Alle Werte sind kalibrierbar.
-              </p>
+              <p className="mt-1 text-sm text-slate-600">Trennt Arbeitslast (Zeitdruck) von kognitivem Anspruch (AFB). Alle Werte sind kalibrierbar.</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setShowGuide(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                <HelpCircle size={16} /> Anleitung
+              <button onClick={() => setShowGuide(true)} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <Icon name="help" /> Anleitung
               </button>
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900"
-              >
-                <FileDown size={16} /> PDF exportieren
+              <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-900">
+                <Icon name="filedown" /> PDF exportieren
               </button>
             </div>
           </div>
         </header>
 
-        {/* Steuerung */}
         <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm no-print">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex-1 min-w-64">
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Gewichtung im Gesamtindex D
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={w1}
-                onChange={e => setW1(Number(e.target.value))}
-                className="w-full accent-blue-600"
-              />
+              <label className="mb-1 block text-sm font-medium text-slate-700">Gewichtung im Gesamtindex D</label>
+              <input type="range" min="0" max="100" value={w1} onChange={e => setW1(Number(e.target.value))} className="w-full accent-blue-600"/>
               <div className="mt-1 flex justify-between text-xs text-slate-500">
                 <span>Arbeitslast (R): {w1}%</span>
                 <span>Kognitiver Anspruch (C): {w2}%</span>
               </div>
             </div>
-            <button
-              onClick={() => setShowSettings(s => !s)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              <Settings size={16} /> Kalibrierung
+            <button onClick={() => setShowSettings(s => !s)} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <Icon name="settings" /> Kalibrierung
             </button>
           </div>
 
@@ -250,128 +257,67 @@ export default function ExamComparator() {
               ].map(([key, label]) => (
                 <div key={key}>
                   <label className="mb-1 block text-xs font-medium text-slate-600">{label}</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={settings[key]}
-                    onChange={e =>
-                      setSettings(s => ({ ...s, [key]: Number(e.target.value) }))
-                    }
-                    className={numInput}
-                  />
+                  <input type="number" step="0.1" value={settings[key]}
+                    onChange={e => setSettings(s => ({ ...s, [key]: Number(e.target.value) }))} className={numInput}/>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Examen-Eingaben */}
         <div className="mb-6 grid gap-4 lg:grid-cols-2 no-print">
           {exams.map(exam => {
             const res = results.find(r => r.id === exam.id);
             return (
-              <div
-                key={exam.id}
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                style={{ borderTopWidth: 4, borderTopColor: exam.color }}
-              >
+              <div key={exam.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                style={{ borderTopWidth: 4, borderTopColor: exam.color }}>
                 <div className="mb-3 flex items-center gap-2">
-                  <input
-                    value={exam.name}
-                    onChange={e => updateExam(exam.id, { name: e.target.value })}
-                    className="flex-1 rounded-md border border-transparent px-1 py-1 text-lg font-semibold text-slate-900 hover:border-slate-200 focus:border-blue-500 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => duplicateExam(exam.id)}
-                    className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                    title="Duplizieren"
-                  >
-                    <Copy size={16} />
-                  </button>
-                  <button
-                    onClick={() => removeExam(exam.id)}
-                    className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                    title="Löschen"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <input value={exam.name} onChange={e => updateExam(exam.id, { name: e.target.value })}
+                    className="flex-1 rounded-md border border-transparent px-1 py-1 text-lg font-semibold text-slate-900 hover:border-slate-200 focus:border-blue-500 focus:outline-none"/>
+                  <button onClick={() => duplicateExam(exam.id)} className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700" title="Duplizieren"><Icon name="copy" /></button>
+                  <button onClick={() => removeExam(exam.id)} className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600" title="Löschen"><Icon name="trash" /></button>
                 </div>
 
-                {/* Dokumente */}
                 <div className="mb-4">
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-700">Dokumente</h3>
-                    <button
-                      onClick={() => addDoc(exam.id)}
-                      className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                    >
-                      <Plus size={14} /> Dokument
+                    <button onClick={() => addDoc(exam.id)} className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200">
+                      <Icon name="plus" size={14} /> Dokument
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {exam.docs.length === 0 && (
-                      <p className="text-xs italic text-slate-400">Noch keine Dokumente.</p>
-                    )}
+                    {exam.docs.length === 0 && <p className="text-xs italic text-slate-400">Noch keine Dokumente.</p>}
                     {exam.docs.map(doc => {
                       const dt = DOC_TYPES.find(t => t.key === doc.type);
-                      const Icon = dt.icon;
                       return (
                         <div key={doc.id} className="flex items-center gap-2">
-                          <Icon size={16} className="shrink-0 text-slate-400" />
-                          <select
-                            value={doc.type}
-                            onChange={e => updateDoc(exam.id, doc.id, { type: e.target.value })}
-                            className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-                          >
-                            {DOC_TYPES.map(t => (
-                              <option key={t.key} value={t.key}>
-                                {t.label}
-                              </option>
-                            ))}
+                          <span className="shrink-0 text-slate-400"><Icon name={dt.icon} /></span>
+                          <select value={doc.type} onChange={e => updateDoc(exam.id, doc.id, { type: e.target.value })}
+                            className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none">
+                            {DOC_TYPES.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
                           </select>
                           {dt.hasWords ? (
                             <div className="flex items-center gap-1">
-                              <input
-                                type="number"
-                                value={doc.words}
-                                onChange={e =>
-                                  updateDoc(exam.id, doc.id, { words: Number(e.target.value) })
-                                }
-                                className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-                              />
+                              <input type="number" value={doc.words} onChange={e => updateDoc(exam.id, doc.id, { words: Number(e.target.value) })}
+                                className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"/>
                               <span className="text-xs text-slate-400">Wörter</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-1">
-                              <input
-                                type="number"
-                                min="1"
-                                value={doc.count}
-                                onChange={e =>
-                                  updateDoc(exam.id, doc.id, { count: Number(e.target.value) })
-                                }
-                                className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-                              />
+                              <input type="number" min="1" value={doc.count} onChange={e => updateDoc(exam.id, doc.id, { count: Number(e.target.value) })}
+                                className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"/>
                               <span className="text-xs text-slate-400">Stk.</span>
                             </div>
                           )}
-                          <button
-                            onClick={() => removeDoc(exam.id, doc.id)}
-                            className="rounded p-1 text-slate-300 hover:text-red-500"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <button onClick={() => removeDoc(exam.id, doc.id)} className="rounded p-1 text-slate-300 hover:text-red-500"><Icon name="trash" size={14} /></button>
                         </div>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Punkteverteilung */}
                 <div className="mb-3">
-                  <h3 className="mb-2 text-sm font-semibold text-slate-700">
-                    Punkte nach Anforderungsbereich
-                  </h3>
+                  <h3 className="mb-2 text-sm font-semibold text-slate-700">Punkte nach Anforderungsbereich</h3>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       ['pAFB1', 'AFB I (Reproduktion)'],
@@ -381,33 +327,22 @@ export default function ExamComparator() {
                     ].map(([key, label]) => (
                       <div key={key}>
                         <label className="mb-1 block text-xs text-slate-600">{label}</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={exam[key]}
-                          onChange={e => updateExam(exam.id, { [key]: Number(e.target.value) })}
-                          className={numInput}
-                        />
+                        <input type="number" min="0" value={exam[key]} onChange={e => updateExam(exam.id, { [key]: Number(e.target.value) })} className={numInput}/>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Punktesumme-Hinweis */}
                 {!res.pointsOk && (
                   <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                    <AlertTriangle size={14} />
-                    Summe = {res.totalPts} Punkte (Soll: {settings.totalPoints})
+                    <Icon name="alert" size={14} /> Summe = {res.totalPts} Punkte (Soll: {settings.totalPoints})
                   </div>
                 )}
 
-                {/* Mini-Ergebnis */}
                 <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-50 p-3 text-center">
                   <div>
                     <div className="text-xs text-slate-500">Zeitbedarf</div>
-                    <div className={`text-lg font-bold ${res.overload ? 'text-red-600' : 'text-slate-800'}`}>
-                      {Math.round(res.T)}′
-                    </div>
+                    <div className={`text-lg font-bold ${res.overload ? 'text-red-600' : 'text-slate-800'}`}>{Math.round(res.T)}′</div>
                     <div className="text-xs text-slate-400">R = {res.R.toFixed(2)}</div>
                   </div>
                   <div>
@@ -417,9 +352,7 @@ export default function ExamComparator() {
                   </div>
                   <div>
                     <div className="text-xs text-slate-500">Index D</div>
-                    <div className="text-lg font-bold" style={{ color: exam.color }}>
-                      {res.D.toFixed(2)}
-                    </div>
+                    <div className="text-lg font-bold" style={{ color: exam.color }}>{res.D.toFixed(2)}</div>
                     <div className="text-xs text-slate-400">Synth. {Math.round(res.synthShare * 100)}%</div>
                   </div>
                 </div>
@@ -428,73 +361,14 @@ export default function ExamComparator() {
           })}
         </div>
 
-        <button
-          onClick={addExam}
-          className="mb-6 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 no-print"
-        >
-          <Plus size={16} /> Examen hinzufügen
+        <button onClick={addExam} className="mb-6 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 no-print">
+          <Icon name="plus" /> Examen hinzufügen
         </button>
 
-        {/* Vergleichs-Streudiagramm */}
         <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm print-keep">
           <h2 className="mb-1 text-lg font-semibold text-slate-900">Vergleichsmatrix</h2>
-          <p className="mb-4 text-sm text-slate-600">
-            x-Achse: Arbeitslast (R, &gt;1 = Überlast) · y-Achse: kognitiver Anspruch (C)
-          </p>
-          <div className="h-96 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 30, bottom: 40, left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <ReferenceArea x1={1} y1={2} fill="#fee2e2" fillOpacity={0.5} />
-                <ReferenceArea x1={0} x2={1} y1={2} fill="#fef9c3" fillOpacity={0.4} />
-                <ReferenceArea x1={1} y1={1} y2={2} fill="#ffedd5" fillOpacity={0.4} />
-                <ReferenceArea x1={0} x2={1} y1={1} y2={2} fill="#dcfce7" fillOpacity={0.4} />
-                <XAxis
-                  type="number"
-                  dataKey="R"
-                  name="Arbeitslast"
-                  domain={[0, 'dataMax + 0.3']}
-                  tickFormatter={v => v.toFixed(1)}
-                  label={{ value: 'Arbeitslast R', position: 'insideBottom', offset: -20 }}
-                  stroke="#64748b"
-                />
-                <YAxis
-                  type="number"
-                  dataKey="C"
-                  name="Anspruch"
-                  domain={[1, 3]}
-                  ticks={[1, 1.5, 2, 2.5, 3]}
-                  label={{ value: 'Anspruch C', angle: -90, position: 'insideLeft' }}
-                  stroke="#64748b"
-                />
-                <ReferenceLine x={1} stroke="#94a3b8" strokeDasharray="4 4" />
-                <ReferenceLine y={2} stroke="#94a3b8" strokeDasharray="4 4" />
-                <Tooltip
-                  cursor={{ strokeDasharray: '3 3' }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const d = payload[0].payload;
-                      return (
-                        <div className="rounded-lg border border-slate-200 bg-white p-2 text-xs shadow-lg">
-                          <div className="font-semibold" style={{ color: d.color }}>{d.name}</div>
-                          <div>R (Arbeitslast): {d.R.toFixed(2)}</div>
-                          <div>C (Anspruch): {d.C.toFixed(2)}</div>
-                          <div>D (Index): {d.D.toFixed(2)}</div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Scatter data={results} fill="#2563eb">
-                  {results.map(r => (
-                    <Scatter key={r.id} />
-                  ))}
-                  <LabelList dataKey="name" position="top" style={{ fontSize: 11, fill: '#334155' }} />
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="mb-4 text-sm text-slate-600">x-Achse: Arbeitslast (R, &gt;1 = Überlast) · y-Achse: kognitiver Anspruch (C)</p>
+          <div className="w-full"><ScatterPlot results={results} /></div>
           <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600 sm:grid-cols-4">
             <span className="rounded bg-green-100 px-2 py-1">leicht (wenig/niedrig)</span>
             <span className="rounded bg-yellow-100 px-2 py-1">Fleißexamen (viel/niedrig)</span>
@@ -503,20 +377,15 @@ export default function ExamComparator() {
           </div>
         </div>
 
-        {/* Ranking-Tabelle */}
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm print-keep">
           <h2 className="mb-3 text-lg font-semibold text-slate-900">Rangliste nach Gesamtindex D</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-500">
-                  <th className="py-2 pr-2">#</th>
-                  <th className="py-2 pr-2">Examen</th>
-                  <th className="py-2 pr-2">Zeit (Min)</th>
-                  <th className="py-2 pr-2">R</th>
-                  <th className="py-2 pr-2">C</th>
-                  <th className="py-2 pr-2">Synth.</th>
-                  <th className="py-2 pr-2">D</th>
+                  <th className="py-2 pr-2">#</th><th className="py-2 pr-2">Examen</th>
+                  <th className="py-2 pr-2">Zeit (Min)</th><th className="py-2 pr-2">R</th>
+                  <th className="py-2 pr-2">C</th><th className="py-2 pr-2">Synth.</th><th className="py-2 pr-2">D</th>
                 </tr>
               </thead>
               <tbody>
@@ -525,114 +394,55 @@ export default function ExamComparator() {
                     <td className="py-2 pr-2 font-semibold text-slate-400">{i + 1}</td>
                     <td className="py-2 pr-2">
                       <span className="inline-flex items-center gap-2 font-medium">
-                        <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.color }} />
-                        {r.name}
+                        <span className="inline-block h-3 w-3 rounded-full" style={{ background: r.color }}></span>{r.name}
                       </span>
                     </td>
                     <td className="py-2 pr-2">{Math.round(r.T)}</td>
-                    <td className={`py-2 pr-2 ${r.overload ? 'font-bold text-red-600' : ''}`}>
-                      {r.R.toFixed(2)}
-                    </td>
+                    <td className={`py-2 pr-2 ${r.overload ? 'font-bold text-red-600' : ''}`}>{r.R.toFixed(2)}</td>
                     <td className="py-2 pr-2">{r.C.toFixed(2)}</td>
                     <td className="py-2 pr-2">{Math.round(r.synthShare * 100)}%</td>
-                    <td className="py-2 pr-2 font-bold" style={{ color: r.color }}>
-                      {r.D.toFixed(2)}
-                    </td>
+                    <td className="py-2 pr-2 font-bold" style={{ color: r.color }}>{r.D.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-slate-500">
-            R &gt; 1 bedeutet rechnerische Überlast (Zeit reicht nicht). C reicht von 1 (reine
-            Reproduktion) bis 3 (reiner Transfer). D kombiniert beides nach deiner Gewichtung.
-          </p>
+          <p className="mt-3 text-xs text-slate-500">R &gt; 1 bedeutet rechnerische Überlast (Zeit reicht nicht). C reicht von 1 (reine Reproduktion) bis 3 (reiner Transfer). D kombiniert beides nach deiner Gewichtung.</p>
         </div>
       </div>
 
-      {/* Anleitung-Modal */}
       {showGuide && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 no-print"
-          onClick={() => setShowGuide(false)}
-        >
-          <div
-            className="my-8 w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl"
-            onClick={e => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 no-print" onClick={() => setShowGuide(false)}>
+          <div className="my-8 w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="mb-4 flex items-start justify-between">
               <h2 className="text-xl font-bold text-slate-900">Anleitung: Was bedeuten die Kennzahlen?</h2>
-              <button
-                onClick={() => setShowGuide(false)}
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-              >
-                <X size={20} />
-              </button>
+              <button onClick={() => setShowGuide(false)} className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><Icon name="x" size={20} /></button>
             </div>
-
             <div className="space-y-4 text-sm leading-relaxed text-slate-700">
-              <p>
-                Die App misst, wie anspruchsvoll ein Examen ist – aus zwei Blickwinkeln: Wie viel Zeit
-                kostet es, und wie viel Denkleistung verlangt es?
-              </p>
-
+              <p>Die App misst, wie anspruchsvoll ein Examen ist – aus zwei Blickwinkeln: Wie viel Zeit kostet es, und wie viel Denkleistung verlangt es?</p>
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Benötigte Zeit</h3>
-                <p>
-                  Geschätzte Zeit, um das Examen vollständig zu bearbeiten – zusammengesetzt aus dem
-                  Lesen der Dokumente und dem Beantworten der Aufgaben. Aufgaben aus höheren
-                  Anforderungsbereichen (AFB II und III) bekommen automatisch mehr Zeit. Beantwortet:
-                  <em> Wie lange dauert das Examen realistisch?</em>
-                </p>
+                <p>Geschätzte Zeit, um das Examen vollständig zu bearbeiten – aus dem Lesen der Dokumente und dem Beantworten der Aufgaben. Aufgaben aus höheren Anforderungsbereichen (AFB II und III) bekommen automatisch mehr Zeit. Beantwortet: <em>Wie lange dauert das Examen realistisch?</em></p>
               </div>
-
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Arbeitslast (R)</h3>
-                <p>
-                  Verhältnis von benötigter zu verfügbarer Zeit. Bei genau 1 passt das Examen perfekt,
-                  unter 1 gibt es Zeitreserven, über 1 ist es zu lang (z. B. 1,2 = 20 % mehr Zeit nötig).
-                  Beantwortet: <em>Reicht die Zeit?</em>
-                </p>
+                <p>Verhältnis von benötigter zu verfügbarer Zeit. Bei genau 1 passt es perfekt, unter 1 gibt es Reserven, über 1 ist es zu lang (z. B. 1,2 = 20 % mehr Zeit nötig). Beantwortet: <em>Reicht die Zeit?</em></p>
               </div>
-
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Kognitiver Anspruch (C)</h3>
-                <p>
-                  Zeigt auf einer Skala von 1 bis 3, wie viel Denkleistung das Examen verlangt – je nach
-                  Verteilung der Punkte auf die Anforderungsbereiche. Viele AFB-I-Punkte ergeben einen
-                  Wert nahe 1, viele AFB-III-Punkte einen Wert nahe 3. Beantwortet:
-                  <em> Wie anspruchsvoll ist das Examen inhaltlich?</em>
-                </p>
+                <p>Zeigt auf einer Skala von 1 bis 3, wie viel Denkleistung verlangt wird. Viele AFB-I-Punkte ergeben einen Wert nahe 1, viele AFB-III-Punkte einen Wert nahe 3. Beantwortet: <em>Wie anspruchsvoll ist das Examen inhaltlich?</em></p>
               </div>
-
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">Gesamt-Index (D)</h3>
-                <p>
-                  Bündelt Zeitdruck und Denkanspruch in einer Zahl. Über den Schieberegler stellt man
-                  ein, wie stark jeder Aspekt zählt (bei 50/50 gleich viel). Je höher D, desto schwerer
-                  das Examen insgesamt. Die Rangliste sortiert genau nach dieser Zahl.
-                </p>
+                <p>Bündelt Zeitdruck und Denkanspruch in einer Zahl. Über den Schieberegler stellt man ein, wie stark jeder Aspekt zählt. Je höher D, desto schwerer das Examen insgesamt. Die Rangliste sortiert genau danach.</p>
               </div>
-
               <div>
                 <h3 className="mb-1 font-semibold text-slate-900">So liest man die Ergebnisse zusammen</h3>
-                <p>
-                  Am aussagekräftigsten sind die Kennzahlen gemeinsam: Die Arbeitslast sagt, ob die Zeit
-                  reicht; der kognitive Anspruch, wie schwer der Stoff ist; der Gesamt-Index fasst beides
-                  zusammen. Ein Examen kann z. B. genug Zeit lassen (niedrige Arbeitslast), aber
-                  inhaltlich fordernd sein (hoher Anspruch) – oder umgekehrt durch viele einfache Punkte
-                  unter Zeitdruck setzen. Erst beide Zahlen zusammen ergeben das vollständige Bild.
-                </p>
+                <p>Am aussagekräftigsten sind die Kennzahlen gemeinsam: Die Arbeitslast sagt, ob die Zeit reicht; der kognitive Anspruch, wie schwer der Stoff ist; der Gesamt-Index fasst beides zusammen. Erst beide Zahlen zusammen ergeben das vollständige Bild.</p>
               </div>
             </div>
-
             <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowGuide(false)}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                Verstanden
-              </button>
+              <button onClick={() => setShowGuide(false)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Verstanden</button>
             </div>
           </div>
         </div>
@@ -640,3 +450,8 @@ export default function ExamComparator() {
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ExamComparator />);
+</script>
+</body>
+</html>
