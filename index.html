@@ -155,9 +155,125 @@
     margin-top: 40px;
   }
 
+  /* ===== FOOTER-LINKS (Impressum / Datenschutz) ===== */
+  .footer-links {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .footer-links button {
+    background: none;
+    border: none;
+    color: #64748b;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+  }
+
+  .footer-links button:hover,
+  .footer-links button:focus-visible {
+    color: #334155;
+    outline: none;
+  }
+
+  .footer-links .trenner { color: #cbd5e1; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+
+  .modal-overlay.offen { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 640px;
+    width: 100%;
+    margin: auto;
+    padding: 28px 28px 32px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  .modal h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: #1e293b;
+    padding-right: 36px;
+  }
+
+  .modal h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 18px 0 6px;
+    color: #334155;
+  }
+
+  .modal p,
+  .modal li {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #475569;
+  }
+
+  .modal p { margin-bottom: 10px; }
+
+  .modal ul {
+    margin: 0 0 10px 20px;
+  }
+
+  .modal a {
+    color: var(--blau);
+    word-break: break-word;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+
+  .modal-close:hover,
+  .modal-close:focus-visible {
+    background: #e2e8f0;
+    outline: none;
+  }
+
   @media (max-width: 480px) {
     .kategorie { padding: 16px 18px; }
     .app-link { padding: 10px 14px; }
+    .modal { padding: 22px 20px 26px; }
   }
 </style>
 </head>
@@ -176,7 +292,20 @@
 
   <footer>
     <p>© 2026 · Erstellt für den Unterricht</p>
+    <div class="footer-links">
+      <button type="button" onclick="modalOeffnen('impressum')">Impressum</button>
+      <span class="trenner">·</span>
+      <button type="button" onclick="modalOeffnen('datenschutz')">Datenschutz</button>
+    </div>
   </footer>
+
+  <!-- ===== MODAL (Impressum / Datenschutz) ===== -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitel">
+    <div class="modal">
+      <button type="button" class="modal-close" aria-label="Schließen" onclick="modalSchliessen()">×</button>
+      <div id="modalInhalt"></div>
+    </div>
+  </div>
 
 <script>
   /* =========================================================
@@ -260,6 +389,96 @@
 
     box.appendChild(liste);
     inhalt.appendChild(box);
+  });
+
+  /* =========================================================
+     MODAL-INHALTE: IMPRESSUM & DATENSCHUTZ
+     ========================================================= */
+  const rechtstexte = {
+    impressum: `
+      <h3 id="modalTitel">Impressum</h3>
+      <p>Angaben gemäß dem luxemburgischen Gesetz vom 14. August 2000 über den
+      elektronischen Geschäftsverkehr.</p>
+
+      <h4>Verantwortlich für den Inhalt</h4>
+      <p>
+        Claude Schmitz<br>
+        E-Mail: <a href="mailto:code4geographie@gmail.com">code4geographie@gmail.com</a>
+      </p>
+
+      <h4>Art des Angebots</h4>
+      <p>Diese Website ist ein privates, nicht-kommerzielles Angebot und stellt
+      kostenlose, interaktive Lernanwendungen für den Unterricht bereit.</p>
+
+      <h4>Haftung für Inhalte</h4>
+      <p>Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt.
+      Für die Richtigkeit, Vollständigkeit und Aktualität wird jedoch keine
+      Gewähr übernommen.</p>
+    `,
+    datenschutz: `
+      <h3 id="modalTitel">Datenschutzerklärung</h3>
+      <p>Der Schutz deiner persönlichen Daten ist mir wichtig. Diese Erklärung
+      informiert über die Verarbeitung personenbezogener Daten gemäß der
+      EU-Datenschutz-Grundverordnung (DSGVO).</p>
+
+      <h4>Verantwortlicher</h4>
+      <p>
+        Claude Schmitz<br>
+        E-Mail: <a href="mailto:code4geographie@gmail.com">code4geographie@gmail.com</a>
+      </p>
+
+      <h4>Keine Cookies, kein Tracking</h4>
+      <p>Diese Website verwendet <strong>keine Cookies</strong>, keine
+      Analyse-Werkzeuge und keine Tracking-Dienste. Es werden auch keine
+      externen Ressourcen (z. B. Schriftarten oder Skripte von Drittanbietern)
+      nachgeladen. Die einzelnen Lernanwendungen laufen vollständig in deinem
+      Browser; dabei eingegebene Daten werden nicht an einen Server übertragen.</p>
+
+      <h4>Hosting und Server-Logs</h4>
+      <p>Diese Website wird über <strong>GitHub Pages</strong> bereitgestellt,
+      einen Dienst der GitHub Inc. (88 Colin P. Kelly Jr. Street, San Francisco,
+      CA 94107, USA). Beim Aufruf der Seite verarbeitet GitHub aus technischen
+      Gründen automatisch Verbindungsdaten, darunter deine IP-Adresse, in
+      Server-Protokollen. Dies ist für den sicheren und stabilen Betrieb der
+      Seite erforderlich (Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO –
+      berechtigtes Interesse). Die Datenverarbeitung durch GitHub erfolgt
+      teilweise in den USA. Einzelheiten findest du in der
+      <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub</a>.</p>
+
+      <h4>Deine Rechte</h4>
+      <p>Du hast nach der DSGVO das Recht auf Auskunft, Berichtigung, Löschung,
+      Einschränkung der Verarbeitung, Datenübertragbarkeit sowie ein
+      Widerspruchsrecht. Wende dich dafür an die oben genannte E-Mail-Adresse.</p>
+
+      <h4>Beschwerderecht</h4>
+      <p>Du hast das Recht, dich bei einer Aufsichtsbehörde zu beschweren.
+      Zuständig in Luxemburg ist die Commission nationale pour la protection des
+      données (CNPD), <a href="https://cnpd.public.lu" target="_blank" rel="noopener">cnpd.public.lu</a>.</p>
+    `
+  };
+
+  const modalOverlay = document.getElementById("modalOverlay");
+  const modalInhalt = document.getElementById("modalInhalt");
+
+  function modalOeffnen(typ) {
+    modalInhalt.innerHTML = rechtstexte[typ] || "";
+    modalOverlay.classList.add("offen");
+    document.body.style.overflow = "hidden";
+  }
+
+  function modalSchliessen() {
+    modalOverlay.classList.remove("offen");
+    document.body.style.overflow = "";
+  }
+
+  /* Schließen bei Klick auf den Hintergrund */
+  modalOverlay.addEventListener("click", function (e) {
+    if (e.target === modalOverlay) modalSchliessen();
+  });
+
+  /* Schließen mit Escape-Taste */
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") modalSchliessen();
   });
 </script>
 </body>
