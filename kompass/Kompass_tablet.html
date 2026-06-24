@@ -739,6 +739,14 @@
   #e5-root .results-table tr.row-current td { background: #fffaf0; }
   #e5-root .results-table tr.row-done    td { background: #f4faf2; }
   #e5-root .answer-empty { color: #c8bca8; font-weight: 400; }
+
+/* LEHRERZUGANG */
+  #teacherModal {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.4); padding: 1rem;
+  }
+  #teacherModal.hidden-stage { display: none; }
 </style>
 </head>
 <body class="bg-base text-ink">
@@ -752,14 +760,29 @@
         <p class="text-xs text-muted leading-tight">Lern-App für den Geografieunterricht</p>
       </div>
     </div>
-    <div class="text-sm text-muted hidden sm:block">
-      Etappe <span id="etappeAnzeige" class="font-bold text-ink">1</span> / 5
+    <div class="flex items-center gap-3">
+      <button id="teacherBtn" class="tap text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg border border-skyDk text-skyDk hover:bg-skyLt transition">
+        Lehrerzugang
+      </button>
+      <div class="text-sm text-muted hidden sm:block">
+        Etappe <span id="etappeAnzeige" class="font-bold text-ink">1</span> / 5
+      </div>
     </div>
   </div>
   <nav class="max-w-5xl mx-auto px-4 pb-3">
     <ol id="navList" class="flex items-center justify-between gap-1 sm:gap-2"></ol>
   </nav>
 </header>
+
+<!-- LEHRERMODUS-BANNER -->
+<div id="teacherBanner" class="hidden-stage bg-skyLt border-b border-skyDk">
+  <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
+    <span class="text-sm font-semibold text-skyDk">🔓 Lehrermodus aktiv – alle Etappen frei wählbar</span>
+    <button id="teacherExit" class="tap text-xs font-semibold px-3 py-1.5 rounded-lg bg-skyDk text-white hover:opacity-90 transition">
+      Lehrermodus verlassen
+    </button>
+  </div>
+</div>
 
 <main class="max-w-5xl mx-auto px-4 py-6 sm:py-8">
 
@@ -821,7 +844,6 @@
           </div>
         </div>
 
-        <!-- ÄNDERUNG: Merksatz entfernt -->
         <div class="theorie-card t-fade">
           <div class="flex items-start gap-3">
             <div class="icon-box bg-coral">N</div>
@@ -848,7 +870,6 @@
           </div>
         </div>
 
-        <!-- ÄNDERUNG: Nebenhimmelsrichtungen erweitert auf 12 -->
         <div class="theorie-card t-fade">
           <div class="flex items-start gap-3">
             <div class="icon-box bg-skyDk">+</div>
@@ -1252,7 +1273,6 @@
           </div>
         </div>
 
-        <!-- ÄNDERUNG: "Die wichtigsten Bauteile" wird interaktive Aufgabe -->
         <div class="theorie-card t-fade">
           <div class="flex items-start gap-3">
             <div class="icon-box bg-coral">2</div>
@@ -1267,19 +1287,13 @@
               <div class="e3-bauteile-wrap">
                 <div class="e3-bauteile-compass">
                   <svg viewBox="-220 -220 440 440" id="e3-bauteileSvg" aria-label="Statischer Kompass mit Bauteilmarkierungen">
-                    <!-- Gehäuse (Grundplatte) -->
                     <circle cx="0" cy="0" r="190" fill="#F0C8A0" stroke="#C89868" stroke-width="2"/>
                     <circle cx="0" cy="0" r="190" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.6"/>
-                    <!-- Nordmarke (kleines rotes Dreieck am Rand) -->
                     <polygon points="0,-178 -9,-162 -3,-162 -3,-152 3,-152 3,-162 9,-162" fill="#C84040"/>
-                    <!-- Schwarzer Ring -->
                     <circle cx="0" cy="0" r="155" fill="#3A3A3A"/>
                     <circle cx="0" cy="0" r="150" fill="#F5F1E8"/>
-                    <!-- Drehbare Kompassscheibe -->
                     <circle cx="0" cy="0" r="148" fill="#FEFCF6"/>
-                    <!-- Gradmarkierungen -->
                     <g id="e3-bauteileMarks"></g>
-                    <!-- Himmelsrichtungen -->
                     <text x="0" y="-114" text-anchor="middle" dominant-baseline="middle" font-size="22" font-weight="bold" fill="#C84040">N</text>
                     <text x="114" y="0" text-anchor="middle" dominant-baseline="middle" font-size="20" font-weight="bold" fill="#3A3A3A">E</text>
                     <text x="0" y="114" text-anchor="middle" dominant-baseline="middle" font-size="20" font-weight="bold" fill="#3A3A3A">S</text>
@@ -1288,11 +1302,9 @@
                     <text x="80" y="80" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="600" fill="#6A5A4A">SE</text>
                     <text x="-80" y="80" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="600" fill="#6A5A4A">SW</text>
                     <text x="-80" y="-80" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="600" fill="#6A5A4A">NW</text>
-                    <!-- Magnetnadel -->
                     <polygon points="0,-95 -7,0 0,-3 7,0" fill="#C84040"/>
                     <polygon points="0,95 -7,0 0,3 7,0" fill="#F0F0F0" stroke="#888" stroke-width="0.5"/>
                     <circle cx="0" cy="0" r="4" fill="#3A3A3A"/>
-                    <!-- Bauteil-Markierungen (4 farbige, pulsierende Punkte) -->
                     <g id="e3-bauteileMarkers"></g>
                   </svg>
                 </div>
@@ -1397,7 +1409,6 @@
         </div>
       </div>
 
-      <!-- Aufgaben mit dem interaktiven Kompass -->
       <div class="border-t border-sand pt-6 mb-6">
         <h3 class="text-xl font-bold mb-1">🎯 Aufgaben mit dem Kompass</h3>
         <p class="text-sm text-muted mb-3">Probiere beide Drehbewegungen am interaktiven Kompass aus.</p>
@@ -1424,9 +1435,13 @@
 
       <div class="border-t border-sand pt-6 mb-6">
         <h3 class="text-xl font-bold mb-1">🧠 Übung B: Verständnisquiz</h3>
-        <p class="text-sm text-muted mb-3">Beantworte alle 4 Fragen richtig.</p>
-        <div id="e3-quizContainer"></div>
-        <div id="e3-quizStatus" class="e3-status text-muted">0 von 4 richtig</div>
+        <p class="text-sm text-muted mb-3">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
+        <div id="quiz-3-start" class="flex justify-start mb-2">
+          <button id="btnQuizStart-3" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition">
+            Quiz starten ▸
+          </button>
+        </div>
+        <div id="quiz-3" class="quiz-host hidden"></div>
       </div>
 
       <div class="flex justify-between mt-6">
@@ -1613,9 +1628,13 @@
 
       <div class="border-t border-sand pt-6 mb-2">
         <h3 class="text-xl font-bold mb-1">🧠 Übung B: Verständnisquiz</h3>
-        <p class="text-sm text-muted mb-3">Beantworte alle 4 Fragen richtig.</p>
-        <div id="e4-quizContainer"></div>
-        <div id="e4-quizStatus" class="e4-status text-muted">0 von 4 richtig</div>
+        <p class="text-sm text-muted mb-3">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
+        <div id="quiz-4-start" class="flex justify-start mb-2">
+          <button id="btnQuizStart-4" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition">
+            Quiz starten ▸
+          </button>
+        </div>
+        <div id="quiz-4" class="quiz-host hidden"></div>
       </div>
 
       <div class="flex justify-between mt-6">
@@ -1844,8 +1863,32 @@
   </section>
 </main>
 
+<!-- LEHRERZUGANG-MODAL -->
+<div id="teacherModal" class="hidden-stage">
+  <div class="bg-surface rounded-2xl shadow-lg border border-sand w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">Lehrerzugang</h3>
+      <button id="teacherClose" class="tap text-muted hover:text-ink text-xl leading-none px-2">✕</button>
+    </div>
+
+    <div id="teacherCodeStep">
+      <p class="text-sm text-muted mb-3">Bitte gib den Zugangscode ein.</p>
+      <input id="teacherCodeInput" type="password" inputmode="numeric"
+             placeholder="Code"
+             class="w-full border-2 border-sand rounded-xl px-4 py-2.5 text-center text-lg tracking-widest focus:border-skyDk outline-none mb-2">
+      <div id="teacherError" class="text-sm text-coralDk mb-2 hidden">Falscher Code. Bitte erneut versuchen.</div>
+      <button id="teacherSubmit" class="tap w-full bg-skyDk hover:opacity-90 text-white font-semibold py-2.5 rounded-xl transition">Bestätigen</button>
+    </div>
+
+    <div id="teacherJumpStep" class="hidden">
+      <p class="text-sm text-muted mb-3">Wähle eine Etappe, zu der du springen möchtest:</p>
+      <div id="teacherEtappenList" class="grid grid-cols-1 gap-2"></div>
+    </div>
+  </div>
+</div>
+
 <footer class="max-w-5xl mx-auto px-4 py-6 text-xs text-muted text-center">
-  Kompass-Lern-App · Version 0.9.3 (Bauteile-Aufgabe + Nebenhimmelsrichtungen)
+  Kompass-Lern-App · Version 0.9.4 (Lehrerzugang + Quize E3/E4 = 8 Fragen)
 </footer>
 
 <script>
@@ -1871,7 +1914,7 @@ function shuffleArr(arr) {
 }
 
 /* ==========================================================================
-   QUIZ-ENGINE (Etappe 1)
+   QUIZ-ENGINE (sequenziell, wiederverwendbar für E1, E3, E4)
    ========================================================================== */
 class QuizEngine {
   constructor({ hostId, fragen, onFinish }) {
@@ -2003,7 +2046,7 @@ class QuizEngine {
 }
 
 /* ==========================================================================
-   FRAGEN ETAPPE 1
+   FRAGEN ETAPPE 1 (8 Fragen)
    ========================================================================== */
 const FRAGEN_E1 = [
   { typ:'single', frage:'Was bedeutet „sich orientieren"?',
@@ -2025,6 +2068,66 @@ const FRAGEN_E1 = [
   { typ:'multi', frage:'Wofür ist Orientierung im Alltag nützlich?',
     optionen:['Den Schulweg finden','Beim Wandern den Rückweg kennen','Einen Treffpunkt erreichen','Eine Mathematikaufgabe lösen'],
     richtig:[0,1,2], erklärung:'Orientierung hilft im Alltag, Wege zu finden und Ziele zu erreichen.' }
+];
+
+/* ==========================================================================
+   FRAGEN ETAPPE 3 (8 Fragen)
+   ========================================================================== */
+const FRAGEN_E3 = [
+  { typ:'single', frage:'Worauf reagiert die Magnetnadel des Kompasses?',
+    optionen:['Auf das Erdmagnetfeld','Auf die Schwerkraft','Auf das Sonnenlicht','Auf den Wind'],
+    richtig:[0], erklärung:'Die Magnetnadel ist ein kleiner Magnet, der sich nach dem Erdmagnetfeld ausrichtet.' },
+  { typ:'single', frage:'Was passiert, wenn du die Kompassscheibe oder das Gehäuse drehst?',
+    optionen:['Die Magnetnadel bleibt zum magnetischen Norden ausgerichtet','Die Magnetnadel dreht sich mit','Die Magnetnadel zeigt zur Marschrichtung','Die Magnetnadel hört auf zu zeigen'],
+    richtig:[0], erklärung:'Die Nadel ist frei drehbar gelagert und folgt immer dem Erdmagnetfeld — egal wie du den Kompass hältst.' },
+  { typ:'single', frage:'Was kann einen Kompass stören und falsche Werte verursachen?',
+    optionen:['Eisen, Magnete und Hochspannungsleitungen','Sonnenlicht','Regen','Die Höhe über dem Meer'],
+    richtig:[0], erklärung:'Alles, was magnetisch ist oder ein Magnetfeld erzeugt, kann die Nadel ablenken.' },
+  { typ:'single', frage:'Wie musst du den Kompass beim Ablesen halten?',
+    optionen:['Waagerecht','Senkrecht','Schräg nach oben','Auf den Kopf'],
+    richtig:[0], erklärung:'Damit sich die Magnetnadel frei drehen kann, muss der Kompass waagerecht gehalten werden.' },
+  { typ:'single', frage:'Welcher Teil des Kompasses zeigt zuverlässig nach Norden?',
+    optionen:['Die rote Spitze der Magnetnadel','Die weiße Spitze der Magnetnadel','Das Gehäuse','Die Gradskala'],
+    richtig:[0], erklärung:'Die rote Spitze der Magnetnadel zeigt immer zum magnetischen Norden.' },
+  { typ:'single', frage:'Wozu dient die drehbare Kompassscheibe?',
+    optionen:['Um die Skala mit den Himmelsrichtungen auszurichten','Um die Nadel zu bremsen','Um den Kompass schwerer zu machen','Um die Sonne zu messen'],
+    richtig:[0], erklärung:'Die drehbare Scheibe trägt die Skala (N, E, S, W) und wird zum Ausrichten gedreht.' },
+  { typ:'single', frage:'Was ist die Nordmarke am Kompass?',
+    optionen:['Eine feste Markierung, die zeigt, wo „N" liegt','Ein zweiter Magnet','Eine kleine Lampe','Der Tragriemen'],
+    richtig:[0], erklärung:'Die Nordmarke ist fest auf dem Gehäuse/der Scheibe und markiert die Nordrichtung.' },
+  { typ:'multi', frage:'Was gehört zu den wichtigen Bauteilen eines Kompasses?',
+    optionen:['Magnetnadel','Drehbare Kompassscheibe','Himmelsrichtungen & Gradskala','Ein Akku'],
+    richtig:[0,1,2], erklärung:'Magnetnadel, drehbare Scheibe und die Skala sind zentrale Bauteile. Ein klassischer Kompass braucht keinen Akku.' }
+];
+
+/* ==========================================================================
+   FRAGEN ETAPPE 4 (8 Fragen)
+   ========================================================================== */
+const FRAGEN_E4 = [
+  { typ:'single', frage:'Was ist der erste Schritt beim Ausrichten des Kompasses?',
+    optionen:['Das Gehäuse drehen, bis die Nordmarke auf die rote Magnetnadel zeigt','Die Kompassscheibe drehen, bis das N auf die Nadel zeigt','Direkt die Himmelsrichtung zum Ziel ablesen','Den Kompass schütteln, damit die Nadel sich bewegt'],
+    richtig:[0], erklärung:'Schritt 1: Das ganze Gehäuse drehen, bis die Nordmarke und die rote Magnetnadel in dieselbe Richtung zeigen.' },
+  { typ:'single', frage:'Wozu drehst du in Schritt 2 die Kompassscheibe?',
+    optionen:['Damit das N der Skala genau auf die rote Nadelspitze zeigt','Damit die Magnetnadel aufhört, sich zu bewegen','Damit das Gehäuse fixiert wird','Damit die Sonne in die richtige Richtung scheint'],
+    richtig:[0], erklärung:'Die Kompassscheibe muss so gedreht werden, dass das N auf die rote Nadelspitze zeigt — Norden auf Norden.' },
+  { typ:'single', frage:'Wenn der Kompass korrekt ausgerichtet ist, worauf zeigt die rote Spitze der Magnetnadel?',
+    optionen:['Auf die Nordmarke des Gehäuses und auf das N der Skala','Auf das Ziel (die Marschrichtung)','Auf die Sonne','Auf den Süden der Skala'],
+    richtig:[0], erklärung:'Bei korrekter Ausrichtung zeigen Nordmarke, N der Skala und rote Nadelspitze alle in dieselbe Richtung.' },
+  { typ:'single', frage:'Wie liest du in Schritt 3 die Himmelsrichtung zum Ziel ab?',
+    optionen:['Du schaust, welche Himmelsrichtung der Skala in Richtung des Ziels zeigt','Du liest die Richtung ab, in die die Magnetnadel zeigt','Du nimmst immer die Himmelsrichtung gegenüber der Nadel','Du wählst die Richtung, die am nächsten zur Sonne liegt'],
+    richtig:[0], erklärung:'Der Kompass ist zur Realität ausgerichtet — du liest einfach die Richtung zum Ziel ab.' },
+  { typ:'single', frage:'Wie muss der Kompass beim Ausrichten gehalten werden?',
+    optionen:['Waagerecht','Senkrecht','Mit der Skala nach unten','Schräg gegen die Sonne'],
+    richtig:[0], erklärung:'Nur waagerecht kann sich die Magnetnadel frei drehen und korrekt anzeigen.' },
+  { typ:'single', frage:'In welcher Reihenfolge gehst du beim Ausrichten vor?',
+    optionen:['Gehäuse drehen → Scheibe drehen → Richtung ablesen','Richtung ablesen → Gehäuse drehen → Scheibe drehen','Scheibe drehen → Richtung ablesen → Gehäuse drehen','Gehäuse drehen → Richtung ablesen → Scheibe drehen'],
+    richtig:[0], erklärung:'Erst Gehäuse, dann Scheibe (Norden auf Norden), zuletzt die Richtung zum Ziel ablesen.' },
+  { typ:'single', frage:'Was zeigt die Magnetnadel immer an — egal wie du den Kompass drehst?',
+    optionen:['Den magnetischen Norden','Die Marschrichtung','Den Süden','Die Sonne'],
+    richtig:[0], erklärung:'Die frei drehbare Magnetnadel folgt stets dem Erdmagnetfeld und zeigt nach magnetisch Norden.' },
+  { typ:'single', frage:'Was bedeutet „Marschrichtung"?',
+    optionen:['Die Himmelsrichtung, in die du zum Ziel gehen musst','Die Richtung, aus der der Wind kommt','Die Richtung zur Sonne','Die Richtung der weißen Nadelspitze'],
+    richtig:[0], erklärung:'Die Marschrichtung ist die abgelesene Himmelsrichtung, in die dein Ziel liegt.' }
 ];
 
 /* ==========================================================================
@@ -2242,22 +2345,8 @@ const E3_DND_TARGETS = [
   { id:'t3', desc:'Der Teil, den du drehen kannst, um die Skala auszurichten.' },
   { id:'t4', desc:'N, E, S, W und die Skala von 0° bis 360° auf der Scheibe.' },
 ];
-const E3_QUIZ = [
-  { q: 'Worauf reagiert die Magnetnadel des Kompasses?',
-    options: [{ t:'Auf das Erdmagnetfeld', c:true },{ t:'Auf die Schwerkraft', c:false },{ t:'Auf das Sonnenlicht', c:false },{ t:'Auf den Wind', c:false }],
-    explain: 'Die Magnetnadel ist ein kleiner Magnet, der sich nach dem Erdmagnetfeld ausrichtet.' },
-  { q: 'Was passiert, wenn du die Kompassscheibe oder das Gehäuse drehst?',
-    options: [{ t:'Die Magnetnadel bleibt zum magnetischen Norden ausgerichtet', c:true },{ t:'Die Magnetnadel dreht sich mit', c:false },{ t:'Die Magnetnadel zeigt zur Marschrichtung', c:false },{ t:'Die Magnetnadel hört auf zu zeigen', c:false }],
-    explain: 'Die Nadel ist frei drehbar gelagert und folgt immer dem Erdmagnetfeld — egal wie du den Kompass hältst.' },
-  { q: 'Was kann einen Kompass stören und falsche Werte verursachen?',
-    options: [{ t:'Eisen, Magnete und Hochspannungsleitungen', c:true },{ t:'Sonnenlicht', c:false },{ t:'Regen', c:false },{ t:'Die Höhe über dem Meer', c:false }],
-    explain: 'Alles was magnetisch ist oder ein Magnetfeld erzeugt, kann die Nadel ablenken.' },
-  { q: 'Wie musst du den Kompass beim Ablesen halten?',
-    options: [{ t:'Waagerecht', c:true },{ t:'Senkrecht', c:false },{ t:'Schräg nach oben', c:false },{ t:'Auf den Kopf', c:false }],
-    explain: 'Damit sich die Magnetnadel frei drehen kann, muss der Kompass waagerecht gehalten werden.' },
-];
 
-/* NEU: Bauteile-Aufgabe */
+/* Bauteile-Aufgabe */
 const E3_BAUTEILE = [
   { num:1, id:'magnetnadel',       label:'Magnetnadel',                     pos:{x:18,  y:-65}, color:'#C84040' },
   { num:2, id:'nordmarke',         label:'Nordmarke',                       pos:{x:0,   y:-178}, color:'#3060B0' },
@@ -2267,12 +2356,13 @@ const E3_BAUTEILE = [
 
 let e3State = {
   dialRotation: 0, housingRotation: 0, magneticNorth: 0,
-  placed: {}, quizCorrect: [false, false, false, false],
-  dndDone: false, quizDone: false,
+  placed: {}, quizDone: false,
+  dndDone: false,
   housingRotated: false, discRotated: false,
   bauteilePlaced: {}, bauteileDone: false,
   flashTimer: null,
 };
+let quizE3 = null;
 
 function e3UpdateCompleteBtn() {
   const btn = document.querySelector('.btn-complete[data-stage="3"]');
@@ -2389,8 +2479,6 @@ function e3RenderBauteileMarkers() {
     const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     grp.setAttribute('transform', `translate(${b.pos.x} ${b.pos.y})`);
     grp.setAttribute('class', 'e3-bauteile-marker');
-
-    // Pulsierender äußerer Ring
     const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     ring.setAttribute('r', 14);
     ring.setAttribute('class', 'e3-pulse');
@@ -2398,16 +2486,12 @@ function e3RenderBauteileMarkers() {
     ring.setAttribute('stroke', b.color);
     ring.setAttribute('stroke-width', 2.5);
     grp.appendChild(ring);
-
-    // Massiver farbiger Punkt
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     dot.setAttribute('r', 13);
     dot.setAttribute('fill', b.color);
     dot.setAttribute('stroke', '#fff');
     dot.setAttribute('stroke-width', 2.5);
     grp.appendChild(dot);
-
-    // Nummer
     const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('dominant-baseline', 'central');
@@ -2416,7 +2500,6 @@ function e3RenderBauteileMarkers() {
     txt.setAttribute('fill', '#fff');
     txt.textContent = b.num;
     grp.appendChild(txt);
-
     g.appendChild(grp);
   });
 }
@@ -2435,7 +2518,7 @@ function e3RenderBauteilePool() {
     div.className = 'e3-bauteile-item';
     div.draggable = true;
     div.dataset.id = b.id;
-    div.innerHTML = `<span class="e3-bauteile-color-dot" style="background:${b.color}"></span><span>${b.label}</span>`;
+    div.innerHTML = `<span>${b.label}</span>`;
     div.addEventListener('dragstart', e => {
       e.dataTransfer.setData('text/plain', b.id);
       div.classList.add('dragging');
@@ -2698,56 +2781,11 @@ function e3AddTouchDrag(el, itemId) {
   el.addEventListener('pointerup', finish);
   el.addEventListener('pointercancel', () => { active = false; if (ghost) { ghost.remove(); ghost = null; } });
 }
-function e3RenderQuiz() {
-  const container = document.getElementById('e3-quizContainer');
-  container.innerHTML = '';
-  E3_QUIZ.forEach((q, qi) => {
-    const div = document.createElement('div');
-    div.className = 'e3-quiz-question';
-    const shuffled = shuffleArr(q.options);
-    let html = `<div class="e3-quiz-q">${qi+1}. ${q.q}</div><div class="e3-quiz-options">`;
-    shuffled.forEach((opt) => {
-      html += `<button class="e3-quiz-opt" data-q="${qi}" data-correct="${opt.c}">${opt.t}</button>`;
-    });
-    html += `</div><div class="e3-quiz-feedback" data-fb="${qi}" style="display:none;"></div>`;
-    div.innerHTML = html;
-    container.appendChild(div);
-  });
-  container.querySelectorAll('.e3-quiz-opt').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const qi = +btn.dataset.q;
-      if (e3State.quizCorrect[qi]) return;
-      const correct = btn.dataset.correct === 'true';
-      btn.classList.add(correct ? 'correct' : 'wrong');
-      const fb = container.querySelector(`[data-fb="${qi}"]`);
-      fb.style.display = 'block';
-      if (correct) {
-        fb.className = 'e3-quiz-feedback correct';
-        fb.textContent = '✓ Richtig! ' + E3_QUIZ[qi].explain;
-        container.querySelectorAll(`.e3-quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
-        e3State.quizCorrect[qi] = true;
-      } else {
-        fb.className = 'e3-quiz-feedback wrong';
-        fb.textContent = '✗ Nicht ganz. Versuche es nochmal!';
-        btn.disabled = true;
-      }
-      e3CheckQuiz();
-    });
-  });
-}
-function e3CheckQuiz() {
-  const status = document.getElementById('e3-quizStatus');
-  const c = e3State.quizCorrect.filter(Boolean).length;
-  const total = E3_QUIZ.length;
-  if (c === total) { status.textContent = '✓ Alle Fragen richtig beantwortet!'; status.style.color = '#6E9A6E'; e3State.quizDone = true; }
-  else { status.textContent = `${c} von ${total} richtig`; status.style.color = '#7A7A85'; e3State.quizDone = false; }
-  e3UpdateCompleteBtn();
-}
 function e3Reset() {
   e3State = {
     dialRotation: 0, housingRotation: 0, magneticNorth: 0,
-    placed: {}, quizCorrect: [false, false, false, false],
-    dndDone: false, quizDone: false,
+    placed: {}, quizDone: false,
+    dndDone: false,
     housingRotated: false, discRotated: false,
     bauteilePlaced: {}, bauteileDone: false,
     flashTimer: null,
@@ -2755,7 +2793,10 @@ function e3Reset() {
   if (e3Initialized) {
     e3RenderBauteilePool();
     e3RenderBauteileTargets();
-    e3RenderDnd(); e3RenderQuiz();
+    e3RenderDnd();
+    const q3 = document.getElementById('quiz-3');
+    q3.classList.add('hidden'); q3.innerHTML = '';
+    document.getElementById('btnQuizStart-3').classList.remove('hidden');
     e3UpdateCompassTasks();
     e3RandomizeMagneticNorth(); e3UpdateCompleteBtn();
   }
@@ -2770,7 +2811,16 @@ function initE3() {
   e3BindCompass();
   document.getElementById('e3-btnRandom').addEventListener('click', e3RandomizeMagneticNorth);
   document.getElementById('e3-btnReset').addEventListener('click', e3ResetCompass);
-  e3RenderDnd(); e3RenderQuiz();
+  e3RenderDnd();
+  quizE3 = new QuizEngine({
+    hostId: 'quiz-3', fragen: FRAGEN_E3,
+    onFinish: () => { e3State.quizDone = true; e3UpdateCompleteBtn(); }
+  });
+  document.getElementById('btnQuizStart-3').addEventListener('click', () => {
+    document.getElementById('btnQuizStart-3').classList.add('hidden');
+    quizE3.start();
+    document.getElementById('quiz-3').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   e3UpdateCompassTasks();
   e3RandomizeMagneticNorth(); e3UpdateCompleteBtn();
 }
@@ -2791,54 +2841,15 @@ const E4_DIRS = [
 const E4_TOLERANCE = 12;
 const E4_TARGET_RADIUS = 215;
 
-const E4_QUIZ = [
-  { q: 'Was ist der erste Schritt beim Ausrichten des Kompasses?',
-    options: [
-      { t:'Das Gehäuse drehen, bis die Nordmarke auf die rote Magnetnadel zeigt', c:true },
-      { t:'Die Kompassscheibe drehen, bis das N auf die Nadel zeigt', c:false },
-      { t:'Direkt die Himmelsrichtung zum Ziel ablesen', c:false },
-      { t:'Den Kompass schütteln, damit die Nadel sich bewegt', c:false }
-    ],
-    explain: 'Schritt 1: Das ganze Gehäuse drehen, bis die Nordmarke (rotes Dreieck oben) und die rote Magnetnadel in dieselbe Richtung zeigen.'
-  },
-  { q: 'Wozu drehst du in Schritt 2 die Kompassscheibe?',
-    options: [
-      { t:'Damit das N der Skala genau auf die rote Nadelspitze zeigt — Norden auf Norden', c:true },
-      { t:'Damit die Magnetnadel aufhört, sich zu bewegen', c:false },
-      { t:'Damit das Gehäuse fixiert wird', c:false },
-      { t:'Damit die Sonne in die richtige Richtung scheint', c:false }
-    ],
-    explain: 'Die Kompassscheibe (mit der Skala N, E, S, W) muss so gedreht werden, dass das N auf die rote Nadelspitze zeigt. So passt die Skala zur echten Welt.'
-  },
-  { q: 'Wenn der Kompass korrekt ausgerichtet ist, worauf zeigt die rote Spitze der Magnetnadel?',
-    options: [
-      { t:'Auf die Nordmarke des Gehäuses und auf das N der Skala', c:true },
-      { t:'Auf das Ziel (die Marschrichtung)', c:false },
-      { t:'Auf die Sonne', c:false },
-      { t:'Auf den Süden der Skala', c:false }
-    ],
-    explain: 'Bei korrekter Ausrichtung zeigen Nordmarke (Gehäuse), N (Skala) und rote Nadelspitze alle in dieselbe Richtung — den magnetischen Norden.'
-  },
-  { q: 'Wie liest du in Schritt 3 die Himmelsrichtung zum Ziel ab?',
-    options: [
-      { t:'Du schaust, welche Himmelsrichtung der Skala in Richtung des Ziels zeigt', c:true },
-      { t:'Du liest die Richtung ab, in die die Magnetnadel zeigt', c:false },
-      { t:'Du nimmst immer die Himmelsrichtung gegenüber der Nadel', c:false },
-      { t:'Du wählst die Richtung, die am nächsten zur Sonne liegt', c:false }
-    ],
-    explain: 'Der Kompass ist nun zur Realität ausgerichtet. Du schaust einfach, in welche Himmelsrichtung dein Ziel liegt — das ist die Marschrichtung.'
-  }
-];
-
 let e4State = {
   round: 1, totalRounds: 3, successCount: 0,
   magneticNorth: 0, targetDir: null,
   housingRotation: 0, dialRotation: 0,
   step1OK: false, step2OK: false, step3Locked: false,
   uebungADone: false,
-  quizCorrect: [false, false, false, false],
   uebungBDone: false,
 };
+let quizE4 = null;
 
 function e4NormAngle(a) { return ((a % 360) + 360) % 360; }
 function e4AngleDiff(a, b) {
@@ -2899,7 +2910,7 @@ function e4UpdateUI() {
   const inst = document.getElementById('e4-instruction');
   inst.classList.remove('success', 'error');
   if (e4State.uebungADone) {
-    inst.textContent = '🎉 Übung A geschafft! Beantworte jetzt das Verständnisquiz unten.';
+    inst.textContent = '🎉 Übung A geschafft! Starte jetzt das Verständnisquiz unten.';
     inst.classList.add('success');
   } else if (e4State.step3Locked) {
     // wird im Klick-Handler gesetzt
@@ -3033,64 +3044,20 @@ function e4BindCompass() {
   wrap.addEventListener('pointerup', endDrag);
   wrap.addEventListener('pointercancel', endDrag);
 }
-function e4RenderQuiz() {
-  const container = document.getElementById('e4-quizContainer');
-  container.innerHTML = '';
-  E4_QUIZ.forEach((q, qi) => {
-    const div = document.createElement('div');
-    div.className = 'e4-quiz-question';
-    const shuffled = shuffleArr(q.options);
-    let html = `<div class="e4-quiz-q">${qi+1}. ${q.q}</div><div class="e4-quiz-options">`;
-    shuffled.forEach((opt) => {
-      html += `<button class="e4-quiz-opt" data-q="${qi}" data-correct="${opt.c}">${opt.t}</button>`;
-    });
-    html += `</div><div class="e4-quiz-feedback" data-fb="${qi}" style="display:none;"></div>`;
-    div.innerHTML = html;
-    container.appendChild(div);
-  });
-  container.querySelectorAll('.e4-quiz-opt').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const qi = +btn.dataset.q;
-      if (e4State.quizCorrect[qi]) return;
-      const correct = btn.dataset.correct === 'true';
-      btn.classList.add(correct ? 'correct' : 'wrong');
-      const fb = container.querySelector(`[data-fb="${qi}"]`);
-      fb.style.display = 'block';
-      if (correct) {
-        fb.className = 'e4-quiz-feedback correct';
-        fb.textContent = '✓ Richtig! ' + E4_QUIZ[qi].explain;
-        container.querySelectorAll(`.e4-quiz-opt[data-q="${qi}"]`).forEach(b => b.disabled = true);
-        e4State.quizCorrect[qi] = true;
-      } else {
-        fb.className = 'e4-quiz-feedback wrong';
-        fb.textContent = '✗ Nicht ganz. Versuche es nochmal!';
-        btn.disabled = true;
-      }
-      e4CheckQuiz();
-    });
-  });
-}
-function e4CheckQuiz() {
-  const status = document.getElementById('e4-quizStatus');
-  const c = e4State.quizCorrect.filter(Boolean).length;
-  const total = E4_QUIZ.length;
-  if (c === total) {
-    status.textContent = '✓ Alle Fragen richtig beantwortet!';
-    status.style.color = '#6E9A6E';
-    e4State.uebungBDone = true;
-  } else {
-    status.textContent = `${c} von ${total} richtig`;
-    status.style.color = '#7A7A85';
-    e4State.uebungBDone = false;
-  }
-  e4UpdateCompleteBtn();
-}
 function initE4() {
   document.getElementById('tintin-4').innerHTML = tintinSVG(56);
   e4GenerateMarks();
   e4RenderDirectionButtons();
   e4BindCompass();
-  e4RenderQuiz();
+  quizE4 = new QuizEngine({
+    hostId: 'quiz-4', fragen: FRAGEN_E4,
+    onFinish: () => { e4State.uebungBDone = true; e4UpdateCompleteBtn(); }
+  });
+  document.getElementById('btnQuizStart-4').addEventListener('click', () => {
+    document.getElementById('btnQuizStart-4').classList.add('hidden');
+    quizE4.start();
+    document.getElementById('quiz-4').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   document.getElementById('e4-newRound').addEventListener('click', () => {
     if (e4State.uebungADone) {
       e4State.successCount = 0; e4State.round = 1; e4State.uebungADone = false;
@@ -3108,9 +3075,14 @@ function e4Reset() {
     housingRotation: 0, dialRotation: 0,
     step1OK: false, step2OK: false, step3Locked: false,
     uebungADone: false,
-    quizCorrect: [false, false, false, false], uebungBDone: false,
+    uebungBDone: false,
   };
-  if (e4Initialized) { e4RenderQuiz(); e4StartRound(); e4UpdateCompleteBtn(); }
+  if (e4Initialized) {
+    const q4 = document.getElementById('quiz-4');
+    q4.classList.add('hidden'); q4.innerHTML = '';
+    document.getElementById('btnQuizStart-4').classList.remove('hidden');
+    e4StartRound(); e4UpdateCompleteBtn();
+  }
 }
 
 /* ==========================================================================
@@ -3578,7 +3550,7 @@ const ETAPPEN = [
   { id: 4, titel: 'Ausrichten'   },
   { id: 5, titel: 'Karte'        },
 ];
-const state = { aktuelle: 1, abgeschlossen: new Set() };
+const state = { aktuelle: 1, abgeschlossen: new Set(), teacherMode: false };
 const navList = document.getElementById('navList');
 
 function renderNav() {
@@ -3588,7 +3560,7 @@ function renderNav() {
     li.className = 'flex items-center';
     const isAktuell    = state.aktuelle === et.id;
     const isFertig     = state.abgeschlossen.has(et.id);
-    const isErreichbar = isFertig || isAktuell;
+    const isErreichbar = isFertig || isAktuell || state.teacherMode;
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'tap flex flex-col items-center gap-1 py-1 rounded-lg transition ' +
@@ -3681,6 +3653,69 @@ document.getElementById('restartBtn').addEventListener('click', () => {
   }
 });
 
+/* ==========================================================================
+   LEHRERZUGANG
+   ========================================================================== */
+const TEACHER_CODE = '4711';
+
+function openTeacherModal() {
+  document.getElementById('teacherModal').classList.remove('hidden-stage');
+  document.getElementById('teacherCodeStep').classList.remove('hidden');
+  document.getElementById('teacherJumpStep').classList.add('hidden');
+  document.getElementById('teacherCodeInput').value = '';
+  document.getElementById('teacherError').classList.add('hidden');
+  setTimeout(() => { try { document.getElementById('teacherCodeInput').focus(); } catch(_) {} }, 50);
+}
+function closeTeacherModal() {
+  document.getElementById('teacherModal').classList.add('hidden-stage');
+}
+function teacherSubmitCode() {
+  const val = document.getElementById('teacherCodeInput').value.trim();
+  if (val === TEACHER_CODE) {
+    document.getElementById('teacherCodeStep').classList.add('hidden');
+    document.getElementById('teacherJumpStep').classList.remove('hidden');
+    renderTeacherEtappen();
+  } else {
+    document.getElementById('teacherError').classList.remove('hidden');
+  }
+}
+function renderTeacherEtappen() {
+  const list = document.getElementById('teacherEtappenList');
+  list.innerHTML = '';
+  ETAPPEN.forEach(et => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tap w-full text-left bg-white border border-sand hover:bg-sand rounded-xl px-4 py-3 font-semibold flex items-center gap-3 transition';
+    b.innerHTML = `<span class="w-7 h-7 rounded-full bg-sage text-white flex items-center justify-center text-sm flex-shrink-0">${et.id}</span> Etappe ${et.id}: ${et.titel}`;
+    b.addEventListener('click', () => {
+      state.teacherMode = true;
+      document.getElementById('teacherBanner').classList.remove('hidden-stage');
+      closeTeacherModal();
+      zeigeEtappe(et.id);
+    });
+    list.appendChild(b);
+  });
+}
+function exitTeacherMode() {
+  state.teacherMode = false;
+  document.getElementById('teacherBanner').classList.add('hidden-stage');
+  renderNav();
+}
+
+document.getElementById('teacherBtn').addEventListener('click', openTeacherModal);
+document.getElementById('teacherClose').addEventListener('click', closeTeacherModal);
+document.getElementById('teacherSubmit').addEventListener('click', teacherSubmitCode);
+document.getElementById('teacherCodeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') teacherSubmitCode();
+});
+document.getElementById('teacherExit').addEventListener('click', exitTeacherMode);
+document.getElementById('teacherModal').addEventListener('click', e => {
+  if (e.target.id === 'teacherModal') closeTeacherModal();
+});
+
+/* ==========================================================================
+   START
+   ========================================================================== */
 document.getElementById('tintin-1').innerHTML = tintinSVG(56);
 
 const completeBtnE1 = document.querySelector('.btn-complete[data-stage="1"]');
