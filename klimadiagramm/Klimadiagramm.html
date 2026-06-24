@@ -1,1 +1,1574 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klimadiagramme – Lernreise</title>
+<style>
+:root{
+  --bg:#eef3f9;--card:#fff;--ink:#27324a;--muted:#67738c;
+  --primary:#3f6fb5;--primary-d:#345a93;--accent:#2a9d8f;
+  --temp:#c7270d;--precip:#0073bc;--cream:#fbfbee;
+  --good:#2a9d8f;--bad:#e4572e;--soft:#dde6f2;--gold:#e0a700;
+  --shadow:0 8px 24px rgba(40,60,90,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  background:linear-gradient(160deg,#eaf1fb,#eef6f3);color:var(--ink);font-size:18px;line-height:1.55;
+  -webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--soft);padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.25rem;color:var(--primary-d)}
+.headbtn{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:10px 16px}
+.nav button{flex:0 0 auto;border:2px solid transparent;padding:8px 16px;border-radius:12px;font-size:.95rem;
+  font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(40,60,90,.06);transition:.2s;white-space:nowrap}
+.nav button.locked{opacity:.4;cursor:not-allowed}
+.nav button.done::after{content:" ✓";font-weight:800}
+main{max-width:920px;margin:0 auto;padding:18px 16px 80px}
+.step{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow);margin-bottom:20px}
+h1{font-size:1.7rem;margin:.1em 0 .5em}
+h2{font-size:1.32rem;color:var(--primary-d);margin-top:1.4em}
+h3{font-size:1.08rem;color:var(--accent)}
+.kicker{color:var(--accent);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem}
+p{margin:.6em 0}ul{margin:.4em 0 .4em 1.1em}li{margin:.3em 0}
+.muted{color:var(--muted)}
+.temp-word{color:var(--temp);font-weight:700}.precip-word{color:var(--precip);font-weight:700}
+.box{border-radius:16px;padding:16px 18px;margin:16px 0;border-left:6px solid var(--primary)}
+.box.info{background:#eef4fc;border-color:var(--primary)}
+.box.tip{background:#eafaf6;border-color:var(--accent)}
+.box.def{background:#fff7ea;border-color:var(--gold)}
+.box.temp{background:#fdeee9;border-color:var(--temp)}
+.box.precip{background:#e8f1ff;border-color:var(--precip)}
+.box h4{margin:.1em 0 .4em;font-size:1rem}
+button.btn{border:none;background:var(--primary);color:#fff;padding:9px 16px;border-radius:12px;
+  font-weight:700;cursor:pointer;font-size:.95rem;transition:.15s;box-shadow:0 3px 8px rgba(40,60,90,.12);touch-action:manipulation}
+button.btn:hover{filter:brightness(.95)}
+button.btn.ghost{background:#fff;color:var(--primary-d);border:2px solid var(--soft);box-shadow:none}
+button.btn.accent{background:var(--accent)}
+button.btn.gold{background:var(--gold);color:#3a2e00}
+button.btn:disabled{opacity:.45;cursor:not-allowed}
+.taskbox,.quizbox{background:#f7faff;border:1px solid var(--soft);border-radius:16px;padding:18px;margin:14px 0}
+.boxhead{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--primary-d);margin-bottom:6px}
+.progress{font-size:.85rem;color:var(--muted);font-weight:700;margin-bottom:8px}
+.feedback{margin-top:10px;font-weight:700;min-height:1.2em}
+.feedback.ok{color:var(--good)}.feedback.no{color:var(--bad)}.feedback.hint{color:#b9821a}
+.opt{display:block;padding:10px 13px;border:2px solid var(--soft);border-radius:10px;margin:7px 0;cursor:pointer;transition:.12s;background:#fff}
+.opt:hover{border-color:var(--primary)}
+.opt.sel{border-color:var(--primary);background:#eef4fc}
+.opt.correct{border-color:var(--good);background:#e7f7f3}
+.opt.wrong{border-color:var(--bad);background:#fdeee9}
+.qtext{font-weight:700;margin-bottom:8px}
+input[type=text],input[type=number],input[type=password]{padding:9px 12px;border:2px solid var(--soft);border-radius:10px;font-size:1rem;width:220px;max-width:100%}
+input.mini{width:90px;text-align:center}
+.negwrap{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.negbtn{min-width:54px;font-size:1.15rem;font-weight:800}
+.hero{text-align:center;padding:14px 6px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:640px){.choice{grid-template-columns:1fr}}
+.choice-card{border-radius:20px;padding:26px;cursor:pointer;border:2px solid transparent;transition:.18s;box-shadow:var(--shadow)}
+.choice-card.b1{background:linear-gradient(135deg,#eef4fc,#eafaf6)}
+.choice-card.b2{background:linear-gradient(135deg,#fff7ea,#eafaf6)}
+.choice-card.b1:hover,.choice-card.b2:hover{transform:translateY(-3px);border-color:var(--primary)}
+.choice-card .ico{font-size:42px}
+.pill{display:inline-block;background:#eef4fc;color:var(--primary-d);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:700}
+.diagram-box{background:var(--cream);border-radius:16px;padding:10px;border:1px solid #ece9d8}
+.diagram-small{max-width:460px;margin:0 auto}
+svg.climate{width:100%;height:auto;display:block}
+.legend{display:flex;gap:18px;align-items:center;font-size:14px;margin-top:10px;flex-wrap:wrap}
+.lg{display:inline-flex;align-items:center;gap:6px}
+.lg .line{width:24px;height:4px;border-radius:2px;background:var(--temp)}
+.lg .bar{width:14px;height:16px;background:rgba(0,115,188,.45);border:1px solid var(--precip);border-radius:2px}
+.selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+table.climate-table{border-collapse:collapse;width:100%;font-size:15px}
+table.climate-table th,table.climate-table td{border:1px solid var(--soft);padding:8px 4px;text-align:center;min-width:30px}
+table.climate-table th{background:#eef4fc;color:var(--primary-d)}
+table.climate-table .rowlbl{font-weight:700;background:#f7faff}
+.calc-input{width:70px;text-align:center;font-size:15px;border:2px solid var(--primary);border-radius:8px;padding:6px}
+.info-bar{margin-top:10px;background:#eef4fc;border:1px solid #cfe0f5;border-radius:12px;padding:11px 14px;min-height:20px;font-size:15px}
+.color-task{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.color-ctrl{background:#fff;border:1px solid var(--soft);border-radius:14px;padding:12px 14px}
+.ctile{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:10px;border:2px solid transparent;cursor:pointer;font-weight:700;margin-right:6px}
+.ctile.red{background:#fdeee9;color:var(--temp)}
+.ctile.blue{background:#e8f1ff;color:var(--precip)}
+.ctile.on{border-color:currentColor}
+.dot{width:14px;height:14px;border-radius:50%}
+.dot.red{background:var(--temp)}.dot.blue{background:var(--precip)}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px}
+.teacher-zone{margin-top:24px;border-top:1px dashed var(--soft);padding-top:18px}
+.teacher-zone .tz-title{text-align:center;color:var(--muted);font-size:.85rem;font-weight:700;letter-spacing:.04em;margin-bottom:10px}
+.read-table td{text-align:center}
+.read-table td.lbl{text-align:left;font-weight:600}
+.res-stat{flex:1;min-width:120px;text-align:center;margin:0}
+.res-stat .num{font-size:1.8rem;font-weight:800}
+@media print{
+  body{background:#fff}header,.nav,.no-print{display:none!important}
+  .card{box-shadow:none;border:1px solid #ddd;page-break-inside:avoid}
+}
+@media(max-width:560px){body{font-size:16px}.card{padding:18px}h1{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌡️ Klimadiagramme</div>
+  <div class="headbtn">
+    <button class="btn ghost no-print" id="homeBtn" style="display:none">← Start</button>
+    <button class="btn no-print" id="pdfBtn" style="display:none">🖨️ PDF</button>
+  </div>
+</header>
+<div class="nav no-print" id="nav" style="display:none"></div>
+<main id="main"></main>
 
+<script>
+/* ===================== HELFER ===================== */
+const MONTHS_SHORT=['J','F','M','A','M','J','J','A','S','O','N','D'];
+const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function norm(s){return (s||"").toLowerCase().replace(/grad/g,"").replace(/[°'"′″\s]/g,"").replace(",",".");}
+function coordsNorm(s){return (s||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function parseDec(s){return parseFloat((s||"").toString().replace(",",".").replace(/[^\d.\-]/g,""));}
+function de(n){return (typeof n==='number'?n:parseFloat(n)).toString().replace('.',',');}
+function thousand(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function escapeHtml(s){return (s||"").toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function monthIndexFromText(s){
+  const t=norm(s); if(!t)return -1;
+  for(let i=0;i<MONTHS.length;i++){if(norm(MONTHS[i])===t)return i;}
+  const alt={'jan':0,'feb':1,'mär':2,'maerz':2,'marz':2,'mrz':2,'apr':3,'mai':4,'jun':5,'jul':6,'aug':7,'sep':8,'sept':8,'okt':9,'nov':10,'dez':11};
+  if(alt[t]!==undefined)return alt[t];
+  if(t.length>=3){for(let i=0;i<MONTHS.length;i++){if(norm(MONTHS[i]).startsWith(t))return i;}}
+  return -1;
+}
+
+/* ===================== DATEN ===================== */
+const DATA={
+  zugspitze:{name:'Zugspitze',country:'Deutschland',coords:'47°N 10°E',alt:'2.962',
+    temps:[-11.7,-11.4,-9.6,-6.4,-1.8,1.0,3.5,3.3,0.6,-3.0,-7.5,-10.4],
+    precip:[150,140,130,140,165,215,240,230,160,120,150,163]},
+  berlin:{name:'Berlin',country:'Deutschland',coords:'52°N 13°E',alt:'37',
+    temps:[-0.9,0,3.9,8.6,13.5,16.8,18.6,18,14.4,10.4,4.4,1],
+    precip:[43,34,35,41,54,70,57,61,44,37,45,49]},
+  palermo:{name:'Palermo',country:'Italien',coords:'38°N 13°E',alt:'71',
+    temps:[10,11,13,15,18,22,25,25,23,19,15,12],
+    precip:[71,43,50,49,19,9,2,18,41,77,71,62]},
+  reykjavik:{name:'Reykjavík',country:'Island',coords:'64°N 21°W',alt:'18',
+    temps:[-1,0,2,4,7,10,11,10,9,5,2,0],
+    precip:[89,64,62,56,42,42,50,56,67,94,78,79]}
+};
+/* Datensatz für Bereich 2 (Selbst erstellen) – Luxemburg */
+const DATA_LUX={name:'Luxemburg',coords:'49°N 6°E',alt:'334',
+  temps:[0,1,5,9,13,16,18,17,14,9,5,2],
+  precip:[73,56,43,54,60,64,66,74,63,55,64,68],
+  meanT:8.8,sumP:740};
+/* Feste Skala für Bereich 2: °C-Achse 0/10/20, mm-Achse 0/20/40/60/80 (Verhältnis 1:2) */
+const T_GRID=[0,10,20];
+const P_GRID=[0,20,40,60,80];
+
+function stats(d){
+  const mean=d.temps.reduce((a,b)=>a+b,0)/12;
+  const sum=d.precip.reduce((a,b)=>a+b,0);
+  return {mean:Math.round(mean*10)/10,sum};
+}
+
+/* ===================== KLIMADIAGRAMM (Bereich 1) ===================== */
+function buildDiagram(d){
+  const T=d.temps,P=d.precip,s=stats(d);
+  const tMin=Math.min(...T),tMax=Math.max(...T),pMax=Math.max(...P);
+
+  let aTmin=Math.floor(Math.min(0,tMin)/10)*10;
+  let aTmax=Math.ceil(tMax/10)*10;
+  if(aTmax<=aTmin)aTmax=aTmin+10;
+  let aPmax=Math.ceil(pMax/20)*20;
+  if(aPmax<20)aPmax=20;
+
+  const topEquiv=Math.max(aTmax,aPmax/2);
+  const botEquiv=aTmin;
+  const span=topEquiv-botEquiv;
+
+  const L=86,R=556,TOP=118,BOT=512;
+  const slot=(R-L)/12;
+  const X=i=>L+slot*(i+0.5);
+  const yE=e=>BOT-(e-botEquiv)/span*(BOT-TOP);
+  const yT=t=>yE(t);
+  const yP=p=>yE(p/2);
+  const y0=yE(0);
+
+  let g='';
+  g+=`<rect x="${L}" y="${TOP}" width="${R-L}" height="${BOT-TOP}" fill="#ffffff" stroke="#1d1d1b" stroke-width="1"/>`;
+
+  for(let q=Math.ceil(aTmin);q<=aTmax+0.001;q+=1){
+    if(q%10===0)continue;
+    const yy=yT(q);
+    g+=`<line x1="${L-3}" y1="${yy}" x2="${L}" y2="${yy}" stroke="#c7270d" stroke-width="0.7" opacity="0.65"/>`;
+  }
+  for(let q=aTmin;q<=topEquiv+0.001;q+=10){
+    const yy=yT(q);
+    const zero=(q===0);
+    g+=`<line x1="${L}" y1="${yy}" x2="${R}" y2="${yy}" stroke="${zero?'#7d838b':'#cdd2d9'}" stroke-width="${zero?1.5:1}"/>`;
+    if(q<=aTmax+0.001){
+      g+=`<line x1="${L-6}" y1="${yy}" x2="${L}" y2="${yy}" stroke="#c7270d" stroke-width="1.2"/>`;
+      g+=`<text x="${L-10}" y="${yy+5}" text-anchor="end" font-size="15" fill="#c7270d">${q}</text>`;
+    }
+  }
+  for(let i=0;i<=12;i++){
+    const xx=L+slot*i;
+    g+=`<line x1="${xx}" y1="${TOP}" x2="${xx}" y2="${BOT}" stroke="#eaedf1" stroke-width="0.6"/>`;
+  }
+  for(let pv=0;pv<=aPmax+0.001;pv+=2){
+    if(pv%20===0)continue;
+    const yy=yP(pv);
+    g+=`<line x1="${R}" y1="${yy}" x2="${R+3}" y2="${yy}" stroke="#0073bc" stroke-width="0.7" opacity="0.65"/>`;
+  }
+  for(let pv=0;pv<=aPmax+0.001;pv+=20){
+    const yy=yP(pv);
+    g+=`<line x1="${R}" y1="${yy}" x2="${R+6}" y2="${yy}" stroke="#0073bc" stroke-width="1.2"/>`;
+    g+=`<text x="${R+10}" y="${yy+5}" font-size="15" fill="#0073bc">${pv}</text>`;
+  }
+  const bw=slot*0.6;
+  for(let i=0;i<12;i++){
+    const bx=X(i)-bw/2,by=yP(P[i]);
+    g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${y0-by}" fill="rgba(0,115,188,0.45)" stroke="#0073bc" stroke-width="1"/>`;
+  }
+  const pts=T.map((t,i)=>`${X(i)},${yT(t)}`).join(' ');
+  g+=`<polyline points="${pts}" fill="none" stroke="#c7270d" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  T.forEach((t,i)=>{g+=`<circle cx="${X(i)}" cy="${yT(t)}" r="3.2" fill="#c7270d"/>`;});
+  MONTHS_SHORT.forEach((m,i)=>{g+=`<text x="${X(i)}" y="${BOT+24}" text-anchor="middle" font-size="17" fill="#1d1d1b">${m}</text>`;});
+  g+=`<text x="${L-32}" y="${TOP-10}" font-size="17" fill="#c7270d" font-weight="bold">°C</text>`;
+  g+=`<text x="${R+6}" y="${TOP-10}" font-size="17" fill="#0073bc" font-weight="bold">mm</text>`;
+  g+=`<text x="${L}" y="30" font-size="23" font-weight="bold" fill="#1d1d1b">${d.name} (${d.country})</text>`;
+  g+=`<text x="${L}" y="55" font-size="16" fill="#1d1d1b">${d.coords} · ${d.alt} m ü. M.</text>`;
+  g+=`<text x="${L}" y="84" font-size="17" fill="#c7270d" font-weight="bold">Ø T: ${de(s.mean)} °C</text>`;
+  g+=`<text x="${R+40}" y="84" text-anchor="end" font-size="17" fill="#0073bc" font-weight="bold">N: ${thousand(s.sum)} mm</text>`;
+
+  return `<svg class="climate" viewBox="0 0 600 552" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="600" height="552" fill="#fbfbee"/>${g}</svg>`;
+}
+
+/* ===================== BEREICH 2 · KORREKTHEITSPRÜFUNG ===================== */
+function b2Correct(b){
+  const T=DATA_LUX.temps,P=DATA_LUX.precip;
+  return {
+    okName:norm(b.header.name)==='luxemburg',
+    okCoords:coordsNorm(b.header.coords)===coordsNorm(DATA_LUX.coords),
+    okAlt:parseDec(b.header.alt)===334,
+    okMean:!isNaN(parseDec(b.header.meanT))&&Math.abs(parseDec(b.header.meanT)-DATA_LUX.meanT)<=0.3,
+    okSum:parseDec(b.header.sumP)===DATA_LUX.sumP,
+    okTScale:T_GRID.map((v,i)=>parseDec(b.tScale[i])===v),
+    okPScale:P_GRID.map((v,i)=>parseDec(b.pScale[i])===v),
+    okMonths:b.months.map((m,i)=>norm(m)===norm(MONTHS_SHORT[i])),
+    okTemps:b.userTemps.map((t,i)=>t!=null&&t===T[i]),
+    okPrecip:b.userPrecip.map((p,i)=>p!=null&&Math.abs(p-P[i])<=3)
+  };
+}
+
+/* ===================== BEREICH 2 · STUDENT-DIAGRAMM ===================== */
+function buildStudentDiagram(b){
+  const c=b2Correct(b);
+  const L=86,R=556,TOP=120,BOT=500,W=640,H=584,slot=(R-L)/12;
+  const X=i=>L+slot*(i+0.5);
+  const botEquiv=0,topEquiv=40,span=40,aTmax=20,aPmax=80;
+  const yE=e=>BOT-(e-botEquiv)/span*(BOT-TOP);
+  const yT=t=>yE(t), yP=p=>yE(p/2), y0=yE(0);
+  const inS='width:100%;height:100%;box-sizing:border-box;border:2px solid #3f6fb5;border-radius:6px;text-align:center;font-family:inherit;padding:1px 2px;background:#fff;color:#27324a;';
+  const fo=(x,y,w,h,inner)=>`<foreignObject x="${x}" y="${y}" width="${w}" height="${h}">${inner}</foreignObject>`;
+  let g='';
+
+  g+=`<rect x="${L}" y="${TOP}" width="${R-L}" height="${BOT-TOP}" fill="#fff" stroke="#1d1d1b" stroke-width="1"/>`;
+  for(let i=0;i<=12;i++){const xx=L+slot*i;g+=`<line x1="${xx}" y1="${TOP}" x2="${xx}" y2="${BOT}" stroke="#dfe3ea" stroke-width="1"/>`;}
+
+  /* horizontale Gitterlinien an den mm-Positionen (Obermenge) */
+  P_GRID.forEach(pv=>{
+    const yy=yP(pv),zero=(pv===0);
+    g+=`<line x1="${L}" y1="${yy}" x2="${R}" y2="${yy}" stroke="${zero?'#7d838b':'#cdd2d9'}" stroke-width="${zero?1.5:1}"/>`;
+  });
+
+  /* Einheiten (innen oben, kollisionsfrei) */
+  g+=`<text x="${L+6}" y="${TOP+16}" font-size="15" fill="#c7270d" font-weight="bold">°C</text>`;
+  g+=`<text x="${R-8}" y="${TOP+16}" text-anchor="end" font-size="15" fill="#0073bc" font-weight="bold">mm</text>`;
+
+  /* °C-Skala: 3 Felder links */
+  T_GRID.forEach((v,i)=>{
+    const yy=yT(v);
+    g+=`<line x1="${L-6}" y1="${yy}" x2="${L}" y2="${yy}" stroke="#c7270d" stroke-width="1.2"/>`;
+    if(c.okTScale[i]){
+      g+=`<text x="${L-12}" y="${yy+5}" text-anchor="end" font-size="15" fill="#c7270d" font-weight="bold">${v}</text>`;
+    }else{
+      g+=fo(L-58,yy-17,48,34,`<input data-fo="t${i}" value="${escapeHtml(b.tScale[i])}" placeholder="?" inputmode="numeric" style="${inS}font-size:13px;"/>`);
+    }
+  });
+  /* mm-Skala: 5 Felder rechts */
+  P_GRID.forEach((v,i)=>{
+    const yy=yP(v);
+    g+=`<line x1="${R}" y1="${yy}" x2="${R+6}" y2="${yy}" stroke="#0073bc" stroke-width="1.2"/>`;
+    if(c.okPScale[i]){
+      g+=`<text x="${R+12}" y="${yy+5}" font-size="15" fill="#0073bc" font-weight="bold">${v}</text>`;
+    }else{
+      g+=fo(R+10,yy-17,50,34,`<input data-fo="p${i}" value="${escapeHtml(b.pScale[i])}" placeholder="?" inputmode="numeric" style="${inS}font-size:13px;"/>`);
+    }
+  });
+
+  /* ---- Kopf-Eingabefelder ---- */
+  if(c.okName){g+=`<text x="${L}" y="30" font-size="22" font-weight="bold" fill="#1d1d1b">${escapeHtml(b.header.name)}</text>`;}
+  else{g+=fo(L-2,8,250,34,`<input data-fo="name" value="${escapeHtml(b.header.name)}" placeholder="Name" style="${inS}text-align:left;font-size:18px;font-weight:700;"/>`);}
+
+  g+=`<text x="${L+140}" y="62" font-size="15" fill="#1d1d1b">·</text>`;
+  g+=`<text x="${L+226}" y="62" font-size="15" fill="#1d1d1b">m ü. M.</text>`;
+  if(c.okCoords){g+=`<text x="${L}" y="62" font-size="15" fill="#1d1d1b">${escapeHtml(b.header.coords)}</text>`;}
+  else{g+=fo(L-2,42,134,34,`<input data-fo="coords" value="${escapeHtml(b.header.coords)}" placeholder="Koordinaten" style="${inS}text-align:left;font-size:13px;"/>`);}
+  if(c.okAlt){g+=`<text x="${L+152}" y="62" font-size="15" fill="#1d1d1b">${escapeHtml(b.header.alt)}</text>`;}
+  else{g+=fo(L+150,42,72,34,`<input data-fo="alt" value="${escapeHtml(b.header.alt)}" placeholder="Höhe" inputmode="numeric" style="${inS}font-size:13px;"/>`);}
+
+  g+=`<text x="${L}" y="98" font-size="15" fill="#c7270d" font-weight="bold">Ø T:</text>`;
+  if(c.okMean){g+=`<text x="${L+42}" y="98" font-size="15" fill="#c7270d" font-weight="bold">${escapeHtml(b.header.meanT)} °C</text>`;}
+  else{g+=fo(L+38,76,54,34,`<input data-fo="meanT" value="${escapeHtml(b.header.meanT)}" placeholder="Ø" inputmode="decimal" style="${inS}font-size:13px;"/>`);g+=`<text x="${L+96}" y="98" font-size="15" fill="#c7270d" font-weight="bold">°C</text>`;}
+
+  g+=`<text x="${R-122}" y="98" font-size="15" fill="#0073bc" font-weight="bold">N:</text>`;
+  if(c.okSum){g+=`<text x="${R}" y="98" text-anchor="end" font-size="15" fill="#0073bc" font-weight="bold">${escapeHtml(b.header.sumP)} mm</text>`;}
+  else{g+=fo(R-98,76,58,34,`<input data-fo="sumP" value="${escapeHtml(b.header.sumP)}" placeholder="Σ" inputmode="numeric" style="${inS}font-size:13px;"/>`);g+=`<text x="${R}" y="98" text-anchor="end" font-size="15" fill="#0073bc" font-weight="bold">mm</text>`;}
+
+  /* ---- Balken & Kurve (feste Skala → jederzeit zeichenbar) ---- */
+  const bw=slot*0.6;
+  b.userPrecip.forEach((p,i)=>{
+    if(p==null)return;
+    const bx=X(i)-bw/2,by=yP(p);
+    let fill='rgba(0,115,188,0.45)',stroke='#0073bc';
+    if(b.check){const ok=c.okPrecip[i];stroke=ok?'#2a9d8f':'#e4572e';fill=ok?'rgba(42,157,143,0.30)':'rgba(228,87,46,0.25)';}
+    g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${y0-by}" fill="${fill}" stroke="${stroke}" stroke-width="${b.check?2:1}"/>`;
+    g+=`<text x="${X(i)}" y="${by-4}" text-anchor="middle" font-size="11" fill="#0073bc">${p}</text>`;
+  });
+  const placed=[];
+  b.userTemps.forEach((t,i)=>{if(t!=null)placed.push(`${X(i)},${yT(t)}`);});
+  if(placed.length>1)g+=`<polyline points="${placed.join(' ')}" fill="none" stroke="#c7270d" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  b.userTemps.forEach((t,i)=>{
+    if(t==null)return;
+    let col=b.check?(c.okTemps[i]?'#2a9d8f':'#e4572e'):'#c7270d';
+    g+=`<circle cx="${X(i)}" cy="${yT(t)}" r="4.5" fill="${col}"/>`;
+    g+=`<text x="${X(i)}" y="${yT(t)-9}" text-anchor="middle" font-size="11" fill="${col}" font-weight="bold">${de(t)}</text>`;
+  });
+
+  /* ---- Monatsbuchstaben (unten, mit viel Platz) ---- */
+  for(let i=0;i<12;i++){
+    if(c.okMonths[i]){g+=`<text x="${X(i)}" y="${BOT+32}" text-anchor="middle" font-size="17" fill="#1d1d1b">${escapeHtml(b.months[i])}</text>`;}
+    else{g+=fo(X(i)-16,BOT+10,32,34,`<input data-fo="m${i}" value="${escapeHtml(b.months[i])}" maxlength="2" style="${inS}font-size:14px;padding:0;"/>`);}
+  }
+
+  return `<svg class="climate" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="${W}" height="${H}" fill="#fbfbee"/>${g}</svg>`;
+}
+
+/* ===================== REYKJAVÍK MIT PULSIERENDEN PUNKTEN (Etappe 4 · Teil A) ===================== */
+const REYK_POINTS=[
+ {id:'name',  x:225,y:22, label:'Name der Klimastation'},
+ {id:'coords',x:120,y:50, label:'Koordinaten der Klimastation'},
+ {id:'alt',   x:198,y:50, label:'Höhe über dem Meeresspiegel'},
+ {id:'meanT', x:120,y:82, label:'Jahresmitteltemperatur'},
+ {id:'sumP',  x:558,y:82, label:'Jahresniederschlag'},
+ {id:'scaleC',x:70, y:250,label:'Skala für Temperaturwerte in °C'},
+ {id:'scaleM',x:580,y:250,label:'Skala für Niederschlagswerte in mm'},
+ {id:'bars',  x:458,y:292,label:'Niederschlagssäulen'},
+ {id:'curve', x:184,y:433,label:'Temperaturkurve'},
+ {id:'months',x:300,y:536,label:'Anfangsbuchstaben der Monate'}
+];
+function buildReykjavikLabeled(solved){
+  const base=buildDiagram(DATA.reykjavik);
+  let overlay='';
+  REYK_POINTS.forEach(p=>{
+    if(solved.has(p.id)){
+      overlay+=`<g>
+        <circle cx="${p.x}" cy="${p.y}" r="11" fill="#2a9d8f" stroke="#fff" stroke-width="2"/>
+        <text x="${p.x}" y="${p.y+4}" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff" pointer-events="none">✓</text>
+      </g>`;
+    }else{
+      overlay+=`<g class="lblpt" data-id="${p.id}">
+        <circle cx="${p.x}" cy="${p.y}" r="16" fill="#7c3aed" fill-opacity="0" pointer-events="all" style="cursor:pointer"/>
+        <circle cx="${p.x}" cy="${p.y}" r="8" fill="#7c3aed" stroke="#fff" stroke-width="2" pointer-events="none">
+          <animate attributeName="r" values="6;13;6" dur="1.4s" repeatCount="indefinite"/>
+          <animate attributeName="fill-opacity" values="1;0.4;1" dur="1.4s" repeatCount="indefinite"/>
+        </circle>
+      </g>`;
+    }
+  });
+  return base.replace('</svg>',overlay+'</svg>');
+}
+
+/* ===================== 1:2-VERHÄLTNIS-GRAFIK (Etappe 3) ===================== */
+function buildRatioGraphic(){
+  const X1=95,X2=305,TOP=58,BOT=236;
+  const stepY=(BOT-TOP)/3;
+  const cVals=[0,10,20,30],mVals=[0,20,40,60];
+  let g='';
+  g+=`<line x1="${X1}" y1="${TOP-14}" x2="${X1}" y2="${BOT}" stroke="#c7270d" stroke-width="2.5"/>`;
+  g+=`<line x1="${X2}" y1="${TOP-14}" x2="${X2}" y2="${BOT}" stroke="#0073bc" stroke-width="2.5"/>`;
+  for(let k=0;k<4;k++){
+    const y=BOT-k*stepY;
+    g+=`<line x1="${X1}" y1="${y}" x2="${X2}" y2="${y}" stroke="#9aa3b0" stroke-width="1.3" stroke-dasharray="5 5"/>`;
+    g+=`<line x1="${X1-7}" y1="${y}" x2="${X1}" y2="${y}" stroke="#c7270d" stroke-width="2"/>`;
+    g+=`<line x1="${X2}" y1="${y}" x2="${X2+7}" y2="${y}" stroke="#0073bc" stroke-width="2"/>`;
+    g+=`<text x="${X1-11}" y="${y+5}" text-anchor="end" font-size="15" fill="#c7270d" font-weight="bold">${cVals[k]}</text>`;
+    g+=`<text x="${X2+11}" y="${y+5}" font-size="15" fill="#0073bc" font-weight="bold">${mVals[k]}</text>`;
+    if(k>0)g+=`<text x="${(X1+X2)/2}" y="${y-7}" text-anchor="middle" font-size="12" fill="#67738c">${cVals[k]} °C ↔ ${mVals[k]} mm</text>`;
+  }
+  g+=`<text x="${X1}" y="${TOP-24}" text-anchor="middle" font-size="14" fill="#c7270d" font-weight="bold">°C</text>`;
+  g+=`<text x="${X2}" y="${TOP-24}" text-anchor="middle" font-size="14" fill="#0073bc" font-weight="bold">mm</text>`;
+  g+=`<text x="200" y="270" text-anchor="middle" font-size="13" fill="#27324a" font-weight="bold">Verhältnis 1 : 2 — jede Höhe gilt für beide Werte gleichzeitig</text>`;
+  return `<svg viewBox="0 0 400 290" style="width:100%;max-width:420px;height:auto;display:block;margin:0 auto"><rect width="400" height="290" fill="#fbfbee"/>${g}</svg>`;
+}
+
+/* ===================== PALERMO INTERAKTIV (Etappe 3) ===================== */
+function buildPalermoTask(selected,reveal){
+  const d=DATA.palermo,T=d.temps,P=d.precip;
+  const tMin=Math.min(...T),tMax=Math.max(...T),pMax=Math.max(...P);
+  let aTmin=Math.floor(Math.min(0,tMin)/10)*10;
+  let aTmax=Math.ceil(tMax/10)*10; if(aTmax<=aTmin)aTmax=aTmin+10;
+  let aPmax=Math.ceil(pMax/20)*20; if(aPmax<20)aPmax=20;
+  const topEquiv=Math.max(aTmax,aPmax/2),botEquiv=aTmin,span=topEquiv-botEquiv;
+  const L=86,R=556,TOP=118,BOT=512,slot=(R-L)/12;
+  const X=i=>L+slot*(i+0.5);
+  const yE=e=>BOT-(e-botEquiv)/span*(BOT-TOP);
+  const yT=t=>yE(t),yP=p=>yE(p/2),y0=yE(0);
+  let g='';
+  g+=`<rect x="${L}" y="${TOP}" width="${R-L}" height="${BOT-TOP}" fill="#ffffff" stroke="#1d1d1b" stroke-width="1"/>`;
+
+  for(let q=Math.ceil(aTmin);q<=aTmax+0.001;q+=1){if(q%10===0)continue;const yy=yT(q);g+=`<line x1="${L-3}" y1="${yy}" x2="${L}" y2="${yy}" stroke="#c7270d" stroke-width="0.7" opacity="0.65"/>`;}
+  for(let q=aTmin;q<=topEquiv+0.001;q+=10){const yy=yT(q),zero=(q===0);g+=`<line x1="${L}" y1="${yy}" x2="${R}" y2="${yy}" stroke="${zero?'#7d838b':'#cdd2d9'}" stroke-width="${zero?1.5:1}"/>`;if(q<=aTmax+0.001){g+=`<line x1="${L-6}" y1="${yy}" x2="${L}" y2="${yy}" stroke="#c7270d" stroke-width="1.2"/>`;g+=`<text x="${L-10}" y="${yy+5}" text-anchor="end" font-size="15" fill="#c7270d">${q}</text>`;}}
+  for(let i=0;i<=12;i++){const xx=L+slot*i;g+=`<line x1="${xx}" y1="${TOP}" x2="${xx}" y2="${BOT}" stroke="#eaedf1" stroke-width="0.6"/>`;}
+  for(let pv=0;pv<=aPmax+0.001;pv+=2){if(pv%20===0)continue;const yy=yP(pv);g+=`<line x1="${R}" y1="${yy}" x2="${R+3}" y2="${yy}" stroke="#0073bc" stroke-width="0.7" opacity="0.65"/>`;}
+  for(let pv=0;pv<=aPmax+0.001;pv+=20){const yy=yP(pv);g+=`<line x1="${R}" y1="${yy}" x2="${R+6}" y2="${yy}" stroke="#0073bc" stroke-width="1.2"/>`;g+=`<text x="${R+10}" y="${yy+5}" font-size="15" fill="#0073bc">${pv}</text>`;}
+
+  const bw=slot*0.6;
+  for(let i=0;i<12;i++){
+    const bx=X(i)-bw/2,by=yP(P[i]);
+    let fill='rgba(0,115,188,0.45)',stroke='#0073bc';
+    if(reveal&&reveal.set.has(i)){
+      if(reveal.color==='yellow'){fill='#f5c518';stroke='#b8870a';}
+      else{fill='#0b3d91';stroke='#06245c';}
+    }
+    g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${y0-by}" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
+  }
+  const pts=T.map((t,i)=>`${X(i)},${yT(t)}`).join(' ');
+  g+=`<polyline points="${pts}" fill="none" stroke="#c7270d" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  T.forEach((t,i)=>{g+=`<circle cx="${X(i)}" cy="${yT(t)}" r="3.2" fill="#c7270d"/>`;});
+  MONTHS_SHORT.forEach((m,i)=>{g+=`<text x="${X(i)}" y="${BOT+24}" text-anchor="middle" font-size="17" fill="#1d1d1b">${m}</text>`;});
+  g+=`<text x="${L-32}" y="${TOP-10}" font-size="17" fill="#c7270d" font-weight="bold">°C</text>`;
+  g+=`<text x="${R+6}" y="${TOP-10}" font-size="17" fill="#0073bc" font-weight="bold">mm</text>`;
+  g+=`<text x="${L}" y="30" font-size="23" font-weight="bold" fill="#1d1d1b">${d.name} (${d.country})</text>`;
+  g+=`<text x="${L}" y="55" font-size="16" fill="#1d1d1b">${d.coords} · ${d.alt} m ü. M.</text>`;
+
+  if(!reveal){
+    selected.forEach(i=>{const bx=L+slot*i;g+=`<rect x="${bx+1.5}" y="${TOP+1.5}" width="${slot-3}" height="${BOT-TOP-3}" fill="none" stroke="#1d1d1b" stroke-width="2.5"/>`;});
+    for(let i=0;i<12;i++){const bx=L+slot*i;g+=`<rect class="monthcol" data-idx="${i}" x="${bx}" y="${TOP}" width="${slot}" height="${BOT-TOP}" fill="transparent" style="cursor:pointer"/>`;}
+  }
+
+  return `<svg class="climate" viewBox="0 0 600 552" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="600" height="552" fill="#fbfbee"/>${g}</svg>`;
+}
+
+/* ===================== QUIZ-ENGINE ===================== */
+function renderQuiz(host,pool,count,onPass){
+  host.innerHTML="";
+  const head=document.createElement("div");head.className="boxhead";head.textContent="📝 Quiz";
+  const prog=document.createElement("div");prog.className="progress";
+  const body=document.createElement("div");
+  host.append(head,prog,body);
+  let bag=shuffle(pool.slice()),lastQ=null,slot=0,usedHelp=false;
+  function draw(){if(bag.length===0)bag=shuffle(pool.slice());let q=bag.shift();
+    if(q===lastQ&&bag.length){bag.push(q);q=bag.shift();}lastQ=q;return q;}
+  function next(){
+    if(slot>=count){prog.textContent="Quiz abgeschlossen ✓";
+      body.innerHTML='<div class="feedback ok">🎉 Geschafft! Alle Fragen richtig beantwortet.</div>';onPass&&onPass(usedHelp);return;}
+    render(draw(),0);
+  }
+  function render(q,attempt){
+    prog.textContent="Frage "+(slot+1)+" von "+count;
+    body.innerHTML='<div class="qtext">'+q.q+'</div>';
+    let sel=null,inp=null;
+    if(q.type==="input"){inp=document.createElement("input");inp.type="text";inp.placeholder="Antwort…";body.appendChild(inp);}
+    else{q.options.forEach((op,oi)=>{const o=document.createElement("label");o.className="opt";o.textContent=op;
+      o.onclick=()=>{[...body.querySelectorAll(".opt")].forEach(c=>c.classList.remove("sel"));o.classList.add("sel");sel=oi;};body.appendChild(o);});}
+    const fb=document.createElement("div");fb.className="feedback";
+    const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Antworten";
+    body.append(btn,fb);
+    btn.onclick=()=>{
+      let ok;
+      if(q.type==="input")ok=q.answer.some(a=>norm(a)===norm(inp.value));
+      else ok=sel===q.answer;
+      if(ok){
+        fb.className="feedback ok";fb.textContent="Richtig!";
+        if(q.type!=="input"&&sel!=null)body.querySelectorAll(".opt")[sel].classList.add("correct");
+        btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>{slot++;next();};
+      }else{
+        if(q.type!=="input"&&sel!=null)body.querySelectorAll(".opt")[sel].classList.add("wrong");
+        attempt++;usedHelp=true;
+        if(attempt===1){fb.className="feedback hint";fb.textContent="💡 "+q.hint+" – versuch es nochmal.";}
+        else{fb.className="feedback no";fb.textContent="Leider wieder falsch. Du bekommst eine neue Frage…";
+          setTimeout(()=>render(draw(),0),1100);}
+      }
+    };
+  }
+  next();
+}
+
+/* ===================== AUFGABEN-SEQUENZ ===================== */
+function renderTasks(host,tasks,onDone){
+  host.innerHTML="";
+  const head=document.createElement("div");head.className="boxhead";head.textContent="❓ Aufgaben";
+  const prog=document.createElement("div");prog.className="progress";
+  const body=document.createElement("div");
+  host.append(head,prog,body);
+  let i=0,usedHelp=false;
+  function show(){
+    if(i>=tasks.length){prog.textContent="Alle Aufgaben gelöst ✓";
+      body.innerHTML='<div class="feedback ok">Stark – du hast alle Ableseaufgaben geschafft!</div>';onDone&&onDone(usedHelp);return;}
+    const t=tasks[i];let attempt=0;
+    prog.textContent="Aufgabe "+(i+1)+" von "+tasks.length;
+    body.innerHTML='<div class="qtext">'+(i+1)+". "+t.q+'</div>'+(t.html||"");
+
+    /* ± Umschalt-Button für Aufgaben mit möglichen negativen Werten
+       (löst das Tablet-Tastatur-Problem: die Zahlentastatur hat oft kein Minus) */
+    if(t.neg){
+      const inp=body.querySelector('input[type=text],input[type=number]');
+      if(inp){
+        const wrap=document.createElement('span');
+        wrap.className='negwrap';
+        inp.parentNode.insertBefore(wrap,inp);
+        const tog=document.createElement('button');
+        tog.type='button';tog.className='btn ghost negbtn';tog.textContent='+/−';
+        tog.title='Vorzeichen umschalten (für negative Werte)';
+        tog.onclick=()=>{
+          let v=(inp.value||'').trim();
+          if(v.startsWith('-'))inp.value=v.slice(1);
+          else inp.value='-'+v;
+          inp.focus();
+        };
+        wrap.appendChild(tog);
+        wrap.appendChild(inp);
+      }
+    }
+
+    const fb=document.createElement("div");fb.className="feedback";
+    const btn=document.createElement("button");btn.className="btn accent";btn.textContent="Prüfen";
+    body.append(btn,fb);
+    btn.onclick=()=>{
+      const ok=t.check(body);
+      if(ok){fb.className="feedback ok";fb.textContent=t.success||"Richtig!";
+        btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>{i++;show();};}
+      else{attempt++;usedHelp=true;
+        if(attempt===1){fb.className="feedback hint";fb.textContent="💡 "+t.hint;}
+        else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis nochmal an: 💡 "+t.hint;}}
+    };
+  }
+  show();
+}
+
+/* ===================== FRAGEN-POOLS ===================== */
+const POOL_E1=[
+ {q:"Was zeigt ein Klimadiagramm?",type:"mc",options:["Das Wetter eines einzelnen Tages","Durchschnittliche Temperatur und Niederschlag im Jahresverlauf","Die Einwohnerzahl einer Stadt"],answer:1,hint:"Es fasst viele Jahre zusammen, nicht einen Tag"},
+ {q:"Welche Farbe wird für die <b>Temperatur</b> verwendet?",type:"mc",options:["Blau","Grün","Rot"],answer:2,hint:"Denk an Wärme"},
+ {q:"Welche Farbe wird für den <b>Niederschlag</b> verwendet?",type:"mc",options:["Rot","Blau","Grün"],answer:1,hint:"Denk an Wasser"},
+ {q:"Kann die durchschnittliche Monatstemperatur <b>negativ</b> sein?",type:"mc",options:["Ja, z. B. im Winter im Hochgebirge","Nein, niemals"],answer:0,hint:"Ein Mittelwert kann unter 0 °C liegen"},
+ {q:"Kann der Niederschlag <b>negativ</b> sein?",type:"mc",options:["Nein, Niederschlag ist nie negativ","Ja, im Winter"],answer:0,hint:"Man kann keine negative Wassermenge haben"},
+ {q:"Wie erhält man den <b>Jahresniederschlag</b>?",type:"mc",options:["Durchschnitt der 12 Monate","Summe aller Monatsniederschläge","Der höchste Monatswert"],answer:1,hint:"Alle Monate werden addiert"},
+ {q:"Wie berechnet man die <b>Jahresdurchschnittstemperatur</b>?",type:"mc",options:["Summe der 12 Werte geteilt durch 12","Summe aller 12 Werte","Höchster minus niedrigster Wert"],answer:0,hint:"Es ist ein Mittelwert"},
+ {q:"Womit wird die <b>Temperatur</b> dargestellt?",type:"mc",options:["Als blaue Balken","Als rote Kurve"],answer:1,hint:"Eine durchgehende Linie in Rot"},
+ {q:"Womit wird der <b>Niederschlag</b> dargestellt?",type:"mc",options:["Als rote Kurve","Als blaue Balken"],answer:1,hint:"Säulen pro Monat in Blau"},
+ {q:"Aus wie vielen Monaten besteht ein Klimadiagramm?",type:"input",answer:["12","zwölf","12 monate"],hint:"Ein ganzes Jahr"}
+];
+/* Etappe 2 dreht sich um die KLIMATABELLE und das RECHNEN (Mittelwert, Summe …) */
+const POOL_E2=[
+ {q:"Wie berechnest du die <b>Jahresdurchschnittstemperatur</b> aus einer Klimatabelle?",type:"mc",options:["Alle 12 Monatswerte addieren und durch 12 teilen","Alle 12 Monatswerte einfach addieren","Den höchsten und den niedrigsten Wert addieren"],answer:0,hint:"Ein Mittelwert: Summe geteilt durch die Anzahl der Werte."},
+ {q:"Durch welche Zahl <b>teilst</b> du, um die durchschnittliche Jahrestemperatur zu berechnen?",type:"input",answer:["12","zwölf"],hint:"So viele Monate hat ein Jahr."},
+ {q:"Wie erhältst du den <b>Jahresniederschlag</b> aus der mm-Zeile?",type:"mc",options:["Den Durchschnitt der 12 Werte bilden","Alle 12 Monatswerte addieren","Nur den höchsten Monatswert nehmen"],answer:1,hint:"Der Jahresniederschlag ist die Summe – nicht der Durchschnitt."},
+ {q:"Du addierst die 12 Niederschlagswerte. Teilst du danach noch durch 12?",type:"mc",options:["Ja, immer","Nein – beim Jahresniederschlag wird nur addiert"],answer:1,hint:"Geteilt wird nur bei der Durchschnittstemperatur."},
+ {q:"Die Summe der 12 Monatstemperaturen beträgt 108 °C. Wie hoch ist die Jahresdurchschnittstemperatur (in °C)?",type:"input",answer:["9","9°c","9grad","9°"],hint:"108 geteilt durch 12."},
+ {q:"Die Summe der 12 Monatstemperaturen beträgt 60 °C. Wie hoch ist der Durchschnitt (in °C)?",type:"input",answer:["5","5°c","5grad","5°"],hint:"60 ÷ 12 = ?"},
+ {q:"Eine Klimatabelle hat zwei Datenzeilen. Was steht in der Zeile mit der Einheit <b>°C</b>?",type:"mc",options:["Die Niederschlagsmengen","Die Durchschnittstemperaturen der Monate","Die Höhe über dem Meer"],answer:1,hint:"°C ist die Einheit der Temperatur."},
+ {q:"Wie viele Monatswerte stehen in <b>einer</b> Zeile der Klimatabelle?",type:"input",answer:["12","zwölf"],hint:"Für jeden Monat ein Wert."},
+ {q:"Berlin: höchste Monatstemperatur 18,6 °C, niedrigste −0,9 °C. Wie findest du diese Werte in der Tabelle?",type:"mc",options:["Den größten und den kleinsten Wert in der °C-Zeile suchen","Alle Werte addieren","Die Werte durch 12 teilen"],answer:0,hint:"Du musst nur in der Temperaturzeile suchen, nicht rechnen."},
+ {q:"Runden: 8,76 °C auf <b>eine</b> Stelle nach dem Komma gerundet ergibt …",type:"mc",options:["8,7 °C","8,8 °C","9,0 °C"],answer:1,hint:"Die zweite Nachkommastelle (6) rundet auf."},
+ {q:"Kann ein Wert in der <b>°C-Zeile</b> der Tabelle negativ sein?",type:"mc",options:["Ja, im Winter kann die Durchschnittstemperatur unter 0 °C liegen","Nein, niemals"],answer:0,hint:"Denk an kalte Wintermonate."},
+ {q:"Kann ein Wert in der <b>mm-Zeile</b> (Niederschlag) negativ sein?",type:"mc",options:["Ja","Nein, Niederschlag ist nie negativ"],answer:1,hint:"Eine negative Wassermenge gibt es nicht."}
+];
+const POOL_E3=[
+ {q:"In welchem Verhältnis stehen die beiden Achsen im Walter-Lieth-Diagramm?",type:"mc",options:["1 : 1 (1 °C = 1 mm)","1 : 2 (1 °C = 2 mm)","1 : 10 (1 °C = 10 mm)"],answer:1,hint:"1 °C entspricht doppelt so vielen Millimetern"},
+ {q:"Wann ist ein Monat <b>arid</b> (trocken)?",type:"mc",options:["Wenn die Temperaturkurve ÜBER der Niederschlagssäule liegt","Wenn die Temperaturkurve UNTER der Niederschlagssäule liegt"],answer:0,hint:"Arid = trocken = es verdunstet mehr als es regnet"},
+ {q:"Wann ist ein Monat <b>humid</b> (feucht)?",type:"mc",options:["Wenn die Temperaturkurve ÜBER der Säule liegt","Wenn die Temperaturkurve UNTER der Säule liegt"],answer:1,hint:"Humid = feucht = genügend Wasser"},
+ {q:"10 °C liegen im Diagramm auf gleicher Höhe wie …",type:"mc",options:["5 mm","10 mm","20 mm"],answer:2,hint:"1 °C = 2 mm, also 10 °C = 20 mm"},
+ {q:"Was bedeutet 'arid'?",type:"mc",options:["Feucht","Trocken","Kalt"],answer:1,hint:"Es geht um Wassermangel"},
+ {q:"Was bedeutet 'humid'?",type:"mc",options:["Trocken","Heiß","Feucht"],answer:2,hint:"Genug Wasser vorhanden"},
+ {q:"Welche Farbe haben in dieser Aufgabe die Balken der ariden Monate?",type:"mc",options:["Gelb","Grün","Schwarz"],answer:0,hint:"Trocken/warm wurde gelb markiert"},
+ {q:"20 °C liegen auf gleicher Höhe wie … mm?",type:"input",answer:["40","40mm","40 mm"],hint:"20 × 2"}
+];
+
+/* ===================== ERGEBNIS-TRACKING ===================== */
+const ALL_TASKS=[
+ {id:'e1quiz', label:'Etappe 1 · Quiz'},
+ {id:'e2a1',   label:'Etappe 2 · Aufgabe 1 (Richtig einfärben)'},
+ {id:'e2a2',   label:'Etappe 2 · Aufgabe 2 (Jahreswerte berechnen)'},
+ {id:'e2a3',   label:'Etappe 2 · Aufgabe 3 (Daten ablesen)'},
+ {id:'e2quiz', label:'Etappe 2 · Quiz (Tabelle & Rechnen)'},
+ {id:'e3task', label:'Etappe 3 · Aride/humide Monate bestimmen'},
+ {id:'e3quiz', label:'Etappe 3 · Quiz'},
+ {id:'e4a',    label:'Etappe 4 · Teil A (Diagramm beschriften)'},
+ {id:'e4b',    label:'Etappe 4 · Teil B (Klimatabelle ablesen)'}
+];
+function recordResult(id,withHelp){
+  if(state.results[id]==='first')return; /* bestes Ergebnis behalten */
+  state.results[id]=withHelp?'help':'first';
+}
+
+/* ===================== STATE & NAV ===================== */
+const state={view:'start',etappe:1,done:{1:false,2:false,3:false,4:false},colors:{temp:null,precip:null},teacher:false,b2:null,results:{}};
+const main=document.getElementById('main');
+const nav=document.getElementById('nav');
+const homeBtn=document.getElementById('homeBtn');
+const pdfBtn=document.getElementById('pdfBtn');
+homeBtn.onclick=()=>{state.view='start';render();};
+pdfBtn.onclick=()=>window.print();
+
+function render(){
+  if(state.view==='start'){nav.style.display='none';homeBtn.style.display='none';pdfBtn.style.display='none';return renderStart();}
+  if(state.view==='b2'){nav.style.display='none';homeBtn.style.display='';pdfBtn.style.display='';return renderBereich2();}
+  /* Bereich 1 (Lernen) – PDF-Button hier IMMER ausgeblendet */
+  nav.style.display='flex';homeBtn.style.display='';pdfBtn.style.display='none';
+  buildNav();
+  if(state.etappe===1)renderEtappe1();
+  else if(state.etappe===2)renderEtappe2();
+  else if(state.etappe===3)renderEtappe3();
+  else if(state.etappe===5)renderResults();
+  else renderEtappe4();
+}
+function buildNav(){
+  nav.innerHTML="";
+  const items=[{n:'1 · Was ist das?',e:1},{n:'2 · Die Klimadaten',e:2},{n:'3 · Arid oder humid?',e:3},{n:'4 · Aufbau & Ablesen',e:4},{n:'📋 Ergebnisse',e:5}];
+  items.forEach(it=>{
+    const b=document.createElement("button");b.textContent=it.n;
+    const active=state.etappe===it.e;
+    b.style.color=active?'#fff':'var(--primary-d)';
+    b.style.background=active?'var(--primary)':'#eef4fc';
+    b.style.borderColor='var(--primary)';
+    if(state.done[it.e])b.classList.add("done");
+    let locked=false;
+    if(it.e===2&&!state.done[1]&&!state.teacher)locked=true;
+    if(it.e===3&&!state.done[2]&&!state.teacher)locked=true;
+    if(it.e===4&&!state.done[3]&&!state.teacher)locked=true;
+    if(locked)b.classList.add("locked");
+    b.onclick=()=>{if(locked)return;state.etappe=it.e;render();};
+    nav.appendChild(b);
+  });
+}
+
+/* ===================== START ===================== */
+function renderStart(){
+  main.innerHTML=`
+  <div class="card">
+    <div class="hero">
+      <span class="pill">Geografie · Lernreise</span>
+      <h1>Klimadiagramme verstehen</h1>
+      <p class="muted">Wähle einen Bereich, um zu starten.</p>
+    </div>
+    <div class="choice">
+      <div class="choice-card b1" id="goB1">
+        <div class="ico">📊</div>
+        <h2 style="margin-top:8px;color:var(--primary-d)">Bereich 1 · Lernen</h2>
+        <p>Schritt für Schritt: Aufbau, Zeichnen und Interpretieren eines Klimadiagramms – mit Aufgaben und Quiz.</p>
+        <span class="pill">4 Etappen verfügbar</span>
+      </div>
+      <div class="choice-card b2" id="goB2">
+        <div class="ico">✏️</div>
+        <h2 style="margin-top:8px;color:var(--primary-d)">Bereich 2 · Selbst erstellen</h2>
+        <p>Übertrage eine Klimatabelle direkt in dein eigenes Klimadiagramm – die Beschriftungen tippst du in die Felder im Diagramm.</p>
+        <span class="pill">Verfügbar</span>
+      </div>
+    </div>
+    <div class="teacher-zone">
+      <div class="tz-title">🔑 Lehrerzugang</div>
+      <div id="teacherArea"></div>
+    </div>
+  </div>`;
+  document.getElementById('goB1').onclick=()=>{state.view='b1';state.etappe=1;render();};
+  document.getElementById('goB2').onclick=()=>{state.view='b2';render();};
+  renderTeacherArea();
+}
+
+/* ===================== LEHRERZUGANG ===================== */
+function renderTeacherArea(){
+  const area=document.getElementById('teacherArea');
+  if(!area)return;
+  if(!state.teacher){
+    area.innerHTML=`
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center">
+        <input type="password" id="teacherCode" inputmode="numeric" placeholder="Code eingeben" style="width:160px">
+        <button class="btn ghost" id="teacherBtn">Freischalten</button>
+      </div>
+      <div class="feedback" id="teacherFb" style="text-align:center"></div>`;
+    const inp=document.getElementById('teacherCode');
+    const btn=document.getElementById('teacherBtn');
+    const fb=document.getElementById('teacherFb');
+    function tryLogin(){
+      if(inp.value.trim()==='4711'){state.teacher=true;renderTeacherArea();}
+      else{fb.className='feedback no';fb.textContent='✗ Falscher Code.';inp.value='';inp.focus();}
+    }
+    btn.onclick=tryLogin;
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+  }else{
+    area.innerHTML=`
+      <div class="feedback ok" style="text-align:center;margin-bottom:12px">👩‍🏫 Lehrermodus aktiv – direkter Sprung zu jedem Bereich:</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn" data-jump="1">→ Etappe 1 · Was ist das?</button>
+        <button class="btn" data-jump="2">→ Etappe 2 · Die Klimadaten</button>
+        <button class="btn" data-jump="3">→ Etappe 3 · Arid oder humid?</button>
+        <button class="btn" data-jump="4">→ Etappe 4 · Aufbau & Ablesen</button>
+        <button class="btn" data-jump="5">→ 📋 Ergebnisseite</button>
+        <button class="btn accent" data-b2>→ Bereich 2 · Selbst erstellen</button>
+      </div>
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn ghost" id="teacherLogout">Lehrermodus beenden</button>
+      </div>`;
+    area.querySelectorAll('[data-jump]').forEach(b=>{
+      b.onclick=()=>{state.view='b1';state.etappe=parseInt(b.dataset.jump,10);render();};
+    });
+    const b2b=area.querySelector('[data-b2]');
+    if(b2b)b2b.onclick=()=>{state.view='b2';render();};
+    document.getElementById('teacherLogout').onclick=()=>{state.teacher=false;renderTeacherArea();};
+  }
+}
+
+/* ===================== ETAPPE 1 ===================== */
+function renderEtappe1(){
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Etappe 1</div>
+    <h1>Was ist ein Klimadiagramm – und was zeigt es?</h1>
+    <p>Ein <b>Klimadiagramm</b> fasst das durchschnittliche Wetter (das <b>Klima</b>) eines Ortes über viele Jahre zusammen. Es zeigt zwei Dinge auf einen Blick:</p>
+    <div class="box temp"><h4>🌡️ Temperatur (°C) – <span class="temp-word">rote Kurve</span></h4>
+      Die <b>Durchschnittstemperatur</b> jedes Monats. Man misst die Temperatur täglich, bildet den Monatsmittelwert und mittelt über viele Jahre.
+      <p style="background:#fff;border-radius:10px;padding:8px 12px;margin-top:8px"><b>Wichtig:</b> Eine Durchschnittstemperatur kann <b>negativ</b> sein (z. B. −12 °C im Winter auf der Zugspitze).</p>
+    </div>
+    <div class="box precip"><h4>🌧️ Niederschlag (mm) – <span class="precip-word">blaue Balken</span></h4>
+      Die <b>Niederschlagsmenge</b> jedes Monats (Regen, Schnee …) in Millimetern.
+      <p style="background:#fff;border-radius:10px;padding:8px 12px;margin-top:8px"><b>Wichtig:</b> Der <b>Jahresniederschlag</b> ist die <b>Summe</b> aller 12 Monate. Niederschlag ist <b>nie negativ</b>.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Beispiel-Klimadiagramm</h2>
+    <p class="muted">Links die Temperatur (°C, rot), rechts der Niederschlag (mm, blau), unten die zwölf Monate. Wechsle die Station und beobachte, wie sich die Skalen an die Daten anpassen:</p>
+    <div class="selector" id="sel1"></div>
+    <div class="diagram-box" id="diaBox"></div>
+    <div class="legend">
+      <span class="lg"><span class="line"></span> Temperatur (Durchschnitt, °C)</span>
+      <span class="lg"><span class="bar"></span> Niederschlag (Summe je Monat, mm)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Beantworte das Quiz, um Etappe 2 freizuschalten</h2>
+    <div class="quizbox" id="quiz1"></div>
+    <div class="foot">
+      <span></span>
+      <button class="btn" id="next1" disabled>Weiter zu Etappe 2 →</button>
+    </div>
+  </div>
+  </div>`;
+
+  const sel=document.getElementById('sel1');
+  let cur='zugspitze';
+  ['zugspitze','berlin','palermo'].forEach(key=>{
+    const b=document.createElement('button');b.className='btn ghost';b.textContent=DATA[key].name;
+    b.onclick=()=>{cur=key;draw();[...sel.children].forEach(c=>{c.classList.add('ghost');});b.classList.remove('ghost');};
+    sel.appendChild(b);
+  });
+  function draw(){document.getElementById('diaBox').innerHTML=buildDiagram(DATA[cur]);}
+  sel.children[0].classList.remove('ghost');
+  draw();
+
+  const next1=document.getElementById('next1');
+  if(state.done[1]||state.teacher)next1.disabled=false;
+  next1.onclick=()=>{state.etappe=2;render();};
+  renderQuiz(document.getElementById('quiz1'),POOL_E1,5,(help)=>{
+    state.done[1]=true;recordResult('e1quiz',help);buildNav();next1.disabled=false;
+  });
+}
+
+/* ===================== ETAPPE 2 ===================== */
+function renderEtappe2(){
+  const d=DATA.berlin,s=stats(d);
+  const head=`<tr><th>&nbsp;</th>`+MONTHS_SHORT.map(m=>`<th>${m}</th>`).join('')+`<th>Jahr</th></tr>`;
+  const rowT=`<tr><td class="rowlbl" data-info="Diese Zeile zeigt die Durchschnittstemperaturen in °C.">°C</td>`+
+    d.temps.map((t,i)=>`<td class="data trow" data-info="Durchschnittstemperatur im ${MONTHS[i]}: ${de(t)} °C">${de(t)}</td>`).join('')+
+    `<td><input class="calc-input" id="meanT" inputmode="decimal" placeholder="Ø"></td></tr>`;
+  const rowP=`<tr><td class="rowlbl" data-info="Diese Zeile zeigt die Niederschlagsmengen in mm.">mm</td>`+
+    d.precip.map((p,i)=>`<td class="data prow" data-info="Niederschlag im ${MONTHS[i]}: ${p} mm">${p}</td>`).join('')+
+    `<td><input class="calc-input" id="sumP" inputmode="numeric" placeholder="Σ"></td></tr>`;
+
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Etappe 2</div>
+    <h1>Die Klimadaten</h1>
+    <p>Bevor man ein Klimadiagramm zeichnet, braucht man <b>Klimadaten</b> – meist als Tabelle. Hier die Daten von <b>${d.name}</b> (${d.coords}, ${d.alt} m ü. M.).</p>
+    <p class="muted">👉 Tippe/klicke auf eine beliebige Zelle, um zu erfahren, was sie bedeutet.</p>
+    <div style="overflow-x:auto"><table class="climate-table">${head}${rowT}${rowP}</table></div>
+    <div class="info-bar" id="infoBar">ℹ️ Hier erscheint die Erklärung zur angeklickten Zelle.</div>
+  </div>
+
+  <div class="card">
+    <h2>🎨 Aufgabe 1 · Richtig einfärben</h2>
+    <p>Merke dir die Regel: <span class="temp-word">Temperaturen immer rot</span>, <span class="precip-word">Niederschläge immer blau</span>. Färbe die beiden Zeilen passend ein.</p>
+    <div class="color-task">
+      <div class="color-ctrl">
+        <div style="font-weight:700;margin-bottom:8px">Temperaturzeile (°C):</div>
+        <span class="ctile red" id="t-red"><span class="dot red"></span> Rot</span>
+        <span class="ctile blue" id="t-blue"><span class="dot blue"></span> Blau</span>
+      </div>
+      <div class="color-ctrl">
+        <div style="font-weight:700;margin-bottom:8px">Niederschlagszeile (mm):</div>
+        <span class="ctile red" id="p-red"><span class="dot red"></span> Rot</span>
+        <span class="ctile blue" id="p-blue"><span class="dot blue"></span> Blau</span>
+      </div>
+    </div>
+    <div class="feedback" id="colorFb"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧮 Aufgabe 2 · Jahreswerte berechnen</h2>
+    <p>Die letzte Spalte der Tabelle oben ist leer. Berechne sie so, wie in Etappe 1 gelernt:</p>
+    <ul>
+      <li><span class="temp-word">Ø Temperatur</span> = Summe aller 12 Monatstemperaturen <b>geteilt durch 12</b> (auf 1 Stelle runden).</li>
+      <li><span class="precip-word">Jahresniederschlag</span> = <b>Summe</b> aller 12 Monatsniederschläge.</li>
+    </ul>
+    <p class="muted">Trage deine Ergebnisse oben in die beiden weißen Felder der Spalte „Jahr" ein.</p>
+    <div class="foot"><span></span><button class="btn accent" id="calcBtn">Berechnung prüfen</button></div>
+    <div class="feedback" id="calcFb"></div>
+  </div>
+
+  <div class="card">
+    <h2>📖 Aufgabe 3 · Daten ablesen</h2>
+    <div class="taskbox" id="readTasks"></div>
+  </div>
+
+  <div class="box def">
+    <h4>Merke</h4>Temperaturen werden <span class="temp-word">immer rot</span> und Niederschläge <span class="precip-word">immer blau</span> dargestellt.
+  </div>
+
+  <div class="card">
+    <h2>Quiz · Klimatabelle &amp; Rechnen</h2>
+    <div class="quizbox" id="quiz2"></div>
+    <div class="box tip" id="endMsg" style="display:none">🎉 <b>Sehr gut!</b> Du hast Etappe 2 abgeschlossen und kannst jetzt mit der Klimatabelle rechnen (Mittelwerte und Summen).</div>
+    <div class="foot"><span></span><button class="btn" id="next2" disabled>Weiter zu Etappe 3 →</button></div>
+  </div>
+  </div>`;
+
+  const infoBar=document.getElementById('infoBar');
+  document.querySelectorAll('table.climate-table [data-info]').forEach(td=>{
+    td.addEventListener('click',()=>{infoBar.textContent='ℹ️ '+td.getAttribute('data-info');});
+  });
+  document.querySelectorAll('table.climate-table th').forEach((th,idx)=>{
+    th.addEventListener('click',()=>{
+      if(idx===0)return;
+      if(idx<=12)infoBar.textContent='ℹ️ Spalte: Monat '+MONTHS[idx-1]+' – die Spalten zeigen die 12 Monate des Jahres.';
+      else infoBar.textContent='ℹ️ Letzte Spalte: hier kommen die Jahreswerte hin (Ø Temperatur und Summe Niederschlag).';
+    });
+  });
+
+  function applyColor(row,color){
+    const cls=row==='temp'?'.trow':'.prow';
+    const col=color==='red'?'var(--temp)':'var(--precip)';
+    document.querySelectorAll('table.climate-table '+cls).forEach(td=>{td.style.color=col;td.style.fontWeight='700';});
+  }
+  let e2a1Help=false;
+  function setRowColor(row,color){
+    state.colors[row]=color;applyColor(row,color);
+    const pre=row==='temp'?'t':'p';
+    document.getElementById(pre+'-red').classList.toggle('on',color==='red');
+    document.getElementById(pre+'-blue').classList.toggle('on',color==='blue');
+    const fb=document.getElementById('colorFb');
+    if(state.colors.temp==='red'&&state.colors.precip==='blue'){fb.className='feedback ok';fb.textContent='✓ Perfekt! Temperatur = rot, Niederschlag = blau.';recordResult('e2a1',e2a1Help);}
+    else if(state.colors.temp&&state.colors.precip){fb.className='feedback no';fb.textContent='✗ Noch nicht richtig. Regel: Temperatur rot, Niederschlag blau.';e2a1Help=true;}
+    else fb.textContent='';
+  }
+  document.getElementById('t-red').onclick=()=>setRowColor('temp','red');
+  document.getElementById('t-blue').onclick=()=>setRowColor('temp','blue');
+  document.getElementById('p-red').onclick=()=>setRowColor('precip','red');
+  document.getElementById('p-blue').onclick=()=>setRowColor('precip','blue');
+  if(state.colors.temp)applyColor('temp',state.colors.temp);
+  if(state.colors.precip)applyColor('precip',state.colors.precip);
+
+  let e2a2Help=false;
+  document.getElementById('calcBtn').onclick=()=>{
+    const fb=document.getElementById('calcFb');
+    const mt=parseDec(document.getElementById('meanT').value);
+    const sp=parseDec(document.getElementById('sumP').value);
+    const okT=!isNaN(mt)&&Math.abs(mt-s.mean)<=0.2;
+    const okP=!isNaN(sp)&&sp===s.sum;
+    fb.className='feedback '+(okT&&okP?'ok':'no');
+    fb.innerHTML=
+      (okT?'✓':'✗')+' Ø Temperatur '+(okT?'richtig':'falsch (Tipp: alle °C addieren ÷ 12)')+'<br>'+
+      (okP?'✓':'✗')+' Jahresniederschlag '+(okP?'richtig':'falsch (Tipp: alle mm addieren)')+
+      (okT&&okP?(' &nbsp;→ Ø T = '+de(s.mean)+' °C, N = '+thousand(s.sum)+' mm'):'');
+    if(okT&&okP){document.getElementById('meanT').style.borderColor='var(--good)';document.getElementById('sumP').style.borderColor='var(--good)';recordResult('e2a2',e2a2Help);}
+    else e2a2Help=true;
+  };
+
+  renderTasks(document.getElementById('readTasks'),[
+    {q:"Nenne die <b>höchste</b> Monatstemperatur (in °C).",
+     html:'<input type="text" inputmode="decimal" placeholder="Wert eintippen">',
+     hint:"Suche in der °C-Zeile den größten Wert (er liegt im Sommer).",
+     success:"Richtig – 18,6 °C im Juli.",
+     check:b=>Math.abs(parseDec(b.querySelector('input').value)-18.6)<=0.1},
+    {q:"Wie viel Niederschlag fällt im <b>Januar</b> (in mm)?",
+     html:'<input type="text" inputmode="numeric" placeholder="Wert eintippen">',
+     hint:"Schau in die mm-Zeile, erste Spalte (J).",
+     success:"Richtig – 43 mm im Januar.",
+     check:b=>parseDec(b.querySelector('input').value)===43},
+    {q:"Wie viel Niederschlag fällt in <b>Berlin</b> in einem ganzen Jahr (in mm)?",
+     html:'<input type="text" inputmode="numeric" placeholder="Wert eintippen">',
+     hint:"Das ist die Summe aller 12 mm-Werte (siehe Aufgabe 2).",
+     success:"Richtig – 570 mm pro Jahr.",
+     check:b=>parseDec(b.querySelector('input').value)===570},
+    {q:"Nenne die <b>niedrigste</b> Monatstemperatur (in °C). <span style='color:var(--muted);font-weight:400'>(Tipp: mit dem +/− Button kannst du das Minuszeichen setzen.)</span>",
+     html:'<input type="text" inputmode="decimal" placeholder="Wert eintippen">',
+     neg:true,
+     hint:"Suche den kleinsten Wert in der °C-Zeile (im Winter, evtl. negativ). Vorzeichen mit +/− setzen.",
+     success:"Richtig – −0,9 °C im Januar.",
+     check:b=>Math.abs(parseDec(b.querySelector('input').value)-(-0.9))<=0.1},
+    {q:"In welchem <b>Monat</b> fällt am meisten Niederschlag?",
+     html:`<label class="opt"><input type="radio" name="rmax" value="april"> April</label>
+           <label class="opt"><input type="radio" name="rmax" value="juni"> Juni</label>
+           <label class="opt"><input type="radio" name="rmax" value="oktober"> Oktober</label>
+           <label class="opt"><input type="radio" name="rmax" value="dezember"> Dezember</label>`,
+     hint:"Suche in der mm-Zeile den höchsten Wert (70 mm).",
+     success:"Richtig – im Juni (70 mm).",
+     check:b=>{const v=b.querySelector('input[name=rmax]:checked');return v&&v.value==='juni';}},
+    {q:"In wie vielen Monaten liegt die Temperatur <b>unter 0 °C</b>?",
+     html:'<input type="text" inputmode="numeric" placeholder="Anzahl eintippen">',
+     hint:"Zähle nur echte Minuswerte. 0 zählt nicht als „unter 0“.",
+     success:"Richtig – nur 1 Monat (Januar mit −0,9 °C).",
+     check:b=>parseDec(b.querySelector('input').value)===1}
+  ],(help)=>{recordResult('e2a3',help);});
+
+  const next2=document.getElementById('next2');
+  if(state.done[2]||state.teacher)next2.disabled=false;
+  next2.onclick=()=>{state.etappe=3;render();};
+
+  renderQuiz(document.getElementById('quiz2'),POOL_E2,5,(help)=>{
+    state.done[2]=true;recordResult('e2quiz',help);buildNav();
+    const em=document.getElementById('endMsg');if(em)em.style.display='block';
+    if(next2)next2.disabled=false;
+  });
+}
+
+/* ===================== ETAPPE 3 · ARID / HUMID ===================== */
+function mountAridHumidSequence(host){
+  const d=DATA.palermo,T=d.temps,P=d.precip;
+  const aridSet=new Set(),humidSet=new Set();
+  for(let i=0;i<12;i++){if(T[i]>P[i]/2)aridSet.add(i);else humidSet.add(i);}
+
+  let phase='arid';
+  let selected=new Set();
+  let reveal=null;
+  let attempt=0;
+  let usedHelp=false;
+
+  host.innerHTML=`
+    <div class="boxhead">❓ Aufgaben</div>
+    <div class="progress" data-prog></div>
+    <div class="qtext" data-qt></div>
+    <div class="diagram-box diagram-small" data-dia></div>
+    <div class="legend" data-leg></div>
+    <p class="muted" style="margin-top:10px">👉 Monat im Diagramm antippen (an/aus) <b>oder</b> die Monate ins Feld schreiben:</p>
+    <input type="text" data-input placeholder="Monate eintippen …">
+    <div class="foot"><span></span><button class="btn accent" data-btn>Prüfen</button></div>
+    <div class="feedback" data-fb></div>`;
+
+  const prog=host.querySelector('[data-prog]');
+  const qt=host.querySelector('[data-qt]');
+  const diaHost=host.querySelector('[data-dia]');
+  const leg=host.querySelector('[data-leg]');
+  const inp=host.querySelector('[data-input]');
+  const btn=host.querySelector('[data-btn]');
+  const fb=host.querySelector('[data-fb]');
+
+  function legend(){
+    const extra=phase==='arid'
+      ? '<span class="lg"><span style="width:16px;height:16px;background:#f5c518;border:1px solid #b8870a;border-radius:3px;display:inline-block"></span> arider Monat (gelb)</span>'
+      : '<span class="lg"><span style="width:16px;height:16px;background:#0b3d91;border-radius:3px;display:inline-block"></span> humider Monat (dunkelblau)</span>';
+    leg.innerHTML='<span class="lg"><span class="line"></span> Temperatur (°C)</span><span class="lg"><span class="bar"></span> Niederschlag (mm)</span>'+extra;
+  }
+
+  function redraw(){
+    diaHost.innerHTML=buildPalermoTask(selected,reveal);
+    if(!reveal){
+      diaHost.querySelectorAll('.monthcol').forEach(r=>{
+        r.addEventListener('click',()=>{
+          const i=parseInt(r.dataset.idx,10);
+          if(selected.has(i))selected.delete(i);else selected.add(i);
+          redraw();
+        });
+      });
+    }
+  }
+
+  function loadPhase(){
+    selected=new Set();reveal=null;attempt=0;
+    inp.value='';inp.disabled=false;
+    btn.disabled=false;btn.style.display='';btn.className='btn accent';btn.textContent='Prüfen';
+    fb.textContent='';fb.className='feedback';
+    if(phase==='arid'){
+      prog.textContent='Aufgabe 1 von 2';
+      qt.innerHTML='Tippe alle <b style="color:var(--temp)">ariden</b> Monate an – also die Monate, in denen die <span class="temp-word">rote Kurve ÜBER</span> den blauen Balken liegt.';
+    }else{
+      prog.textContent='Aufgabe 2 von 2';
+      qt.innerHTML='Tippe alle <b style="color:var(--precip)">humiden</b> Monate an – also die Monate, in denen die <span class="temp-word">rote Kurve UNTER</span> den blauen Balken liegt.';
+    }
+    legend();redraw();
+  }
+
+  btn.onclick=()=>{
+    if(reveal){
+      if(phase==='arid'){phase='humid';loadPhase();}
+      return;
+    }
+    let chosen=new Set(selected);
+    const txt=inp.value.trim();
+    if(txt){txt.split(/[\s,;\/]+/).forEach(p=>{const idx=monthIndexFromText(p);if(idx>=0)chosen.add(idx);});}
+    if(chosen.size===0){fb.className='feedback hint';fb.textContent='💡 Wähle zuerst Monate aus (antippen oder eintippen).';return;}
+
+    const target=phase==='arid'?aridSet:humidSet;
+    const ok=chosen.size===target.size&&[...target].every(i=>chosen.has(i));
+
+    if(ok){
+      selected=chosen;
+      reveal={set:target,color:phase==='arid'?'yellow':'darkblue'};
+      redraw();
+      inp.disabled=true;
+      fb.className='feedback ok';
+      if(phase==='arid'){
+        fb.innerHTML='✓ Richtig! <b>Aride</b> Monate: Mai, Juni, Juli, August, September. Ihre Balken sind jetzt <b style="color:#b8870a">gelb</b> markiert.';
+        btn.className='btn';btn.textContent='Weiter zu Aufgabe 2 →';
+      }else{
+        fb.innerHTML='✓ Richtig! <b>Humide</b> Monate: Januar, Februar, März, April, Oktober, November, Dezember. Ihre Balken sind jetzt <b style="color:#0b3d91">dunkelblau</b> markiert.';
+        btn.style.display='none';
+        prog.textContent='Beide Aufgaben gelöst ✓';
+        recordResult('e3task',usedHelp);
+      }
+    }else{
+      attempt++;usedHelp=true;
+      const hint=phase==='arid'
+        ?'Arid = rote Kurve liegt ÜBER den blauen Balken (warme, trockene Sommermonate).'
+        :'Humid = rote Kurve liegt UNTER den blauen Balken (kühlere, feuchtere Monate).';
+      fb.className='feedback '+(attempt===1?'hint':'no');
+      fb.textContent=(attempt===1?'💡 ':'✗ Noch nicht richtig. ')+hint;
+    }
+  };
+
+  loadPhase();
+}
+
+function renderEtappe3(){
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Etappe 3</div>
+    <h1>Arid oder humid? – Das Walter-Lieth-Prinzip</h1>
+    <p>Klimadiagramme nach <b>Walter &amp; Lieth</b> werden nach einer festen Regel gezeichnet: Die <b>Temperaturachse</b> (°C) und die <b>Niederschlagsachse</b> (mm) stehen im Verhältnis <b>1 : 2</b>.</p>
+    <div class="box info"><h4>📏 Die 1 : 2-Regel</h4>
+      <b>1 °C</b> auf der Temperaturachse entspricht genau <b>2 mm</b> auf der Niederschlagsachse.<br>
+      Also liegen <b>10 °C auf gleicher Höhe wie 20 mm</b>, <b>20 °C wie 40 mm</b> usw.</div>
+    <div class="diagram-box" style="max-width:460px;margin:0 auto">${buildRatioGraphic()}</div>
+  </div>
+
+  <div class="card">
+    <h2>Warum ist das so praktisch?</h2>
+    <p>Durch diese feste Kopplung kann man <b>sofort ablesen</b>, ob ein Monat trocken oder feucht ist – einfach indem man schaut, <b>ob die rote Kurve über oder unter den blauen Balken liegt</b>.</p>
+    <div class="box def"><h4>Merke – arid &amp; humid</h4>
+      <p style="margin:.4em 0"><b style="color:var(--temp)">Arider (trockener) Monat:</b> Die <span class="temp-word">Temperaturkurve liegt ÜBER</span> der Niederschlagssäule → es verdunstet mehr Wasser, als es regnet.</p>
+      <p style="margin:.4em 0"><b style="color:var(--precip)">Humider (feuchter) Monat:</b> Die <span class="temp-word">Temperaturkurve liegt UNTER</span> der Niederschlagssäule → es gibt genügend Wasser.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Beispiel: Palermo (Italien)</h2>
+    <p class="muted">Palermo liegt am Mittelmeer. Löse beide Aufgaben am selben Diagramm – nach Aufgabe 1 wird das Diagramm automatisch zurückgesetzt.</p>
+    <div class="taskbox" id="ahTask"></div>
+  </div>
+
+  <div class="card">
+    <h2>Quiz · Arid &amp; humid</h2>
+    <div class="quizbox" id="quiz3"></div>
+    <div class="box tip" id="endMsg3" style="display:none">🎉 <b>Ausgezeichnet!</b> Du beherrschst jetzt das Walter-Lieth-Prinzip und erkennst aride und humide Monate sicher.</div>
+    <div class="foot"><span></span><button class="btn" id="next3" disabled>Weiter zu Etappe 4 →</button></div>
+  </div>
+  </div>`;
+
+  mountAridHumidSequence(document.getElementById('ahTask'));
+
+  const next3=document.getElementById('next3');
+  if(state.done[3]||state.teacher)next3.disabled=false;
+  next3.onclick=()=>{state.etappe=4;render();};
+
+  renderQuiz(document.getElementById('quiz3'),POOL_E3,5,(help)=>{
+    state.done[3]=true;recordResult('e3quiz',help);buildNav();
+    const em=document.getElementById('endMsg3');if(em)em.style.display='block';
+    if(next3)next3.disabled=false;
+  });
+}
+
+/* ===================== ETAPPE 4 · TEIL A · REYKJAVÍK BENENNEN ===================== */
+function mountReykjavikLabel(host,onAllDone){
+  const total=REYK_POINTS.length;
+  const solved=new Set();
+  let selId=null;
+  let usedHelp=false;
+  const order=shuffle(REYK_POINTS.slice());
+
+  host.innerHTML=`
+    <div class="boxhead">🏷️ Beschrifte das Diagramm</div>
+    <div class="progress" data-prog></div>
+    <div class="diagram-box" data-dia></div>
+    <p class="muted" style="margin-top:10px">👉 Tippe zuerst einen <b>Begriff</b> unten an und dann den passenden <b>pulsierenden Punkt</b> im Diagramm.</p>
+    <div data-list></div>
+    <div class="feedback" data-fb></div>`;
+
+  const prog=host.querySelector('[data-prog]');
+  const diaHost=host.querySelector('[data-dia]');
+  const list=host.querySelector('[data-list]');
+  const fb=host.querySelector('[data-fb]');
+
+  function redraw(){
+    diaHost.innerHTML=buildReykjavikLabeled(solved);
+    diaHost.querySelectorAll('.lblpt').forEach(g=>{
+      g.addEventListener('click',()=>onPoint(g.dataset.id));
+    });
+  }
+  function renderList(){
+    list.innerHTML='';
+    order.forEach(pt=>{
+      const o=document.createElement('div');
+      o.className='opt';
+      if(solved.has(pt.id)){
+        o.classList.add('correct');o.style.cursor='default';
+        o.textContent='✓ '+pt.label;
+      }else{
+        o.textContent=pt.label;
+        if(pt.id===selId)o.classList.add('sel');
+        o.onclick=()=>{selId=pt.id;fb.textContent='';renderList();};
+      }
+      list.appendChild(o);
+    });
+    prog.textContent='Zugeordnet: '+solved.size+' von '+total;
+  }
+  function onPoint(id){
+    if(solved.has(id))return;
+    if(!selId){fb.className='feedback hint';fb.textContent='💡 Wähle zuerst unten einen Begriff aus.';return;}
+    if(selId===id){
+      solved.add(id);selId=null;
+      redraw();renderList();
+      if(solved.size===total){
+        fb.className='feedback ok';fb.textContent='🎉 Super! Du hast alle Elemente des Klimadiagramms richtig benannt.';
+        recordResult('e4a',usedHelp);
+        onAllDone&&onAllDone();
+      }else{
+        fb.className='feedback ok';fb.textContent='✓ Richtig zugeordnet!';
+      }
+    }else{
+      usedHelp=true;
+      fb.className='feedback no';fb.textContent='✗ Dieser Punkt passt nicht zum gewählten Begriff. Versuch es nochmal.';
+    }
+  }
+  redraw();renderList();
+}
+
+/* ===================== ETAPPE 4 · TEIL B · DATEN ABLESEN ===================== */
+function mountReadTable(host,onDone){
+  let usedHelp=false;
+  const fields=[
+    {id:'name', label:'Name der Klimastation',     unit:'',   check:v=>norm(v)==='palermo',                     sol:'Palermo'},
+    {id:'sumP', label:'Jahresniederschlag',         unit:'mm', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-512)<=20, sol:'512 mm'},
+    {id:'meanT',label:'Jahresmitteltemperatur',     unit:'°C', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-17.3)<=1, sol:'17,3 °C'},
+    {id:'minT', label:'Minimale Monatstemperatur',  unit:'°C', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-10)<=1,   sol:'10 °C'},
+    {id:'maxT', label:'Maximale Monatstemperatur',  unit:'°C', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-25)<=1,   sol:'25 °C'},
+    {id:'minP', label:'Minimaler Niederschlag',     unit:'mm', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-2)<=2,    sol:'2 mm'},
+    {id:'maxP', label:'Maximaler Niederschlag',     unit:'mm', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-77)<=2,   sol:'77 mm'},
+    {id:'amp',  label:'Thermische Amplitude',       unit:'°C', check:v=>!isNaN(parseDec(v))&&Math.abs(parseDec(v)-15)<=2,   sol:'15 °C'},
+    {id:'arid', label:'Anzahl arider Monate',       unit:'',   check:v=>parseDec(v)===5, sol:'5'},
+    {id:'humid',label:'Anzahl humider Monate',      unit:'',   check:v=>parseDec(v)===7, sol:'7'}
+  ];
+  const rows=fields.map(f=>`<tr>
+      <td class="lbl">${f.label}</td>
+      <td><input type="text" data-id="${f.id}" class="calc-input" style="width:90px" placeholder="?"></td>
+      <td style="color:var(--muted)">${f.unit||'–'}</td>
+      <td data-st="${f.id}" style="font-weight:800;min-width:24px"></td>
+    </tr>`).join('');
+
+  host.innerHTML=`
+    <div class="boxhead">📝 Klimatabelle ausfüllen</div>
+    <p class="muted">Trage die abgelesenen Werte ein. Kleine Ableseungenauigkeiten sind erlaubt (Toleranz: Temperaturen ±1 °C, Niederschlag ±2 mm, Amplitude ±2 °C, Jahressumme ±20 mm).</p>
+    <div style="overflow-x:auto"><table class="climate-table read-table">
+      <tr><th class="lbl" style="text-align:left">Größe</th><th>Wert</th><th>Einheit</th><th>✓</th></tr>
+      ${rows}
+    </table></div>
+    <div class="foot"><span></span><button class="btn accent" data-check>Werte prüfen</button></div>
+    <div class="feedback" data-fb></div>`;
+
+  const btn=host.querySelector('[data-check]');
+  const fb=host.querySelector('[data-fb]');
+  btn.onclick=()=>{
+    let allok=true,filled=true;
+    fields.forEach(f=>{
+      const inp=host.querySelector('input[data-id="'+f.id+'"]');
+      const st=host.querySelector('[data-st="'+f.id+'"]');
+      const val=(inp.value||'').trim();
+      if(val===''){filled=false;}
+      const ok=val!==''&&f.check(val);
+      if(ok){st.textContent='✓';st.style.color='var(--good)';inp.style.borderColor='var(--good)';}
+      else{st.textContent='✗';st.style.color='var(--bad)';inp.style.borderColor='var(--bad)';allok=false;}
+    });
+    if(allok){
+      fb.className='feedback ok';fb.textContent='🎉 Alle Werte korrekt abgelesen!';
+      recordResult('e4b',usedHelp);
+      onDone&&onDone();
+    }else if(!filled){
+      fb.className='feedback hint';fb.textContent='💡 Fülle bitte alle Felder aus und prüfe dann erneut.';
+    }else{
+      usedHelp=true;
+      fb.className='feedback no';fb.textContent='✗ Einige Werte stimmen noch nicht – schau im Diagramm genau nach (rot ✗-markiert).';
+    }
+  };
+}
+
+function renderEtappe4(){
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Etappe 4</div>
+    <h1>Aufbau &amp; Ablesen eines Klimadiagramms</h1>
+    <p>Jetzt bringst du alles zusammen: Zuerst benennst du die <b>Bestandteile</b> eines Klimadiagramms, danach <b>liest du selbst Werte ab</b> und trägst sie in eine Klimatabelle ein.</p>
+  </div>
+
+  <div class="card">
+    <h2>Teil A · Wie ist ein Klimadiagramm aufgebaut?</h2>
+    <p class="muted">Im Diagramm von <b>Reykjavík</b> pulsieren 10 Punkte. Ordne jedem Begriff den richtigen Punkt zu.</p>
+    <div class="taskbox" id="reykTask"></div>
+    <div class="box def"><h4>Merke</h4>
+      <p style="margin:.3em 0">• Die <b>Anfangsbuchstaben der Monate</b> werden immer <b>mittig</b> in die jeweilige Kolonne geschrieben.</p>
+      <p style="margin:.3em 0">• Die <b>Temperaturwerte</b> werden jeweils in die <b>Mitte der Monatskolonne</b> geschrieben.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Teil B · Daten aus dem Diagramm ablesen</h2>
+    <p>Lies die folgenden Werte aus dem Klimadiagramm ab. Die <b>Jahreswerte</b> (Ø Temperatur und Jahresniederschlag) stehen zum direkten Ablesen oben im Diagramm.</p>
+    <div class="diagram-box">${buildDiagram(DATA.palermo)}</div>
+    <div class="legend">
+      <span class="lg"><span class="line"></span> Temperatur (°C)</span>
+      <span class="lg"><span class="bar"></span> Niederschlag (mm)</span>
+    </div>
+    <div class="box def"><h4>Thermische Amplitude</h4>
+      Die <b>thermische Amplitude</b> ist die <b>Differenz</b> zwischen der <b>höchsten</b> und der <b>niedrigsten</b> Monatsmitteltemperatur.</div>
+    <div class="taskbox" id="readTable"></div>
+    <div class="box tip" id="endMsg4" style="display:none">🎉 <b>Geschafft!</b> Du kannst ein Klimadiagramm benennen und seine Werte korrekt ablesen.</div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Ergebnisseite</h2>
+    <p>Zum Schluss findest du hier eine Übersicht aller Aufgaben: was du gemacht hast, was richtig war und was noch fehlt.</p>
+    <div class="foot"><span></span><button class="btn accent" id="toResults">Zur Ergebnisseite →</button></div>
+  </div>
+  </div>`;
+
+  mountReykjavikLabel(document.getElementById('reykTask'));
+  mountReadTable(document.getElementById('readTable'),()=>{
+    state.done[4]=true;buildNav();
+    const em=document.getElementById('endMsg4');if(em)em.style.display='block';
+  });
+  document.getElementById('toResults').onclick=()=>{state.etappe=5;render();};
+}
+
+/* ===================== ERGEBNISSEITE ===================== */
+function renderResults(){
+  const r=state.results;
+  let firstCount=0,helpCount=0,todoCount=0;
+  const rowsHtml=ALL_TASKS.map(t=>{
+    const s=r[t.id];
+    let label,color,icon;
+    if(s==='first'){label='richtig gelöst – ohne Hilfe';color='var(--good)';icon='✓';firstCount++;}
+    else if(s==='help'){label='gelöst – mit Hilfe / mehreren Versuchen';color='#b9821a';icon='✓';helpCount++;}
+    else{label='nicht gemacht';color='var(--bad)';icon='—';todoCount++;}
+    return `<tr>
+      <td style="text-align:left">${t.label}</td>
+      <td style="font-weight:800;color:${color}">${icon}</td>
+      <td style="text-align:left;color:${color};font-weight:700">${label}</td>
+    </tr>`;
+  }).join('');
+  const total=ALL_TASKS.length;
+  const done=firstCount+helpCount;
+
+  let b2Html='';
+  if(r.b2&&r.b2.checked){
+    const ok=r.b2.correct===r.b2.total;
+    b2Html=`<div class="box ${ok?'tip':'info'}" style="margin-top:10px">
+      <h4>✏️ Bereich 2 · Selbst erstellen</h4>
+      Zuletzt geprüft: <b style="color:${ok?'var(--good)':'var(--primary-d)'}">${r.b2.correct} von ${r.b2.total}</b> Bestandteilen korrekt${ok?' – vollständig richtig! 🎉':'.'}
+    </div>`;
+  }else{
+    b2Html=`<div class="box info" style="margin-top:10px"><h4>✏️ Bereich 2 · Selbst erstellen</h4>Noch nicht geprüft.</div>`;
+  }
+
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Ergebnisübersicht</div>
+    <h1>📋 Ergebnisseite</h1>
+    <p class="muted">Diese Übersicht zeigt, welche Aufgaben tatsächlich bearbeitet wurden – so lässt sich der Lernweg nachvollziehen.</p>
+
+    <div class="no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0">
+      <label style="font-weight:700">Name:</label>
+      <input type="text" id="resName" placeholder="Name des Schülers" style="width:240px">
+    </div>
+    <div id="resNamePrint" style="display:none;font-weight:700;margin:6px 0;font-size:1.1rem"></div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin:14px 0">
+      <div class="box tip res-stat"><div class="num" style="color:var(--good)">${done}/${total}</div><div class="muted">Aufgaben gemacht</div></div>
+      <div class="box info res-stat"><div class="num" style="color:var(--primary-d)">${firstCount}</div><div class="muted">ohne Hilfe</div></div>
+      <div class="box def res-stat"><div class="num" style="color:#b9821a">${helpCount}</div><div class="muted">mit Hilfe</div></div>
+      <div class="box temp res-stat"><div class="num" style="color:var(--bad)">${todoCount}</div><div class="muted">nicht gemacht</div></div>
+    </div>
+
+    <div style="overflow-x:auto"><table class="climate-table read-table">
+      <tr><th style="text-align:left">Aufgabe</th><th>✓</th><th style="text-align:left">Status</th></tr>
+      ${rowsHtml}
+    </table></div>
+
+    ${b2Html}
+
+    <div class="box def" style="margin-top:14px"><h4>Legende</h4>
+      <span style="color:var(--good);font-weight:700">✓ ohne Hilfe</span> = beim ersten Versuch richtig &nbsp;·&nbsp;
+      <span style="color:#b9821a;font-weight:700">✓ mit Hilfe</span> = nach Hinweis/mehreren Versuchen gelöst &nbsp;·&nbsp;
+      <span style="color:var(--bad);font-weight:700">— nicht gemacht</span> = Aufgabe übersprungen
+    </div>
+
+    <div class="foot no-print">
+      <button class="btn ghost" id="resBack">← Zurück zu Etappe 4</button>
+      <button class="btn accent" id="resPrint">🖨️ Ergebnisse drucken</button>
+    </div>
+  </div>
+  </div>`;
+
+  const nameInp=document.getElementById('resName');
+  const namePrint=document.getElementById('resNamePrint');
+  if(nameInp){
+    nameInp.addEventListener('input',()=>{
+      const v=nameInp.value.trim();
+      if(v){namePrint.textContent='Name: '+v;namePrint.style.display='';}
+      else namePrint.style.display='none';
+    });
+  }
+  document.getElementById('resBack').onclick=()=>{state.etappe=4;render();};
+  document.getElementById('resPrint').onclick=()=>window.print();
+}
+
+/* ===================== BEREICH 2 · SELBST ERSTELLEN ===================== */
+function initB2(){
+  state.b2={
+    header:{name:'',coords:'',alt:'',meanT:'',sumP:''},
+    tScale:['','',''],
+    pScale:['','','','',''],
+    userTemps:Array(12).fill(null),
+    userPrecip:Array(12).fill(null),
+    months:Array(12).fill(''),
+    mode:null,
+    check:false
+  };
+}
+
+function renderBereich2(){
+  if(!state.b2)initB2();
+  const b=state.b2;
+
+  const luxHead=`<tr><th>&nbsp;</th>`+MONTHS_SHORT.map(m=>`<th>${m}</th>`).join('')+`<th>Jahr</th></tr>`;
+  const luxRowT=`<tr><td class="rowlbl">°C</td>`+DATA_LUX.temps.map(t=>`<td style="color:var(--temp);font-weight:700">${de(t)}</td>`).join('')+`<td style="color:var(--temp);font-weight:700">${de(DATA_LUX.meanT)}</td></tr>`;
+  const luxRowP=`<tr><td class="rowlbl">mm</td>`+DATA_LUX.precip.map(p=>`<td style="color:var(--precip);font-weight:700">${p}</td>`).join('')+`<td style="color:var(--precip);font-weight:700">${thousand(DATA_LUX.sumP)}</td></tr>`;
+
+  const teacherBtn=state.teacher?`<button class="btn gold" id="b2solution">🔓 Musterlösung einfügen</button>`:'';
+
+  main.innerHTML=`<div class="step">
+  <div class="card">
+    <div class="kicker">Bereich 2 · Selbst erstellen</div>
+    <h1>Erstelle dein eigenes Klimadiagramm</h1>
+    <p>Übertrage die Klimadaten von <b>Luxemburg</b> in das Diagramm. Die <b>Eingabefelder sind direkt im Diagramm</b> – sobald ein Feld richtig ist, verwandelt es sich automatisch in die fertige Beschriftung.</p>
+    <div class="box info" style="margin-top:16px"><h4>So gehst du vor</h4>
+      <p style="margin:.25em 0">① Schreibe <b>Name</b>, <b>Koordinaten</b> und <b>Höhe</b> oben ins Diagramm.</p>
+      <p style="margin:.25em 0">② Beschrifte die <b>°C-Skala</b> (3 Felder links) und die <b>mm-Skala</b> (5 Felder rechts) – die Achsen beginnen unten bei <b>0</b>.</p>
+      <p style="margin:.25em 0">③ Zeichne <b>Temperaturkurve</b> und <b>Niederschlagsbalken</b> mit den Buttons weiter unten.</p>
+      <p style="margin:.25em 0">④ Trage die <b>Monatsbuchstaben</b> unter den Spalten ein.</p>
+      <p style="margin:.25em 0">⑤ Schreibe die <b>Jahreswerte</b> (Ø T und N) ins Diagramm.</p>
+      <p style="margin:.25em 0">⑥ Klicke auf <b>Diagramm prüfen</b>.</p>
+    </div>
+    <h3 style="color:var(--primary-d)">Klimatabelle Luxemburg (334 m ü. M. · 49°N 6°E)</h3>
+    <div style="overflow-x:auto"><table class="climate-table">${luxHead}${luxRowT}${luxRowP}</table></div>
+  </div>
+
+  <div class="card">
+    <h2>Dein Klimadiagramm</h2>
+    <p class="muted">Tippe in die Felder im Diagramm. Richtig getippte Felder werden zur fertigen Beschriftung.</p>
+    <div class="diagram-box" id="b2dia"></div>
+    <div class="legend">
+      <span class="lg"><span class="line"></span> Temperatur (°C)</span>
+      <span class="lg"><span class="bar"></span> Niederschlag (mm)</span>
+    </div>
+    <div class="feedback" id="b2modeInfo"></div>
+  </div>
+
+  <div class="card no-print">
+    <h2>✏️ Kurve &amp; Balken zeichnen</h2>
+    <p class="muted">Wähle einen Modus und <b>tippe in jeder Monatsspalte auf die passende Höhe</b>. Erneutes Tippen verschiebt den Wert.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn ghost" id="b2modeTemp">🌡️ Temperatur setzen</button>
+      <button class="btn ghost" id="b2modePrecip">🌧️ Niederschlag setzen</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="b2clearTemp">Temperaturpunkte löschen</button>
+      <button class="btn ghost" id="b2clearPrecip">Balken löschen</button>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>✅ Diagramm prüfen</h2>
+    <p class="muted">Wenn du fertig bist, prüfe dein Diagramm. Fehler bei Kurve und Balken werden <span style="color:var(--bad)">rot</span>, richtige Teile <span style="color:var(--good)">grün</span> markiert.</p>
+    <div class="foot">
+      <button class="btn ghost" id="b2reset">Alles zurücksetzen</button>
+      <button class="btn accent" id="b2check">Diagramm prüfen</button>
+    </div>
+    ${teacherBtn?'<div style="margin-top:10px">'+teacherBtn+'</div>':''}
+    <div class="feedback" id="b2checkFb"></div>
+  </div>
+  </div>`;
+
+  const diaHost=document.getElementById('b2dia');
+
+  function setModeInfo(msg,type){
+    const el=document.getElementById('b2modeInfo');
+    if(!el)return;el.className='feedback '+(type||'');el.innerHTML=msg||'';
+  }
+  function refreshModeBtns(){
+    const t=document.getElementById('b2modeTemp'),p=document.getElementById('b2modePrecip');
+    if(t)t.className='btn'+(state.b2.mode==='temp'?'':' ghost');
+    if(p)p.className='btn'+(state.b2.mode==='precip'?'':' ghost');
+  }
+  function applyFO(id,val){
+    const bb=state.b2;
+    if(id==='name')bb.header.name=val;
+    else if(id==='coords')bb.header.coords=val;
+    else if(id==='alt')bb.header.alt=val;
+    else if(id==='meanT')bb.header.meanT=val;
+    else if(id==='sumP')bb.header.sumP=val;
+    else if(id[0]==='t'){const i=parseInt(id.slice(1),10);if(!isNaN(i))bb.tScale[i]=val;}
+    else if(id[0]==='p'){const i=parseInt(id.slice(1),10);if(!isNaN(i))bb.pScale[i]=val;}
+    else if(id[0]==='m'){const i=parseInt(id.slice(1),10);if(!isNaN(i))bb.months[i]=val;}
+    bb.check=false;
+  }
+  function onSvgClick(svg,e){
+    const bb=state.b2;
+    if(!bb.mode)return;
+    const L=86,R=556,TOP=120,BOT=500,W=640,H=584,slot=(R-L)/12;
+    const botEquiv=0,span=40,aTmax=20,aPmax=80;
+    const rect=svg.getBoundingClientRect();
+    const sx=(e.clientX-rect.left)/rect.width*W;
+    const sy=(e.clientY-rect.top)/rect.height*H;
+    if(sx<L||sx>R||sy<TOP||sy>BOT)return;
+    let i=Math.floor((sx-L)/slot); if(i<0)i=0; if(i>11)i=11;
+    const eEquiv=botEquiv+(BOT-sy)/(BOT-TOP)*span;
+    if(bb.mode==='temp'){let v=Math.round(eEquiv);v=Math.max(0,Math.min(aTmax,v));bb.userTemps[i]=v;}
+    else{let mm=Math.round(eEquiv*2);mm=Math.max(0,Math.min(aPmax,mm));bb.userPrecip[i]=mm;}
+    bb.check=false;
+    updateDiagram();
+  }
+  function updateDiagram(){
+    if(!diaHost)return;
+    diaHost.innerHTML=buildStudentDiagram(state.b2);
+    const svg=diaHost.querySelector('svg');
+    if(!svg)return;
+    if(state.b2.mode)svg.style.cursor='crosshair';
+    svg.addEventListener('click',e=>onSvgClick(svg,e));
+    diaHost.querySelectorAll('[data-fo]').forEach(el=>{
+      el.addEventListener('mousedown',ev=>ev.stopPropagation());
+      el.addEventListener('click',ev=>ev.stopPropagation());
+      el.addEventListener('input',()=>{
+        const id=el.dataset.fo;
+        let caret=null;try{caret=el.selectionStart;}catch(e){}
+        applyFO(id,el.value);
+        updateDiagram();
+        const again=diaHost.querySelector('[data-fo="'+id+'"]');
+        if(again){again.focus();if(caret!=null){try{again.setSelectionRange(caret,caret);}catch(e){}}}
+      });
+    });
+  }
+
+  document.getElementById('b2modeTemp').onclick=()=>{
+    state.b2.mode='temp';refreshModeBtns();
+    setModeInfo('🌡️ Temperatur-Modus: Tippe in jeder Monatsspalte auf die passende Höhe.','ok');
+    updateDiagram();
+  };
+  document.getElementById('b2modePrecip').onclick=()=>{
+    state.b2.mode='precip';refreshModeBtns();
+    setModeInfo('🌧️ Niederschlag-Modus: Tippe in jeder Monatsspalte auf die passende Höhe der Säule.','ok');
+    updateDiagram();
+  };
+  document.getElementById('b2clearTemp').onclick=()=>{state.b2.userTemps=Array(12).fill(null);state.b2.check=false;updateDiagram();};
+  document.getElementById('b2clearPrecip').onclick=()=>{state.b2.userPrecip=Array(12).fill(null);state.b2.check=false;updateDiagram();};
+
+  document.getElementById('b2check').onclick=()=>{
+    state.b2.check=true;updateDiagram();
+    const c=b2Correct(state.b2);
+    const items=[
+      ['Name der Station',c.okName],
+      ['Koordinaten',c.okCoords],
+      ['Höhe ü. M.',c.okAlt],
+      ['Temperaturskala beschriftet',c.okTScale.every(Boolean)],
+      ['Niederschlagsskala beschriftet',c.okPScale.every(Boolean)],
+      ['Temperaturkurve (alle 12 Werte)',c.okTemps.every(Boolean)],
+      ['Niederschlagsbalken (alle 12 Werte)',c.okPrecip.every(Boolean)],
+      ['Anfangsbuchstaben der Monate',c.okMonths.every(Boolean)],
+      ['Ø Jahrestemperatur',c.okMean],
+      ['Jahresniederschlag',c.okSum]
+    ];
+    const goodItems=items.filter(it=>it[1]);
+    const badItems=items.filter(it=>!it[1]);
+    const allok=badItems.length===0;
+    /* Status für die Ergebnisseite festhalten */
+    state.results.b2={checked:true,correct:goodItems.length,total:items.length};
+    const fb=document.getElementById('b2checkFb');
+    fb.className='feedback';
+    let html='';
+    if(allok){
+      html+='<div style="color:var(--good);font-weight:800;margin-bottom:8px">🎉 Perfekt! Dein Klimadiagramm ist vollständig und korrekt.</div>';
+    }
+    if(goodItems.length){
+      html+='<div style="font-weight:700;margin:6px 0 2px">Das ist bereits gut:</div>';
+      html+=goodItems.map(it=>`<div style="color:var(--good)">✓ ${it[0]}</div>`).join('');
+    }
+    if(badItems.length){
+      html+='<div style="font-weight:700;margin:10px 0 2px;color:var(--bad)">Das fehlt noch oder ist nicht richtig:</div>';
+      html+=badItems.map(it=>`<div style="color:var(--bad)">✗ ${it[0]}</div>`).join('');
+    }
+    fb.innerHTML=html;
+  };
+  document.getElementById('b2reset').onclick=()=>{initB2();renderBereich2();};
+  const solBtn=document.getElementById('b2solution');
+  if(solBtn)solBtn.onclick=()=>{
+    const bb=state.b2;
+    bb.header={name:'Luxemburg',coords:'49°N 6°E',alt:'334',meanT:'8,8',sumP:'740'};
+    bb.tScale=['0','10','20'];
+    bb.pScale=['0','20','40','60','80'];
+    bb.userTemps=DATA_LUX.temps.slice();
+    bb.userPrecip=DATA_LUX.precip.slice();
+    bb.months=MONTHS_SHORT.slice();
+    bb.mode=null;bb.check=false;
+    renderBereich2();
+  };
+
+  refreshModeBtns();
+  updateDiagram();
+}
+
+/* ===================== START ===================== */
+render();
+</script>
+</body>
+</html>
