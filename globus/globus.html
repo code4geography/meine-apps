@@ -1,1 +1,1022 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver 3D-Globus mit Koordinatensystem</title>
 
+    <!-- Tailwind CSS für das UI-Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js und OrbitControls für 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- D3.js und TopoJSON für das Zeichnen der Vektor-Kontinente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+
+    <style>
+        :root {
+            --panel: rgba(255, 255, 255, 0.88);
+            --card: rgba(255, 255, 255, 0.72);
+            --card-border: rgba(13, 148, 136, 0.18);
+            --text-main: #1f2937;
+            --text-soft: #6b7280;
+            --accent: #0d9488;       /* Ozean-Türkis */
+            --accent-hover: #0f766e;
+            --land: #059669;         /* Land-Grün */
+            --land-hover: #047857;
+        }
+
+        body {
+            margin: 0; overflow: hidden;
+            /* Leichtes Grau mit ganz dezentem Grünstich */
+            background: linear-gradient(135deg, #f4f8f5 0%, #e0e8e3 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        /* ---------- SIDEBAR ---------- */
+        #sidebar {
+            position: absolute; top: 0; left: 0; width: 340px; height: 100vh;
+            background: var(--panel);
+            backdrop-filter: blur(18px) saturate(150%);
+            -webkit-backdrop-filter: blur(18px) saturate(150%);
+            z-index: 10; transform: translateX(0);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto; padding: 22px 18px 40px;
+            box-shadow: 6px 0 28px rgba(15, 118, 110, 0.12);
+            border-right: 1px solid rgba(255,255,255,0.7);
+        }
+        #sidebar.closed { transform: translateX(-100%); }
+
+        #sidebar::-webkit-scrollbar { width: 8px; }
+        #sidebar::-webkit-scrollbar-thumb { background: rgba(13,148,136,0.3); border-radius: 4px; }
+        #sidebar::-webkit-scrollbar-thumb:hover { background: rgba(13,148,136,0.5); }
+
+        #toggle-btn {
+            position: absolute; top: 16px; left: 16px; z-index: 20;
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            border: none; color: white;
+            width: 48px; height: 48px; cursor: pointer; border-radius: 14px;
+            font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+            transition: left 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 6px 18px rgba(13,148,136,0.4);
+        }
+        #toggle-btn:hover { transform: scale(1.06); box-shadow: 0 8px 22px rgba(13,148,136,0.5); }
+        #toggle-btn.shifted { left: 358px; }
+
+        .app-header {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.55rem; font-weight: 800; margin-bottom: 4px;
+            letter-spacing: 0.2px;
+            background: linear-gradient(135deg, #0f766e, #059669);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .app-subtitle { font-size: 0.85rem; color: var(--text-soft); margin-bottom: 20px; }
+
+        /* Karten-Sektionen */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 16px 16px 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 3px 14px rgba(15,118,110,0.07);
+        }
+        .section-title {
+            font-size: 1.1rem; font-weight: 800;
+            letter-spacing: 0.01em; margin-bottom: 14px; color: var(--accent-hover);
+            display: flex; align-items: center; gap: 9px;
+        }
+
+        .label-text { font-size: 0.95rem; margin-left: 10px; color: var(--text-main); }
+        .input-group { margin-bottom: 12px; }
+        .input-group:last-child { margin-bottom: 0; }
+        label.field-label { font-size: 0.78rem; color: var(--text-soft); font-weight: 600; }
+
+        /* Checkboxen */
+        .check-row {
+            display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;
+            padding: 7px 9px; border-radius: 10px; transition: background 0.15s;
+        }
+        .check-row:hover { background: rgba(13,148,136,0.08); }
+        .check-row:last-child { margin-bottom: 0; }
+        input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+
+        select, input[type="number"] {
+            background: rgba(255,255,255,0.92); color: var(--text-main);
+            border: 1px solid rgba(13,148,136,0.25); padding: 9px 11px;
+            border-radius: 11px; width: 100%; margin-top: 5px; font-size: 0.92rem;
+            transition: border 0.15s, box-shadow 0.15s; outline: none;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(13,148,136,0.2);
+        }
+
+        button.action-btn {
+            background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border: none;
+            padding: 11px 14px; border-radius: 12px; cursor: pointer; width: 100%;
+            margin-top: 12px; font-weight: 700; font-size: 0.92rem;
+            transition: transform 0.1s, box-shadow 0.18s, filter 0.18s;
+            box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+        }
+        button.action-btn:hover { transform: translateY(-1px); filter: brightness(1.07); box-shadow: 0 6px 18px rgba(13,148,136,0.4); }
+        button.action-btn:active { transform: translateY(0); }
+
+        button.danger-btn { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(220,38,38,0.3); }
+        button.danger-btn:hover { box-shadow: 0 6px 18px rgba(220,38,38,0.4); }
+
+        button.btn-active { background: linear-gradient(135deg, #f59e0b, #d97706) !important; box-shadow: 0 4px 16px rgba(217,119,6,0.45) !important; }
+
+        button.success-btn { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
+        button.success-btn:hover { box-shadow: 0 6px 18px rgba(5,150,105,0.4); }
+
+        .hint-text { font-size: 0.78rem; color: var(--text-soft); margin-bottom: 10px; line-height: 1.45; }
+
+        /* Lern-Aufgabenanzeige */
+        #learn-prompt {
+            background: linear-gradient(135deg, rgba(245,158,11,0.16), rgba(217,119,6,0.1));
+            border: 1px solid rgba(217, 119, 6, 0.38);
+            border-radius: 12px; padding: 13px; margin-top: 12px;
+            font-size: 0.95rem; text-align: center; color: #b45309; font-weight: 600;
+        }
+        #learn-prompt .coord-big { font-size: 1.35rem; font-weight: 800; display: block; margin-top: 4px; color: #92400e; }
+
+        .feedback-correct { color: #059669; font-weight: 800; }
+        .feedback-wrong { color: #dc2626; font-weight: 800; }
+
+        /* 2D Labels für Längen- und Breitengrade (Globus-Farben UNVERÄNDERT) */
+        .coord-label {
+            position: absolute; font-size: 13px; font-weight: bold;
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+            pointer-events: none; z-index: 5;
+        }
+        .lat-label { color: #cc0000; }
+        .lon-label { color: #0000cc; }
+
+        /* Oranges Mess-Label im 3D-Raum (passend zur Steuerung) */
+        .measure-label {
+            position: absolute; font-size: 15px; font-weight: 800;
+            color: #f59e0b;
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 6px rgba(0,0,0,0.8);
+            pointer-events: none; z-index: 6; white-space: nowrap;
+        }
+
+        #tooltip {
+            position: absolute; display: none; background: rgba(31, 41, 55, 0.92);
+            color: #fff; padding: 7px 13px; border-radius: 10px; font-size: 14px;
+            pointer-events: none; z-index: 100; font-weight: 600;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.15);
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="toggle-btn" class="shifted">☰</button>
+
+    <div id="sidebar">
+        <div class="app-header">🌍 Globus-Steuerung</div>
+        <div class="app-subtitle">Koordinaten erkunden, messen & lernen</div>
+
+        <!-- SICHTBARKEIT -->
+        <div class="card">
+            <div class="section-title">👁️ Sichtbarkeit</div>
+            <label class="check-row">
+                <input type="checkbox" id="chk-lat" checked>
+                <span class="label-text">Breitengrade (Rot)</span>
+            </label>
+            <label class="check-row">
+                <input type="checkbox" id="chk-lon" checked>
+                <span class="label-text">Längengrade (Blau)</span>
+            </label>
+            <label class="check-row">
+                <input type="checkbox" id="chk-lat-labels" checked>
+                <span class="label-text">Breiten beschriften</span>
+            </label>
+            <label class="check-row">
+                <input type="checkbox" id="chk-lon-labels" checked>
+                <span class="label-text">Längen beschriften</span>
+            </label>
+            <label class="check-row">
+                <input type="checkbox" id="chk-continents" checked>
+                <span class="label-text font-bold" style="color:#15803d;">Kontinente anzeigen</span>
+            </label>
+        </div>
+
+        <!-- LINIEN-AUSWAHL -->
+        <div class="card">
+            <div class="section-title">📐 Linien-Auswahl</div>
+            <div class="input-group">
+                <label class="field-label">Breitengrad:</label>
+                <select id="sel-lat">
+                    <option value="none">-- Keine Auswahl --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="field-label">Längengrad:</label>
+                <select id="sel-lon">
+                    <option value="none">-- Keine Auswahl --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- MESSTOOL -->
+        <div class="card">
+            <div class="section-title">📏 Messtool</div>
+            <p class="hint-text">Klicken Sie zwei Punkte auf dem Globus an</p>
+            <button id="btn-measure" class="action-btn">Messmodus aktivieren</button>
+            <button id="btn-clear-measure" class="action-btn danger-btn hidden">Messung löschen</button>
+            <p id="measure-result" class="text-sm font-bold mt-3" style="color:#d97706;"></p>
+        </div>
+
+        <!-- LERNMODUS -->
+        <div class="card">
+            <div class="section-title">🎓 Lernmodus</div>
+            <div class="input-group">
+                <label class="field-label">Aufgaben-Typ:</label>
+                <select id="sel-learn-mode">
+                    <option value="A">Punkt → Koordinate (ablesen)</option>
+                    <option value="B">Koordinate → Punkt (klicken)</option>
+                </select>
+            </div>
+            <button id="btn-new-task" class="action-btn">🎲 Neue Aufgabe</button>
+
+            <!-- Anzeige für Modus B -->
+            <div id="learn-prompt" class="hidden"></div>
+
+            <!-- Eingabe für Modus A -->
+            <div id="learn-input-A" class="hidden mt-3">
+                <p class="hint-text">Welche Koordinate hat der grüne Punkt?</p>
+                <div class="flex gap-2">
+                    <div class="w-1/2">
+                        <label class="field-label">Breitengrad</label>
+                        <input type="number" id="learn-lat" placeholder="z.B. 40">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="field-label">Richtung</label>
+                        <select id="learn-lat-dir">
+                            <option value="1">N</option>
+                            <option value="-1">S</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <div class="w-1/2">
+                        <label class="field-label">Längengrad</label>
+                        <input type="number" id="learn-lon" placeholder="z.B. 70">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="field-label">Richtung</label>
+                        <select id="learn-lon-dir">
+                            <option value="1">E</option>
+                            <option value="-1">W</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-check" class="action-btn success-btn hidden">✓ Überprüfen</button>
+            <button id="btn-clear-learn" class="action-btn danger-btn hidden">Aufgabe löschen</button>
+            <p id="learn-feedback" class="text-sm mt-3 text-center"></p>
+        </div>
+
+        <!-- KOORDINATEN-EINGABE (ganz nach unten) -->
+        <div class="card">
+            <div class="section-title">🔍 Koordinaten-Eingabe</div>
+            <div class="flex gap-2">
+                <div class="w-1/2">
+                    <label class="field-label">Breitengrad</label>
+                    <input type="number" id="inp-lat" placeholder="z.B. 52.5">
+                </div>
+                <div class="w-1/2">
+                    <label class="field-label">Richtung</label>
+                    <select id="inp-lat-dir">
+                        <option value="1">N (Nord)</option>
+                        <option value="-1">S (Süd)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-2">
+                <div class="w-1/2">
+                    <label class="field-label">Längengrad</label>
+                    <input type="number" id="inp-lon" placeholder="z.B. 13.4">
+                </div>
+                <div class="w-1/2">
+                    <label class="field-label">Richtung</label>
+                    <select id="inp-lon-dir">
+                        <option value="1">E (Ost)</option>
+                        <option value="-1">W (West)</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btn-search" class="action-btn">Suchen & Anzeigen</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+    <div id="labels-container"></div>
+    <div id="tooltip"></div>
+
+    <script>
+        // --- FORMATIERUNGSFUNKTIONEN FÜR LABELS ---
+        function formatLat(lat) {
+            if (lat === 0) return '0°';
+            return Math.abs(lat) + '°' + (lat > 0 ? 'N' : 'S');
+        }
+        function formatLon(lon) {
+            if (lon === 0) return '0°';
+            if (lon === 180 || lon === -180) return '180°';
+            return Math.abs(lon) + '°' + (lon > 0 ? 'E' : 'W');
+        }
+
+        // --- UI LOGIK ---
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const tooltip = document.getElementById('tooltip');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            toggleBtn.classList.toggle('shifted');
+        });
+
+        // Dropdowns füllen
+        // Breitengrad: zuerst Nord (90 -> -90)
+        const selLat = document.getElementById('sel-lat');
+        for(let i = 90; i >= -90; i-=10) {
+            let opt = document.createElement('option');
+            opt.value = i; opt.innerText = formatLat(i);
+            selLat.appendChild(opt);
+        }
+        const selLon = document.getElementById('sel-lon');
+        for(let i = -180; i <= 180; i+=10) {
+            let opt = document.createElement('option');
+            opt.value = i; opt.innerText = formatLon(i);
+            selLon.appendChild(opt);
+        }
+
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('canvas-container');
+        const labelsContainer = document.getElementById('labels-container');
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(150, 150, 250);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setClearColor(0x000000, 0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 110;
+        controls.maxDistance = 500;
+        // WICHTIG: Panning deaktivieren, damit der Dreh-Mittelpunkt (target)
+        // immer im Globus-Zentrum bleibt. Sonst "wandert" die Drehachse nach
+        // versehentlichem Pannen (Rechtsklick-Ziehen / Zwei-Finger-Geste).
+        controls.enablePan = false;
+
+        const GLOBE_RADIUS = 100;
+        const LINE_RADIUS = 101;
+
+        const sphereGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+        const baseSphere = new THREE.Mesh(sphereGeo, new THREE.MeshBasicMaterial({ visible: false }));
+        scene.add(baseSphere);
+
+        // --- KONTINENTE GENERIEREN ---
+        const mapCanvas = document.createElement('canvas');
+        mapCanvas.width = 4096;
+        mapCanvas.height = 2048;
+        const ctx = mapCanvas.getContext('2d');
+        const continentTexture = new THREE.CanvasTexture(mapCanvas);
+
+        const continentMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            map: continentTexture
+        });
+        const continentMesh = new THREE.Mesh(sphereGeo, continentMat);
+        scene.add(continentMesh);
+
+        fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json')
+            .then(response => response.json())
+            .then(world => {
+                const countries = topojson.feature(world, world.objects.countries);
+                const projection = d3.geoEquirectangular()
+                    .translate([mapCanvas.width / 2, mapCanvas.height / 2])
+                    .scale(mapCanvas.width / (2 * Math.PI));
+                const path = d3.geoPath(projection, ctx);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+                ctx.beginPath();
+                path(countries);
+                ctx.fillStyle = '#d1d5db';
+                ctx.fill();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+
+                continentTexture.needsUpdate = true;
+            });
+
+        // --- KOORDINATENSYSTEM (Linien, Farben UNVERÄNDERT) ---
+        const latLines = [];
+        const lonLines = [];
+        const latLabels = [];
+        const lonLabels = [];
+
+        const materialLat = new THREE.LineBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.6 });
+        const materialLon = new THREE.LineBasicMaterial({ color: 0x4444ff, transparent: true, opacity: 0.6 });
+
+        // Tube-Radien: Äquator/Nullmeridian sind dicker als normale Linien,
+        // aber dünner als ein selektierter Kreis (dieser nutzt Radius 0.8).
+        const MAIN_LINE_TUBE_RADIUS = 0.4;
+
+        function getPosFromLatLon(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+            return new THREE.Vector3(
+                -(radius * Math.sin(phi) * Math.cos(theta)),
+                radius * Math.cos(phi),
+                radius * Math.sin(phi) * Math.sin(theta)
+            );
+        }
+
+        function getLatLonFromPos(pos) {
+            const r = pos.length();
+            const lat = 90 - Math.acos(Math.max(-1, Math.min(1, pos.y / r))) * (180 / Math.PI);
+            let lon = Math.atan2(pos.z, -pos.x) * (180 / Math.PI) - 180;
+            if (lon < -180) lon += 360;
+            if (lon > 180) lon -= 360;
+            return { lat, lon };
+        }
+
+        // Breitengrade generieren
+        for (let lat = -80; lat <= 80; lat += 10) {
+            const points = [];
+            for (let lon = -180; lon <= 180; lon += 5) {
+                points.push(getPosFromLatLon(lat, lon, LINE_RADIUS));
+            }
+
+            let line;
+            if (lat === 0) {
+                // Äquator: etwas dickere Tube, gleiche Farbe
+                const curve = new THREE.CatmullRomCurve3(points, true);
+                const geo = new THREE.TubeGeometry(curve, 128, MAIN_LINE_TUBE_RADIUS, 8, true);
+                line = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+                    color: 0xff4444, transparent: true, opacity: 0.8
+                }));
+            } else {
+                const geo = new THREE.BufferGeometry().setFromPoints(points);
+                line = new THREE.Line(geo, materialLat);
+            }
+            line.userData = { label: formatLat(lat) };
+            scene.add(line);
+            latLines.push(line);
+
+            if (lat !== 0) {
+                const label = document.createElement('div');
+                label.className = 'coord-label lat-label';
+                label.innerText = formatLat(lat);
+                labelsContainer.appendChild(label);
+                latLabels.push({ element: label, pos: getPosFromLatLon(lat, 0, LINE_RADIUS + 2) });
+            }
+        }
+        const eqLabel = document.createElement('div');
+        eqLabel.className = 'coord-label lat-label';
+        eqLabel.innerText = '0°';
+        labelsContainer.appendChild(eqLabel);
+        latLabels.push({ element: eqLabel, pos: getPosFromLatLon(0, 0, LINE_RADIUS + 2) });
+
+        const eqLineIndex = latLines.findIndex(l => l.userData.label === '0°');
+        if(eqLineIndex !== -1) latLines[eqLineIndex].userData = { label: '0° (Äquator)' };
+
+        // Längengrade generieren
+        for (let lon = -180; lon < 180; lon += 10) {
+            const points = [];
+            for (let lat = -90; lat <= 90; lat += 5) {
+                points.push(getPosFromLatLon(lat, lon, LINE_RADIUS));
+            }
+
+            let line;
+            if (lon === 0) {
+                // Nullmeridian: etwas dickere Tube, gleiche Farbe
+                const curve = new THREE.CatmullRomCurve3(points, false);
+                const geo = new THREE.TubeGeometry(curve, 128, MAIN_LINE_TUBE_RADIUS, 8, false);
+                line = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+                    color: 0x4444ff, transparent: true, opacity: 0.8
+                }));
+            } else {
+                const geo = new THREE.BufferGeometry().setFromPoints(points);
+                line = new THREE.Line(geo, materialLon);
+            }
+            line.userData = { label: formatLon(lon) };
+            scene.add(line);
+            lonLines.push(line);
+
+            if(lon !== 0) {
+                const label = document.createElement('div');
+                label.className = 'coord-label lon-label';
+                label.innerText = formatLon(lon);
+                labelsContainer.appendChild(label);
+                lonLabels.push({ element: label, pos: getPosFromLatLon(0, lon, LINE_RADIUS + 2) });
+            }
+        }
+        const pmLabel = document.createElement('div');
+        pmLabel.className = 'coord-label lon-label';
+        pmLabel.innerText = '0°';
+        labelsContainer.appendChild(pmLabel);
+        lonLabels.push({ element: pmLabel, pos: getPosFromLatLon(0, 0, LINE_RADIUS + 2) });
+
+        const pmLineIndex = lonLines.findIndex(l => l.userData.label === '0°');
+        if(pmLineIndex !== -1) lonLines[pmLineIndex].userData = { label: '0° (Nullmeridian)' };
+
+
+        // --- HIGHLIGHT LOGIK ---
+        let activeLatHighlight = null;
+        let activeLonHighlight = null;
+        const HIGHLIGHT_RADIUS = 101.5;
+
+        const intersectionMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(2, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0x9c27b0 })
+        );
+        intersectionMarker.visible = false;
+        scene.add(intersectionMarker);
+
+        function updateIntersection() {
+            const latVal = selLat.value;
+            const lonVal = selLon.value;
+            if (latVal !== 'none' && lonVal !== 'none') {
+                const lat = parseFloat(latVal);
+                const lon = parseFloat(lonVal);
+                const pos = getPosFromLatLon(lat, lon, HIGHLIGHT_RADIUS + 0.5);
+                intersectionMarker.position.copy(pos);
+                intersectionMarker.visible = true;
+                intersectionMarker.userData = {
+                    label: `Kreuzpunkt:\nBreite: ${formatLat(lat)}\nLänge: ${formatLon(lon)}`
+                };
+            } else {
+                intersectionMarker.visible = false;
+            }
+        }
+
+        selLat.addEventListener('change', (e) => {
+            if (activeLatHighlight) { scene.remove(activeLatHighlight); activeLatHighlight = null; }
+            const val = e.target.value;
+            if (val !== 'none') {
+                const lat = parseFloat(val);
+                const points = [];
+                for (let lon = -180; lon <= 180; lon += 5) {
+                    points.push(getPosFromLatLon(lat, lon, HIGHLIGHT_RADIUS));
+                }
+                const curve = new THREE.CatmullRomCurve3(points, true);
+                const geo = new THREE.TubeGeometry(curve, 64, 0.8, 8, true);
+                activeLatHighlight = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color: 0xff0000}));
+                activeLatHighlight.userData = { label: formatLat(lat) };
+                scene.add(activeLatHighlight);
+            }
+            updateIntersection();
+        });
+
+        selLon.addEventListener('change', (e) => {
+            if (activeLonHighlight) { scene.remove(activeLonHighlight); activeLonHighlight = null; }
+            const val = e.target.value;
+            if (val !== 'none') {
+                const lon = parseFloat(val);
+                const points = [];
+                for (let lat = -90; lat <= 90; lat += 5) {
+                    points.push(getPosFromLatLon(lat, lon, HIGHLIGHT_RADIUS));
+                }
+                const curve = new THREE.CatmullRomCurve3(points, false);
+                const geo = new THREE.TubeGeometry(curve, 64, 0.8, 8, false);
+                activeLonHighlight = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color: 0x0000ff}));
+                activeLonHighlight.userData = { label: formatLon(lon) };
+                scene.add(activeLonHighlight);
+            }
+            updateIntersection();
+        });
+
+
+        // --- EVENT LISTENER FÜR UI ---
+        document.getElementById('chk-lat').addEventListener('change', (e) => {
+            latLines.forEach(l => l.visible = e.target.checked);
+        });
+        document.getElementById('chk-lon').addEventListener('change', (e) => {
+            lonLines.forEach(l => l.visible = e.target.checked);
+        });
+        document.getElementById('chk-lat-labels').addEventListener('change', (e) => {
+            latLabels.forEach(l => l.element.style.display = e.target.checked ? 'block' : 'none');
+        });
+        document.getElementById('chk-lon-labels').addEventListener('change', (e) => {
+            lonLabels.forEach(l => l.element.style.display = e.target.checked ? 'block' : 'none');
+        });
+        document.getElementById('chk-continents').addEventListener('change', (e) => {
+            if (e.target.checked) { continentMat.map = continentTexture; }
+            else { continentMat.map = null; }
+            continentMat.needsUpdate = true;
+        });
+
+        // Koordinatensuche
+        const searchMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(2, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xff00ff })
+        );
+        scene.add(searchMarker);
+        searchMarker.visible = false;
+
+        document.getElementById('btn-search').addEventListener('click', () => {
+            const latVal = parseFloat(document.getElementById('inp-lat').value);
+            const latDir = parseFloat(document.getElementById('inp-lat-dir').value);
+            const lonVal = parseFloat(document.getElementById('inp-lon').value);
+            const lonDir = parseFloat(document.getElementById('inp-lon-dir').value);
+
+            if(!isNaN(latVal) && !isNaN(lonVal)) {
+                const finalLat = latVal * latDir;
+                const finalLon = lonVal * lonDir;
+                const pos = getPosFromLatLon(finalLat, finalLon, LINE_RADIUS + 1);
+                searchMarker.position.copy(pos);
+                searchMarker.visible = true;
+                camera.position.copy(pos.clone().multiplyScalar(2.5));
+                controls.update();
+            }
+        });
+
+        // --- MESSTOOL & HOVER LOGIK ---
+        const MEASURE_COLOR = 0xf59e0b; // Orange, passend zur Steuerung
+        let isMeasuring = false;
+        let measurePoints = [];
+        const measureMarkers = [];
+        let measureLine = null;
+
+        const measureLabelEl = document.createElement('div');
+        measureLabelEl.className = 'measure-label';
+        measureLabelEl.style.display = 'none';
+        labelsContainer.appendChild(measureLabelEl);
+        let measureLabelPos = null;
+
+        const raycaster = new THREE.Raycaster();
+        const hoverRaycaster = new THREE.Raycaster();
+        hoverRaycaster.params.Line.threshold = 2;
+        const mouse = new THREE.Vector2();
+
+        const btnMeasure = document.getElementById('btn-measure');
+        const btnClearMeasure = document.getElementById('btn-clear-measure');
+        const measureResult = document.getElementById('measure-result');
+
+        btnMeasure.addEventListener('click', () => {
+            isMeasuring = !isMeasuring;
+            if(isMeasuring) {
+                btnMeasure.innerText = "Messmodus beenden";
+                btnMeasure.classList.add('btn-active');
+                container.style.cursor = 'crosshair';
+                awaitingLearnClick = false;
+            } else {
+                btnMeasure.innerText = "Messmodus aktivieren";
+                btnMeasure.classList.remove('btn-active');
+                container.style.cursor = 'default';
+            }
+        });
+
+        btnClearMeasure.addEventListener('click', () => {
+            measurePoints = [];
+            measureMarkers.forEach(m => scene.remove(m));
+            measureMarkers.length = 0;
+            if(measureLine) { scene.remove(measureLine); measureLine = null; }
+            measureResult.innerText = '';
+            measureLabelEl.style.display = 'none';
+            measureLabelPos = null;
+            btnClearMeasure.classList.add('hidden');
+        });
+
+        function handleMeasureClick() {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(baseSphere);
+            if(intersects.length > 0 && measurePoints.length < 2) {
+                const point = intersects[0].point;
+                measurePoints.push(point);
+
+                const marker = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 16), new THREE.MeshBasicMaterial({color: MEASURE_COLOR}));
+                marker.position.copy(point);
+                scene.add(marker);
+                measureMarkers.push(marker);
+
+                if(measurePoints.length === 2) {
+                    const p1 = measurePoints[0].clone().normalize();
+                    const p2 = measurePoints[1].clone().normalize();
+                    const angle = p1.angleTo(p2);
+                    const earthRadiusKm = 6371;
+                    const distance = angle * earthRadiusKm;
+
+                    measureResult.innerText = `Distanz: ca. ${distance.toFixed(2)} km`;
+                    btnClearMeasure.classList.remove('hidden');
+
+                    const points = [];
+                    for(let i=0; i<=50; i++) {
+                        const t = i/50;
+                        const v = new THREE.Vector3().copy(p1).lerp(p2, t).normalize().multiplyScalar(LINE_RADIUS + 0.5);
+                        points.push(v);
+                    }
+                    const geo = new THREE.BufferGeometry().setFromPoints(points);
+                    measureLine = new THREE.Line(geo, new THREE.LineBasicMaterial({color: MEASURE_COLOR, linewidth: 3}));
+                    scene.add(measureLine);
+
+                    measureLabelEl.innerText = `≈ ${distance.toFixed(0)} km`;
+                    measureLabelEl.style.display = 'block';
+                    measureLabelPos = new THREE.Vector3().copy(p1).lerp(p2, 0.5).normalize().multiplyScalar(LINE_RADIUS + 6);
+
+                    isMeasuring = false;
+                    btnMeasure.innerText = "Messmodus aktivieren";
+                    btnMeasure.classList.remove('btn-active');
+                    container.style.cursor = 'default';
+                }
+            }
+        }
+
+        // ===================================================================
+        // --- LERNMODUS ---
+        // ===================================================================
+        const LEARN_COLOR = 0x059669; // Grün, passend zur Steuerung
+        const selLearnMode = document.getElementById('sel-learn-mode');
+        const btnNewTask = document.getElementById('btn-new-task');
+        const btnCheck = document.getElementById('btn-check');
+        const btnClearLearn = document.getElementById('btn-clear-learn');
+        const learnPrompt = document.getElementById('learn-prompt');
+        const learnInputA = document.getElementById('learn-input-A');
+        const learnFeedback = document.getElementById('learn-feedback');
+
+        const LEARN_TOLERANCE = 5;
+        let awaitingLearnClick = false;
+        let currentTask = null;
+
+        const learnMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(2.2, 24, 24),
+            new THREE.MeshBasicMaterial({ color: LEARN_COLOR })
+        );
+        learnMarker.visible = false;
+        scene.add(learnMarker);
+
+        function randMultiple(min, max, step) {
+            const n = (max - min) / step;
+            const i = Math.floor(Math.random() * (n + 1));
+            return min + i * step;
+        }
+
+        function resetLearnUI() {
+            learnPrompt.classList.add('hidden');
+            learnInputA.classList.add('hidden');
+            btnCheck.classList.add('hidden');
+            learnFeedback.innerText = '';
+            learnFeedback.className = 'text-sm mt-3 text-center';
+        }
+
+        function clearLearnTask() {
+            currentTask = null;
+            awaitingLearnClick = false;
+            learnMarker.visible = false;
+            resetLearnUI();
+            btnClearLearn.classList.add('hidden');
+            container.style.cursor = 'default';
+        }
+
+        btnNewTask.addEventListener('click', () => {
+            if (isMeasuring) {
+                isMeasuring = false;
+                btnMeasure.innerText = "Messmodus aktivieren";
+                btnMeasure.classList.remove('btn-active');
+            }
+            resetLearnUI();
+
+            const mode = selLearnMode.value;
+            const lat = randMultiple(-80, 80, 10);
+            const lon = randMultiple(-170, 180, 10);
+            currentTask = { mode, lat, lon, clickedLat: null, clickedLon: null };
+            btnClearLearn.classList.remove('hidden');
+
+            if (mode === 'A') {
+                learnMarker.position.copy(getPosFromLatLon(lat, lon, LINE_RADIUS + 1.5));
+                learnMarker.visible = true;
+                awaitingLearnClick = false;
+                container.style.cursor = 'default';
+
+                document.getElementById('learn-lat').value = '';
+                document.getElementById('learn-lon').value = '';
+                learnInputA.classList.remove('hidden');
+                btnCheck.classList.remove('hidden');
+            } else {
+                learnMarker.visible = false;
+                awaitingLearnClick = true;
+                container.style.cursor = 'crosshair';
+
+                learnPrompt.innerHTML = `Finde diese Koordinate und klicke darauf:
+                    <span class="coord-big">${formatLat(lat)} / ${formatLon(lon)}</span>`;
+                learnPrompt.classList.remove('hidden');
+            }
+        });
+
+        function handleLearnClick() {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(baseSphere);
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+                learnMarker.position.copy(point.clone().normalize().multiplyScalar(LINE_RADIUS + 1.5));
+                learnMarker.visible = true;
+
+                const { lat, lon } = getLatLonFromPos(point);
+                currentTask.clickedLat = lat;
+                currentTask.clickedLon = lon;
+
+                btnCheck.classList.remove('hidden');
+                learnFeedback.innerText = 'Punkt gesetzt – jetzt überprüfen.';
+                learnFeedback.className = 'text-sm mt-3 text-center';
+            }
+        }
+
+        btnCheck.addEventListener('click', () => {
+            if (!currentTask) return;
+
+            if (currentTask.mode === 'A') {
+                const latVal = parseFloat(document.getElementById('learn-lat').value);
+                const latDir = parseFloat(document.getElementById('learn-lat-dir').value);
+                const lonVal = parseFloat(document.getElementById('learn-lon').value);
+                const lonDir = parseFloat(document.getElementById('learn-lon-dir').value);
+
+                if (isNaN(latVal) || isNaN(lonVal)) {
+                    learnFeedback.innerText = 'Bitte beide Werte eingeben.';
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-wrong';
+                    return;
+                }
+                const guessLat = latVal * latDir;
+                const guessLon = lonVal * lonDir;
+                const correct = (guessLat === currentTask.lat) && (guessLon === currentTask.lon);
+
+                if (correct) {
+                    learnFeedback.innerHTML = '✓ Richtig! Sehr gut.';
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-correct';
+                } else {
+                    learnFeedback.innerHTML = `✗ Falsch. Richtig wäre:<br><b>${formatLat(currentTask.lat)} / ${formatLon(currentTask.lon)}</b>`;
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-wrong';
+                }
+            } else {
+                if (currentTask.clickedLat === null) {
+                    learnFeedback.innerText = 'Bitte zuerst auf den Globus klicken.';
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-wrong';
+                    return;
+                }
+                const latDiff = Math.abs(currentTask.clickedLat - currentTask.lat);
+                let lonDiff = Math.abs(currentTask.clickedLon - currentTask.lon);
+                if (lonDiff > 180) lonDiff = 360 - lonDiff;
+
+                const correct = (latDiff <= LEARN_TOLERANCE) && (lonDiff <= LEARN_TOLERANCE);
+                const clickedStr = `${formatLat(Math.round(currentTask.clickedLat))} / ${formatLon(Math.round(currentTask.clickedLon))}`;
+
+                if (correct) {
+                    learnFeedback.innerHTML = `✓ Richtig! (Dein Klick: ${clickedStr})`;
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-correct';
+                } else {
+                    learnFeedback.innerHTML = `✗ Daneben. Dein Klick: <b>${clickedStr}</b><br>Gesucht war: <b>${formatLat(currentTask.lat)} / ${formatLon(currentTask.lon)}</b>`;
+                    learnFeedback.className = 'text-sm mt-3 text-center feedback-wrong';
+                }
+                awaitingLearnClick = false;
+                container.style.cursor = 'default';
+            }
+        });
+
+        btnClearLearn.addEventListener('click', clearLearnTask);
+
+
+        // --- ZENTRALER KLICK-HANDLER (mit Drag-Erkennung über pointer-Events) ---
+        let pointerDownPos = { x: 0, y: 0 };
+        let pointerStartTracked = false;
+        const DRAG_THRESHOLD = 8; // Pixel: darüber gilt es als Drehen, nicht als Klick
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            tooltip.style.left = (event.clientX + 15) + 'px';
+            tooltip.style.top = (event.clientY + 15) + 'px';
+        });
+
+        // WICHTIG: pointerdown statt mousedown!
+        // OrbitControls ruft preventDefault() auf und unterdrückt damit das
+        // synthetische mousedown-Event. pointerdown wird NICHT unterdrückt.
+        window.addEventListener('pointerdown', (event) => {
+            pointerDownPos = { x: event.clientX, y: event.clientY };
+            pointerStartTracked = true;
+            // Für Touch: mouse-Koordinaten gleich beim Tippen setzen
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Beim Loslassen: Distanz prüfen und ggf. Punkt setzen
+        window.addEventListener('pointerup', (event) => {
+            // Klicks innerhalb der geöffneten Sidebar ignorieren
+            if (event.clientX < 358 && !sidebar.classList.contains('closed')) return;
+            if (!pointerStartTracked) return;
+
+            const dx = event.clientX - pointerDownPos.x;
+            const dy = event.clientY - pointerDownPos.y;
+            pointerStartTracked = false;
+
+            // Cursor-Bewegung über Schwelle => Drehen => kein Punkt setzen
+            if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) return;
+
+            // mouse-Koordinaten auf Loslass-Position aktualisieren (sicher für Touch)
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            if (isMeasuring) {
+                handleMeasureClick();
+                return;
+            }
+            if (awaitingLearnClick) {
+                handleLearnClick();
+                return;
+            }
+        });
+
+        // --- RENDER LOOP & RESIZE ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function projectVisible(pos) {
+            const tempV = pos.clone();
+            tempV.project(camera);
+            const dist = camera.position.distanceTo(pos);
+            const isFront = dist < camera.position.distanceTo(new THREE.Vector3(0,0,0));
+            const onScreen = isFront && tempV.z >= -1 && tempV.z <= 1;
+            return {
+                onScreen,
+                x: (tempV.x *  .5 + .5) * window.innerWidth,
+                y: (tempV.y * -.5 + .5) * window.innerHeight
+            };
+        }
+
+        function updateLabels() {
+            const allLabels = [...latLabels, ...lonLabels];
+            allLabels.forEach(item => {
+                if(item.element.style.display === 'none') return;
+                const p = projectVisible(item.pos);
+                if (p.onScreen) {
+                    item.element.style.transform = `translate(-50%, -50%) translate(${p.x}px,${p.y}px)`;
+                    item.element.style.opacity = "1";
+                } else {
+                    item.element.style.opacity = "0";
+                }
+            });
+
+            if (measureLabelPos && measureLabelEl.style.display !== 'none') {
+                const p = projectVisible(measureLabelPos);
+                if (p.onScreen) {
+                    measureLabelEl.style.transform = `translate(-50%, -50%) translate(${p.x}px,${p.y}px)`;
+                    measureLabelEl.style.opacity = "1";
+                } else {
+                    measureLabelEl.style.opacity = "0";
+                }
+            }
+        }
+
+        function handleHover() {
+            hoverRaycaster.setFromCamera(mouse, camera);
+            const interactables = [];
+            if (document.getElementById('chk-lat').checked) interactables.push(...latLines);
+            if (document.getElementById('chk-lon').checked) interactables.push(...lonLines);
+            if (activeLatHighlight) interactables.push(activeLatHighlight);
+            if (activeLonHighlight) interactables.push(activeLonHighlight);
+            if (intersectionMarker.visible) interactables.push(intersectionMarker);
+
+            const intersects = hoverRaycaster.intersectObjects(interactables);
+            if (intersects.length > 0) {
+                const obj = intersects[0].object;
+                if (obj.userData && obj.userData.label) {
+                    tooltip.style.display = 'block';
+                    tooltip.innerText = obj.userData.label;
+                    return;
+                }
+            }
+            tooltip.style.display = 'none';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            updateLabels();
+            handleHover();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
