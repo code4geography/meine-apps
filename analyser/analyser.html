@@ -6,15 +6,15 @@
 <title>Lern-App · Bild-Analyse (Test)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
 <style> body{background:#0f172a} input[type=range]{accent-color:#4f46e5} </style>
 </head>
 <body class="min-h-screen p-4 flex items-start justify-center">
 <div id="root" class="w-full"></div>
 
-<script type="text/babel" data-presets="react">
+<script type="text/plain" id="app-src">
 const { useRef, useEffect, useState, useCallback } = React;
 
 function I({ n, c='' }){ return <i className={`fa-solid ${n} ${c}`} aria-hidden="true"></i>; }
@@ -22,6 +22,23 @@ function I({ n, c='' }){ return <i className={`fa-solid ${n} ${c}`} aria-hidden=
 // ============================================================
 // Hilfsfunktionen
 // ============================================================
+function stretchVal(v, lo, hi){ if(hi<=lo) return v; const x=((v-lo)/(hi-lo))*255; return x<0?0:x>255?255:x; }
+
+function channelStretch(getVal, n){
+  const hist=new Uint32Array(256); let mn=255,mx=0;
+  for(let i=0;i<n;i++){ const v=getVal(i)|0; hist[v]++; if(v<mn)mn=v; if(v>mx)mx=v; }
+  const lowC=n*0.02, highC=n*0.98; let cum=0,pLo=mn,pHi=mx,foundLo=false;
+  for(let v=0;v<256;v++){ cum+=hist[v]; if(!foundLo&&cum>=lowC){pLo=v;foundLo=true;} if(cum>=highC){pHi=v;break;} }
+  return { mm:[mn,mx], pct:[pLo,pHi] };
+}
+function attachStretch(l){
+  const n=l.w*l.h;
+  l.stretch={
+    gray: channelStretch((i)=>l.gray[i], n),
+    rgb:{ R: channelStretch((i)=>l.rgba[i*4], n), G: channelStretch((i)=>l.rgba[i*4+1], n), B: channelStretch((i)=>l.rgba[i*4+2], n) }
+  };
+  return l;
+}
 function imageToLayer(url, name){
   return new Promise((resolve, reject)=>{
     const img = new Image();
@@ -33,7 +50,7 @@ function imageToLayer(url, name){
         const d=ctx.getImageData(0,0,c.width,c.height).data;
         const n=c.width*c.height, rgba=new Uint8ClampedArray(d), gray=new Uint8ClampedArray(n);
         for(let i=0;i<n;i++) gray[i]=Math.round(0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2]);
-        resolve({id:Math.random().toString(36).slice(2),name,w:c.width,h:c.height,rgba,gray});
+        resolve(attachStretch({id:Math.random().toString(36).slice(2),name,w:c.width,h:c.height,rgba,gray}));
       }catch(e){ reject(new Error('Pixel nicht lesbar (CORS/file://). Über lokalen Server öffnen.')); }
     };
     img.onerror = ()=>reject(new Error('Bild nicht ladbar'));
@@ -43,22 +60,7 @@ function imageToLayer(url, name){
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function shoelace(p){let s=0;for(let i=0,j=p.length-1;i<p.length;j=i++)s+=(p[j].x+p[i].x)*(p[j].y-p[i].y);return Math.abs(s/2);}
 function pointInPoly(x,y,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;if(((yi>y)!==(yj>y))&&(x<((xj-xi)*(y-yi))/(yj-yi)+xi))inside=!inside;}return inside;}
-
-function generateDemoLayers(){
-  const w=260,h=260, noise=(x,y)=>{const v=Math.sin(x*12.9898+y*78.233)*43758.5453;return v-Math.floor(v);};
-  const names=['Demo · Blau (B02)','Demo · Grün (B03)','Demo · Rot (B04)','Demo · NIR (B08)'], out=[];
-  for(let bi=0;bi<4;bi++){
-    const gray=new Uint8ClampedArray(w*h), rgba=new Uint8ClampedArray(w*h*4);
-    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-      const nx=x/w,ny=y/h, isIce=Math.abs(ny-(0.45+0.15*nx))<0.28-0.12*Math.sin(nx*Math.PI), nv=noise(Math.floor(x/6),Math.floor(y/6));
-      let refl; if(isIce)refl=[225,230,232,210]; else if(nv>0.6)refl=[55,70,45,200]; else if(nv>0.35)refl=[115,120,128,140]; else refl=[60,80,95,30];
-      const i=y*w+x, g=Math.max(0,Math.min(255,refl[bi]+(noise(x,y)-0.5)*12));
-      gray[i]=g; rgba[i*4]=g; rgba[i*4+1]=g; rgba[i*4+2]=g; rgba[i*4+3]=255;
-    }
-    out.push({id:'demo'+bi,name:names[bi],w,h,rgba,gray});
-  }
-  return out;
-}
+function makeSide(){ return {type:'single', layerId:null, channelMap:{R:null,G:null,B:null}, brightness:0, contrast:100}; }
 
 function Section({icon,title,children}){
   return (<div><div className="flex items-center gap-2 mb-2 text-slate-500">{icon}<h3 className="text-xs font-semibold uppercase tracking-wide">{title}</h3></div>{children}</div>);
@@ -70,26 +72,41 @@ function Slider({icon,label,value,min,max,onChange,suffix}){
 // ============================================================
 // DAS MODUL
 // ============================================================
-function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', images=[], onComplete=null, onClose=null }){
-  const canvasA=useRef(null), canvasB=useRef(null), overlay=useRef(null), wrapRef=useRef(null), draggingRef=useRef(false);
+function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', images=[], steps=[], onComplete=null, onClose=null }){
+  const canvasA=useRef(null), canvasB=useRef(null), classifyCanvas=useRef(null), overlay=useRef(null), wrapRef=useRef(null), draggingRef=useRef(false);
   const [layers,setLayers]=useState([]); const [loading,setLoading]=useState(false); const [info,setInfo]=useState(null);
-  const [gsd,setGsd]=useState(defaultGsd);
+  const [gsd]=useState(defaultGsd);
   const [mode,setMode]=useState('single'); const [singleId,setSingleId]=useState(null);
-  const [channelMap,setChannelMap]=useState({R:null,G:null,B:null}); const [cmp,setCmp]=useState({left:null,right:null}); const [comparePct,setComparePct]=useState(50);
+  const [channelMap,setChannelMap]=useState({R:null,G:null,B:null});
+  const [sideL,setSideL]=useState(makeSide()); const [sideR,setSideR]=useState(makeSide()); const [activeSide,setActiveSide]=useState('L');
+  const [comparePct,setComparePct]=useState(50);
   const [brightness,setBrightness]=useState(0); const [contrast,setContrast]=useState(100); const [opacity,setOpacity]=useState(100);
+  const [autoStretch,setAutoStretch]=useState(true);
+  const STRETCH = 'pct';
   const [tool,setTool]=useState('none'); const [linePoints,setLinePoints]=useState([]); const [polyPoints,setPolyPoints]=useState([]); const [polyClosed,setPolyClosed]=useState(false);
   const [result,setResult]=useState(null); const [stats,setStats]=useState(null); const [dims,setDims]=useState({w:1,h:1});
-  const getLayer=useCallback((id)=>layers.find((l)=>l.id===id),[layers]);
 
+  const [classifySeed,setClassifySeed]=useState(null); const [classifyTol,setClassifyTol]=useState(28); const [classifyCount,setClassifyCount]=useState(0);
+
+  const [zoom,setZoom]=useState(1); const [pan,setPan]=useState({x:0,y:0});
+  const zoomRef=useRef(1), panRef=useRef({x:0,y:0}); zoomRef.current=zoom; panRef.current=pan;
+  const panDragRef=useRef(null);
+
+  const [wrapW,setWrapW]=useState(1);
+
+  const [stepIdx,setStepIdx]=useState(0); const [stepsOpen,setStepsOpen]=useState(true); const [helpShown,setHelpShown]=useState(false);
+
+  const getLayer=useCallback((id)=>layers.find((l)=>l.id===id),[layers]);
+  const activeCfg = activeSide==='L'?sideL:sideR;
+  const patchSide=(patch)=>{ (activeSide==='L'?setSideL:setSideR)((prev)=>({...prev,...patch})); };
+
+  // GEÄNDERT: Kanäle & Vergleich bleiben leer – nur die Einzelansicht bekommt einen Standard.
   const addLayers=(nl)=>setLayers((prev)=>{
     const all=[...prev,...nl];
     if(!singleId&&all[0])setSingleId(all[0].id);
-    setChannelMap((cm)=>({R:cm.R||all[2]?.id||all[0]?.id||null,G:cm.G||all[1]?.id||all[0]?.id||null,B:cm.B||all[0]?.id||null}));
-    setCmp((c)=>({left:c.left||all[0]?.id||null,right:c.right||all[1]?.id||all[0]?.id||null}));
     return all;
   });
 
-  // Vom Lehrer / der Lern-App vorgegebene Bilder laden
   useEffect(()=>{
     if(!images.length) return;
     (async()=>{ setLoading(true);
@@ -98,22 +115,81 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
     })();
   },[]);
 
+  useEffect(()=>{ const el=wrapRef.current; if(!el)return; const ro=new ResizeObserver((entries)=>{ for(const e of entries){ const w=e.contentRect.width; if(w>2) setWrapW(w); } }); ro.observe(el); const w0=el.getBoundingClientRect().width; if(w0>2) setWrapW(w0); return ()=>ro.disconnect(); },[]);
+
   const handleUpload=async(fl)=>{ setLoading(true); setInfo(null);
     try{ const r=[]; for(const f of Array.from(fl)){ const u=URL.createObjectURL(f); r.push(await imageToLayer(u,f.name.replace(/\.[^.]+$/,''))); } addLayers(r); setInfo({type:'ok',text:`${r.length} Ebene(n) geladen`}); }
     catch(e){ setInfo({type:'err',text:e.message||'Fehler beim Laden.'}); } finally{ setLoading(false); }
   };
-  const loadDemo=()=>{ setLayers([]); setSingleId(null); setChannelMap({R:null,G:null,B:null}); setCmp({left:null,right:null}); setTimeout(()=>{ addLayers(generateDemoLayers()); setInfo({type:'ok',text:'Demo-Szene geladen'}); },0); };
-  const removeLayer=(id)=>{ setLayers((p)=>p.filter((l)=>l.id!==id)); if(singleId===id)setSingleId(layers.find((l)=>l.id!==id)?.id||null); };
 
-  const applyBC=useCallback((v)=>{ const x=(v-128)*(contrast/100)+128+brightness; return x<0?0:x>255?255:x; },[brightness,contrast]);
-  const drawSingle=useCallback((cv,l)=>{ if(!cv||!l)return; cv.width=l.w; cv.height=l.h; const ctx=cv.getContext('2d'),img=ctx.createImageData(l.w,l.h); for(let i=0;i<l.w*l.h;i++){img.data[i*4]=applyBC(l.rgba[i*4]);img.data[i*4+1]=applyBC(l.rgba[i*4+1]);img.data[i*4+2]=applyBC(l.rgba[i*4+2]);img.data[i*4+3]=255;} ctx.putImageData(img,0,0); },[applyBC]);
-  const drawChannels=useCallback((cv,R,G,B)=>{ const base=R||G||B; if(!cv||!base)return; cv.width=base.w; cv.height=base.h; const ctx=cv.getContext('2d'),img=ctx.createImageData(base.w,base.h),n=base.w*base.h; for(let i=0;i<n;i++){img.data[i*4]=applyBC(R?R.gray[i]:0);img.data[i*4+1]=applyBC(G?G.gray[i]:0);img.data[i*4+2]=applyBC(B?B.gray[i]:0);img.data[i*4+3]=255;} ctx.putImageData(img,0,0); },[applyBC]);
+  const fixSide=(s,id,fb)=>({ ...s, layerId: s.layerId===id?fb:s.layerId, channelMap:{ R: s.channelMap.R===id?fb:s.channelMap.R, G: s.channelMap.G===id?fb:s.channelMap.G, B: s.channelMap.B===id?fb:s.channelMap.B } });
+  const removeLayer=(id)=>{
+    const next=layers.filter((l)=>l.id!==id); const fb=next[0]?.id||null; setLayers(next);
+    if(singleId===id) setSingleId(fb);
+    setChannelMap((cm)=>({R:cm.R===id?null:cm.R, G:cm.G===id?null:cm.G, B:cm.B===id?null:cm.B}));
+    setSideL((s)=>fixSide(s,id,null)); setSideR((s)=>fixSide(s,id,null));
+  };
+
+  const applyBC=useCallback((v,br,ct)=>{ const x=(v-128)*(ct/100)+128+br; return x<0?0:x>255?255:x; },[]);
+
+  const drawSingle=useCallback((cv,l,br,ct,sMode)=>{
+    if(!cv||!l)return; cv.width=l.w; cv.height=l.h;
+    const ctx=cv.getContext('2d'),img=ctx.createImageData(l.w,l.h);
+    const sR=sMode&&l.stretch?l.stretch.rgb.R[sMode]:null, sG=sMode&&l.stretch?l.stretch.rgb.G[sMode]:null, sB=sMode&&l.stretch?l.stretch.rgb.B[sMode]:null;
+    for(let i=0;i<l.w*l.h;i++){
+      let r=l.rgba[i*4], g=l.rgba[i*4+1], b=l.rgba[i*4+2];
+      if(sR){ r=stretchVal(r,sR[0],sR[1]); g=stretchVal(g,sG[0],sG[1]); b=stretchVal(b,sB[0],sB[1]); }
+      img.data[i*4]=applyBC(r,br,ct); img.data[i*4+1]=applyBC(g,br,ct); img.data[i*4+2]=applyBC(b,br,ct); img.data[i*4+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+  },[applyBC]);
+
+  const drawChannels=useCallback((cv,R,G,B,br,ct,sMode)=>{
+    const base=R||G||B; if(!cv||!base)return; cv.width=base.w; cv.height=base.h;
+    const ctx=cv.getContext('2d'),img=ctx.createImageData(base.w,base.h),n=base.w*base.h;
+    const sRv=sMode&&R&&R.stretch?R.stretch.gray[sMode]:null, sGv=sMode&&G&&G.stretch?G.stretch.gray[sMode]:null, sBv=sMode&&B&&B.stretch?B.stretch.gray[sMode]:null;
+    for(let i=0;i<n;i++){
+      let r=R?R.gray[i]:0, g=G?G.gray[i]:0, b=B?B.gray[i]:0;
+      if(sRv)r=stretchVal(r,sRv[0],sRv[1]); if(sGv)g=stretchVal(g,sGv[0],sGv[1]); if(sBv)b=stretchVal(b,sBv[0],sBv[1]);
+      img.data[i*4]=applyBC(r,br,ct); img.data[i*4+1]=applyBC(g,br,ct); img.data[i*4+2]=applyBC(b,br,ct); img.data[i*4+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+  },[applyBC]);
+
+  // GEÄNDERT: leert die Leinwand, wenn nichts ausgewählt ist (sonst bliebe ein altes Bild stehen).
+  const renderSide=useCallback((cv,cfg,sMode)=>{
+    if(!cv)return null;
+    if(cfg.type==='channels'){ const R=getLayer(cfg.channelMap.R),G=getLayer(cfg.channelMap.G),B=getLayer(cfg.channelMap.B); const base=R||G||B; if(base){drawChannels(cv,R,G,B,cfg.brightness,cfg.contrast,sMode); return base;} const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); return null; }
+    const l=getLayer(cfg.layerId); if(l){drawSingle(cv,l,cfg.brightness,cfg.contrast,sMode); return l;} const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); return null;
+  },[getLayer,drawSingle,drawChannels]);
+
+  const runClassify=useCallback((seed,tol)=>{
+    const ctx=canvasA.current?.getContext('2d'); const cc=classifyCanvas.current; if(!ctx||!cc||!seed)return;
+    const data=ctx.getImageData(0,0,dims.w,dims.h).data;
+    cc.width=dims.w; cc.height=dims.h; const cctx=cc.getContext('2d'); const out=cctx.createImageData(dims.w,dims.h);
+    let count=0;
+    for(let i=0;i<dims.w*dims.h;i++){
+      const r=data[i*4],g=data[i*4+1],b=data[i*4+2];
+      const d=Math.sqrt((r-seed.r)**2+(g-seed.g)**2+(b-seed.b)**2);
+      if(d<=tol){ out.data[i*4]=236;out.data[i*4+1]=72;out.data[i*4+2]=196;out.data[i*4+3]=150; count++; }
+    }
+    cctx.putImageData(out,0,0); setClassifyCount(count);
+  },[dims]);
+
+  const clearClassify=useCallback(()=>{ setClassifySeed(null); setClassifyCount(0); const cc=classifyCanvas.current; if(cc){const ctx=cc.getContext('2d');ctx.clearRect(0,0,cc.width,cc.height);} },[]);
 
   useEffect(()=>{ if(!layers.length)return;
-    if(mode==='single'){ const l=getLayer(singleId)||layers[0]; if(l){drawSingle(canvasA.current,l);setDims({w:l.w,h:l.h});} }
-    else if(mode==='channels'){ const R=getLayer(channelMap.R),G=getLayer(channelMap.G),B=getLayer(channelMap.B),base=R||G||B; if(base){drawChannels(canvasA.current,R,G,B);setDims({w:base.w,h:base.h});} }
-    else if(mode==='compare'){ const L=getLayer(cmp.left),Rr=getLayer(cmp.right); if(Rr){drawSingle(canvasA.current,Rr);setDims({w:Rr.w,h:Rr.h});} if(L)drawSingle(canvasB.current,L); }
-  },[layers,mode,singleId,channelMap,cmp,brightness,contrast,getLayer,drawSingle,drawChannels]);
+    const sMode = autoStretch ? STRETCH : null;
+    if(mode==='single'){ const l=getLayer(singleId)||layers[0]; if(l){drawSingle(canvasA.current,l,brightness,contrast,sMode);setDims({w:l.w,h:l.h});} }
+    else if(mode==='channels'){ const R=getLayer(channelMap.R),G=getLayer(channelMap.G),B=getLayer(channelMap.B),base=R||G||B; if(base){drawChannels(canvasA.current,R,G,B,brightness,contrast,sMode);setDims({w:base.w,h:base.h});} else { const ctx=canvasA.current?.getContext('2d'); if(ctx)ctx.clearRect(0,0,canvasA.current.width,canvasA.current.height); } }
+    else if(mode==='compare'){
+      const baseR=renderSide(canvasA.current,sideR,sMode); const baseL=renderSide(canvasB.current,sideL,sMode);
+      const base=baseR||baseL; if(base)setDims({w:base.w,h:base.h});
+    }
+    if(classifySeed&&tool==='classify'&&mode!=='compare') setTimeout(()=>runClassify(classifySeed,classifyTol),0);
+  },[layers,mode,singleId,channelMap,sideL,sideR,brightness,contrast,autoStretch,getLayer,drawSingle,drawChannels,renderSide]);
+
+  useEffect(()=>{ if(classifySeed&&tool==='classify'&&mode!=='compare') runClassify(classifySeed,classifyTol); },[classifyTol]);
 
   useEffect(()=>{ const c=overlay.current; if(!c)return; c.width=dims.w; c.height=dims.h; const ctx=c.getContext('2d'); ctx.clearRect(0,0,dims.w,dims.h);
     const lw=Math.max(1.5,dims.w/300), r=Math.max(3,dims.w/80);
@@ -123,6 +199,26 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
 
   useEffect(()=>{ if(tool==='line'&&linePoints.length===2) setResult({type:'distance',meters:dist(linePoints[0],linePoints[1])*gsd}); },[linePoints,tool,gsd]);
 
+  useEffect(()=>{
+    const el=wrapRef.current; if(!el)return;
+    const onWheel=(e)=>{
+      if(mode==='compare')return; e.preventDefault();
+      const r=el.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+      const z=zoomRef.current, p=panRef.current;
+      let nz=z*(e.deltaY<0?1.15:1/1.15); if(nz<1)nz=1; if(nz>12)nz=12;
+      const lx=(mx-p.x)/z, ly=(my-p.y)/z;
+      let nx=mx-lx*nz, ny=my-ly*nz; if(nz===1){nx=0;ny=0;}
+      setZoom(nz); setPan({x:nx,y:ny});
+    };
+    el.addEventListener('wheel',onWheel,{passive:false});
+    return ()=>el.removeEventListener('wheel',onWheel);
+  },[mode]);
+
+  const zoomAt=(mx,my,factor)=>{ const z=zoom,p=pan; let nz=z*factor; if(nz<1)nz=1; if(nz>12)nz=12; const lx=(mx-p.x)/z, ly=(my-p.y)/z; let nx=mx-lx*nz, ny=my-ly*nz; if(nz===1){nx=0;ny=0;} setZoom(nz); setPan({x:nx,y:ny}); };
+  const zoomBy=(f)=>{ const el=wrapRef.current; if(!el)return; const r=el.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,f); };
+  const fitView=()=>{ setZoom(1); setPan({x:0,y:0}); };
+  const toggleHand=()=>setTool((t)=>t==='hand'?'none':'hand');
+
   const computeStats=(poly)=>{ const ctx=canvasA.current?.getContext('2d'); if(!ctx)return; const data=ctx.getImageData(0,0,dims.w,dims.h).data;
     const xs=poly.map((p)=>p.x),ys=poly.map((p)=>p.y),x0=Math.max(0,Math.floor(Math.min(...xs))),x1=Math.min(dims.w-1,Math.ceil(Math.max(...xs))),y0=Math.max(0,Math.floor(Math.min(...ys))),y1=Math.min(dims.h-1,Math.ceil(Math.max(...ys)));
     let r=0,g=0,b=0,count=0; for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(pointInPoly(x+0.5,y+0.5,poly)){const i=(y*dims.w+x)*4;r+=data[i];g+=data[i+1];b+=data[i+2];count++;}
@@ -130,37 +226,67 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
   };
   const closePolygon=()=>{ if(polyPoints.length<3)return; setPolyClosed(true); setResult({type:'area',m2:shoelace(polyPoints)*gsd*gsd}); computeStats(polyPoints); };
   const getPos=(e)=>{ const rect=overlay.current.getBoundingClientRect(); return {x:((e.clientX-rect.left)/rect.width)*dims.w,y:((e.clientY-rect.top)/rect.height)*dims.h}; };
-  const onCanvasDown=(e)=>{ if(mode==='compare'||tool==='none')return; const p=getPos(e);
+  const onCanvasDown=(e)=>{
+    if(mode==='compare')return;
+    if(tool==='hand'){ panDragRef.current={sx:e.clientX,sy:e.clientY,ox:pan.x,oy:pan.y}; try{overlay.current.setPointerCapture(e.pointerId);}catch(_){} return; }
+    if(tool==='none')return; const p=getPos(e);
     if(tool==='line'){ setLinePoints((prev)=>prev.length>=2?[p]:[...prev,p]); if(linePoints.length>=2)setResult(null); }
     else if(tool==='polygon'){ if(polyClosed){setPolyPoints([p]);setPolyClosed(false);setStats(null);setResult(null);} else setPolyPoints((prev)=>[...prev,p]); }
+    else if(tool==='classify'){ const ctx=canvasA.current.getContext('2d'); const px=ctx.getImageData(Math.max(0,Math.min(dims.w-1,Math.floor(p.x))),Math.max(0,Math.min(dims.h-1,Math.floor(p.y))),1,1).data; const seed={r:px[0],g:px[1],b:px[2]}; setClassifySeed(seed); runClassify(seed,classifyTol); }
   };
-  const clearAll=()=>{ setLinePoints([]);setPolyPoints([]);setPolyClosed(false);setResult(null);setStats(null); };
+  const onCanvasMove=(e)=>{ if(!panDragRef.current)return; const d=panDragRef.current; setPan({x:d.ox+(e.clientX-d.sx), y:d.oy+(e.clientY-d.sy)}); };
+  const onCanvasUp=()=>{ panDragRef.current=null; };
+  const clearAll=()=>{ setLinePoints([]);setPolyPoints([]);setPolyClosed(false);setResult(null);setStats(null); clearClassify(); };
   const switchTool=(t)=>{ setTool((c)=>c===t?'none':t); clearAll(); };
   const undoPoly=()=>{ setPolyClosed(false);setPolyPoints((p)=>p.slice(0,-1));setStats(null);setResult(null); };
   const onHandleDown=(e)=>{ e.target.setPointerCapture(e.pointerId); draggingRef.current=true; };
   const onHandleMove=(e)=>{ if(!draggingRef.current||!wrapRef.current)return; const r=wrapRef.current.getBoundingClientRect(); setComparePct(Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100))); };
   const onHandleUp=()=>{ draggingRef.current=false; };
 
+  const gotoStep=(i)=>{ if(i<0||i>=steps.length)return; setStepIdx(i); setHelpShown(false); };
+  const useHelp=()=>{ const s=steps[stepIdx]; if(!s)return; if(s.helpMode){ setMode(s.helpMode); clearAll(); fitView(); } if(s.helpTool!==undefined){ setTool(s.helpTool); if(s.helpTool!=='none')clearAll(); } setHelpShown(true); };
+
   const fmt=(n,d=0)=>n.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
   const resultText=()=>{ if(!result)return null; if(result.type==='distance')return {label:'Strecke',big:`${fmt(result.meters/1000,2)} km`,small:`${fmt(result.meters)} m`,value:(result.meters/1000).toFixed(2)}; return {label:'Fläche',big:`${fmt(result.m2/1e6,2)} km²`,small:`${fmt(result.m2)} m²`,value:(result.m2/1e6).toFixed(2)}; };
   const rt=resultText();
   const hasLayers=layers.length>0;
-  const layerOptions=(val,onChange,allowNone=false)=>(<select value={val||''} onChange={(e)=>onChange(e.target.value||null)} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700">{allowNone&&<option value="">— leer —</option>}{layers.map((l)=><option key={l.id} value={l.id}>{l.name}</option>)}</select>);
+  const layerOptions=(val,onChange,allowNone=false)=>(<select value={val||''} onChange={(e)=>onChange(e.target.value||null)} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700">{allowNone&&<option value="">— leer —</option>}{!allowNone&&<option value="">— bitte wählen —</option>}{layers.map((l)=><option key={l.id} value={l.id}>{l.name}</option>)}</select>);
+
+  const dispBr = mode==='compare'?activeCfg.brightness:brightness;
+  const dispCt = mode==='compare'?activeCfg.contrast:contrast;
+  const setDispBr = (v)=> mode==='compare'?patchSide({brightness:v}):setBrightness(v);
+  const setDispCt = (v)=> mode==='compare'?patchSide({contrast:v}):setContrast(v);
+  const resetAdjust = ()=>{ if(mode==='compare')patchSide({brightness:0,contrast:100}); else {setBrightness(0);setContrast(100);} setOpacity(100); };
+
+  const viewStyle = mode!=='compare' ? {transform:`translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin:'0 0', willChange:'transform'} : undefined;
+
+  let sb=null;
+  if(hasLayers && wrapW>2){
+    const mPerPx = gsd*dims.w/(wrapW*(mode==='compare'?1:zoom));
+    if(isFinite(mPerPx)&&mPerPx>0){
+      const target=mPerPx*90, pow=Math.pow(10,Math.floor(Math.log10(target))), f=target/pow;
+      let nice; if(f<1.5)nice=1; else if(f<3.5)nice=2; else if(f<7.5)nice=5; else nice=10;
+      const meters=nice*pow, px=meters/mPerPx;
+      const label=meters>=1000?`${fmt(meters/1000, meters%1000?1:0)} km`:`${fmt(meters)} m`;
+      sb={px,label};
+    }
+  }
+
+  const classM2 = classifyCount*gsd*gsd;
+  const curStep = steps[stepIdx]||null;
 
   return (
     <div className="relative w-full max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200 text-slate-700">
-      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-600 text-white"><I n="fa-layer-group" c="text-base"/></div>
-        <div className="min-w-0"><h2 className="text-base font-bold text-slate-900 leading-tight">{title}</h2><p className="text-xs text-slate-400">Analyse-Modul</p></div>
-        {onClose&&<button onClick={onClose} className="ml-auto p-2 rounded-lg hover:bg-slate-100 transition text-slate-400"><I n="fa-xmark" c="text-lg"/></button>}
+      {/* GEÄNDERT: Banner-Header mit Logo. Bilder liegen im App-Ordner (banner.jpg / BAT_logo.jpg). */}
+      <div className="relative w-full h-28 bg-gradient-to-r from-sky-600 to-indigo-600 border-b border-slate-200 overflow-hidden">
+        <img src="banner.jpg" alt={title} className="absolute inset-0 w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none';}}/>
+        <img src="BAT_logo.jpg" alt="BAT" className="absolute top-3 left-3 h-16 w-auto rounded-lg shadow-md bg-white/90 p-1" onError={(e)=>{e.currentTarget.style.display='none';}}/>
+        {onClose&&<button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-lg bg-white/85 hover:bg-white transition text-slate-600 shadow"><I n="fa-xmark" c="text-lg"/></button>}
       </div>
-      {task&&<div className="px-4 py-2.5 bg-indigo-50 border-b border-indigo-100"><p className="text-xs text-indigo-900 leading-relaxed">{task}</p></div>}
       <div className="flex flex-col md:flex-row">
-        <div className="w-full md:w-72 md:shrink-0 bg-slate-50 md:border-r border-slate-200 p-3 space-y-4 md:max-h-[640px] md:overflow-y-auto">
+        <div className="w-full md:w-72 md:shrink-0 bg-slate-50 md:border-r border-slate-200 p-3 space-y-4 md:max-h-screen md:overflow-y-auto">
           <Section icon={<I n="fa-image"/>} title="Bilder">
             <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
-            <button onClick={loadDemo} className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 transition"><I n="fa-wand-magic-sparkles"/> Demo-Szene</button>
-            <div className="flex items-center gap-2 mt-2"><label className="text-xs text-slate-500 shrink-0">GSD (m/Px)</label><input type="number" min={0.1} step={0.1} value={gsd} onChange={(e)=>setGsd(Math.max(0.001,Number(e.target.value)||0))} className="w-20 text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white"/></div>
             {info&&<p className={`mt-2 text-xs flex items-start gap-1 ${info.type==='ok'?'text-emerald-600':'text-amber-600'}`}>{info.type==='ok'&&<I n="fa-check" c="mt-0.5"/>}{info.text}</p>}
           </Section>
           <Section icon={<I n="fa-layer-group"/>} title={`Ebenen (${layers.length})`}>
@@ -168,16 +294,30 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
               <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-indigo-50 border-indigo-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-indigo-600':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span><button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button></li>)}</ul>}
           </Section>
           {hasLayers&&<Section icon={<I n="fa-up-down-left-right"/>} title="Ansicht">
-            <div className="grid grid-cols-3 gap-1.5 mb-2">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
-            {mode==='single'&&<div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(singleId,setSingleId)}</div>}
-            {mode==='channels'&&<div className="space-y-1.5">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(channelMap[ch],(v)=>setChannelMap((p)=>({...p,[ch]:v})),true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Z. B. Infrarot auf Rot = Falschfarben.</p></div>}
-            {mode==='compare'&&<div className="space-y-1.5"><div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-12">Links</span>{layerOptions(cmp.left,(v)=>setCmp((c)=>({...c,left:v})))}</div><div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-12">Rechts</span>{layerOptions(cmp.right,(v)=>setCmp((c)=>({...c,right:v})))}</div><p className="text-xs text-slate-400 leading-snug">Regler im Bild ziehen.</p></div>}
+            <div className="grid grid-cols-3 gap-1.5">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();fitView();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
+            {mode==='single'&&<div className="flex items-center gap-2 mt-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(singleId,setSingleId)}</div>}
+            {mode==='channels'&&<div className="space-y-1.5 mt-2">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(channelMap[ch],(v)=>setChannelMap((p)=>({...p,[ch]:v})),true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Ordne den Kanälen selbst die passenden Bänder zu. Echtfarben: R=B04, G=B03, B=B02. Falschfarben: R=B08 (NIR).</p></div>}
+            {mode==='compare'&&<div className="space-y-2 mt-2">
+              <div className={`text-xs px-2 py-1.5 rounded-lg border ${activeSide==='L'?'bg-indigo-50 border-indigo-200 text-indigo-800':'bg-amber-50 border-amber-200 text-amber-800'}`}>Du konfigurierst gerade: <b>{activeSide==='L'?'Linke Seite':'Rechte Seite'}</b> <span className="opacity-70">(oben am Bild umschalten)</span></div>
+              <div className="grid grid-cols-2 gap-1.5">{[['single','Einzelbild'],['channels','Kanäle']].map(([t,lbl])=><button key={t} onClick={()=>patchSide({type:t})} className={`text-xs px-1 py-1.5 rounded-lg transition ${activeCfg.type===t?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
+              {activeCfg.type==='single'?
+                <div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(activeCfg.layerId,(v)=>{patchSide({layerId:v});})}</div>:
+                <div className="space-y-1.5">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(activeCfg.channelMap[ch],(v)=>{patchSide({channelMap:{...activeCfg.channelMap,[ch]:v}});},true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Echtfarben: R=B04, G=B03, B=B02.</p></div>}
+              <p className="text-xs text-slate-400 leading-snug">Wähle für beide Seiten selbst ein Bild. Regler im Bild ziehen. Helligkeit/Kontrast gelten nur für die aktive Seite.</p>
+            </div>}
           </Section>}
-          {hasLayers&&<Section icon={<I n="fa-sliders"/>} title="Bildanpassung">
-            <Slider icon={<I n="fa-sun"/>} label="Helligkeit" value={brightness} min={-100} max={100} onChange={setBrightness} suffix=""/>
-            <Slider icon={<I n="fa-circle-half-stroke"/>} label="Kontrast" value={contrast} min={0} max={200} onChange={setContrast} suffix="%"/>
+          {hasLayers&&<Section icon={<I n="fa-wand-magic-sparkles"/>} title="Auto-Streckung">
+            <button onClick={()=>setAutoStretch((a)=>!a)} className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${autoStretch?'bg-indigo-600 text-white border-indigo-600':'bg-white border-slate-300 hover:bg-slate-100'}`}>
+              <span className="flex items-center gap-1.5"><I n="fa-wand-magic-sparkles"/> Kontrast-Streckung</span>
+              <span className={`font-semibold ${autoStretch?'text-white':'text-slate-400'}`}>{autoStretch?'AN':'AUS'}</span>
+            </button>
+            <p className="text-xs text-slate-400 leading-snug mt-2">Hebt dunkle Roh-Bänder automatisch an (2–98 %, robust gegen Ausreißer). AUS zeigt die Rohwerte.</p>
+          </Section>}
+          {hasLayers&&<Section icon={<I n="fa-sliders"/>} title={mode==='compare'?`Bildanpassung · ${activeSide==='L'?'Links':'Rechts'}`:'Bildanpassung'}>
+            <Slider icon={<I n="fa-sun"/>} label="Helligkeit" value={dispBr} min={-100} max={100} onChange={setDispBr} suffix=""/>
+            <Slider icon={<I n="fa-circle-half-stroke"/>} label="Kontrast" value={dispCt} min={0} max={200} onChange={setDispCt} suffix="%"/>
             <Slider icon={<I n="fa-droplet"/>} label="Deckkraft" value={opacity} min={20} max={100} onChange={setOpacity} suffix="%"/>
-            <button onClick={()=>{setBrightness(0);setContrast(100);setOpacity(100);}} className="w-full mt-1 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 transition">Zurücksetzen</button>
+            <button onClick={resetAdjust} className="w-full mt-1 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 transition">Zurücksetzen</button>
           </Section>}
           {hasLayers&&<Section icon={<I n="fa-ruler"/>} title="Messwerkzeuge">
             {mode==='compare'&&<p className="text-xs text-amber-600 mb-2">Im Vergleich deaktiviert.</p>}
@@ -188,21 +328,88 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
             {tool==='polygon'&&mode!=='compare'&&<div className="grid grid-cols-2 gap-2 mt-2"><button onClick={closePolygon} disabled={polyPoints.length<3} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white transition"><I n="fa-check"/> Schließen</button><button onClick={undoPoly} disabled={!polyPoints.length} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-40 transition"><I n="fa-rotate-left"/> Zurück</button></div>}
             <button onClick={clearAll} className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-rose-50 transition"><I n="fa-trash"/> Zeichnung löschen</button>
           </Section>}
+          {hasLayers&&<Section icon={<I n="fa-fill-drip"/>} title="Klassifikation">
+            {mode==='compare'&&<p className="text-xs text-amber-600 mb-2">Im Vergleich deaktiviert.</p>}
+            <button onClick={()=>switchTool('classify')} disabled={mode==='compare'} className={`w-full flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='classify'?'bg-fuchsia-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-eye-dropper"/> Pixel auswählen</button>
+            {tool==='classify'&&<div className="mt-2">
+              <Slider icon={<I n="fa-arrows-left-right-to-line"/>} label="Toleranz" value={classifyTol} min={2} max={120} onChange={setClassifyTol} suffix=""/>
+              <p className="text-xs text-slate-400 leading-snug">Klicke im Bild auf eine Fläche (z. B. Eis). Alle farbähnlichen Pixel werden markiert und ihre Fläche berechnet.</p>
+            </div>}
+          </Section>}
         </div>
         <div className="flex-1 p-3 flex flex-col gap-3 bg-slate-100/50">
+          {steps.length>0&&curStep&&<div className="rounded-xl bg-white border border-slate-200 overflow-hidden">
+            <button onClick={()=>setStepsOpen((o)=>!o)} className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50 transition">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">{stepIdx+1}</span>
+              <span className="text-xs font-semibold text-slate-700 flex-1 min-w-0 truncate">Schritt {stepIdx+1}/{steps.length}: {curStep.title}</span>
+              <I n={stepsOpen?'fa-chevron-up':'fa-chevron-down'} c="text-slate-400"/>
+            </button>
+            {stepsOpen&&<div className="px-3 pb-3">
+              <p className="text-xs text-slate-600 leading-relaxed mb-2.5">{curStep.text}</p>
+              {(curStep.hint||curStep.helpMode||curStep.helpTool!==undefined)&&<div className="mb-2.5">
+                {!helpShown?
+                  <button onClick={useHelp} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition"><I n="fa-life-ring"/> Ich komme nicht weiter</button>
+                  :<div className="flex items-start gap-2 text-xs px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 leading-relaxed"><I n="fa-lightbulb" c="mt-0.5 shrink-0"/><span>{curStep.hint||'Die passende Funktion wurde für dich aktiviert.'}</span></div>}
+              </div>}
+              <div className="flex items-center gap-2">
+                <button disabled={stepIdx===0} onClick={()=>gotoStep(stepIdx-1)} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-40 transition"><I n="fa-arrow-left"/> Zurück</button>
+                <button disabled={stepIdx===steps.length-1} onClick={()=>gotoStep(stepIdx+1)} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 transition">Weiter <I n="fa-arrow-right"/></button>
+                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 transition-all" style={{width:`${((stepIdx+1)/steps.length)*100}%`}}/></div>
+              </div>
+            </div>}
+          </div>}
+          {mode==='compare'&&hasLayers&&<div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2">
+            <span className="text-xs text-slate-500 pl-1 shrink-0">Du konfigurierst gerade:</span>
+            <button onClick={()=>setActiveSide('L')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='L'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Links</button>
+            <button onClick={()=>setActiveSide('R')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='R'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Rechts</button>
+          </div>}
           <div ref={wrapRef} className="relative w-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-inner select-none" style={{aspectRatio:`${dims.w} / ${dims.h}`}}>
-            {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">„Bild auswählen" oder „Demo-Szene"</p></div>:
+            {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">Lade ein Bild über „Bild auswählen"</p></div>:
             <>
-              <canvas ref={canvasA} style={{imageRendering:'pixelated',opacity:opacity/100}} className="absolute inset-0 w-full h-full"/>
-              <canvas ref={canvasB} style={{imageRendering:'pixelated',opacity:opacity/100,clipPath:`inset(0 ${100-comparePct}% 0 0)`,display:mode==='compare'?'block':'none'}} className="absolute inset-0 w-full h-full"/>
-              <canvas ref={overlay} onPointerDown={onCanvasDown} style={{imageRendering:'pixelated',pointerEvents:tool!=='none'&&mode!=='compare'?'auto':'none',cursor:tool!=='none'?'crosshair':'default'}} className="absolute inset-0 w-full h-full"/>
-              {mode==='compare'&&<><div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md pointer-events-none" style={{left:`${comparePct}%`}}/><div onPointerDown={onHandleDown} onPointerMove={onHandleMove} onPointerUp={onHandleUp} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg border border-slate-200 flex items-center justify-center cursor-ew-resize touch-none text-slate-600" style={{left:`${comparePct}%`}}><I n="fa-code-compare"/></div></>}
+              <div className="absolute inset-0" style={viewStyle}>
+                <canvas ref={canvasA} style={{imageRendering:'pixelated',opacity:opacity/100}} className="absolute inset-0 w-full h-full"/>
+                <canvas ref={canvasB} style={{imageRendering:'pixelated',opacity:opacity/100,clipPath:`inset(0 ${100-comparePct}% 0 0)`,display:mode==='compare'?'block':'none'}} className="absolute inset-0 w-full h-full"/>
+                <canvas ref={classifyCanvas} style={{imageRendering:'pixelated',pointerEvents:'none',display:(tool==='classify'&&classifySeed&&mode!=='compare')?'block':'none'}} className="absolute inset-0 w-full h-full"/>
+                <canvas ref={overlay} onPointerDown={onCanvasDown} onPointerMove={onCanvasMove} onPointerUp={onCanvasUp} onPointerLeave={onCanvasUp} style={{imageRendering:'pixelated',pointerEvents:tool!=='none'&&mode!=='compare'?'auto':'none',cursor:tool==='hand'?'grab':tool!=='none'?'crosshair':'default'}} className="absolute inset-0 w-full h-full"/>
+              </div>
+              {sb&&<div className="absolute bottom-2 left-2 z-10 pointer-events-none flex flex-col items-start gap-0.5">
+                <span className="text-xs font-medium text-white px-1.5 rounded bg-black/55 tabular-nums">{sb.label}</span>
+                <div className="h-1.5 bg-white border-l-2 border-r-2 border-b-2 border-slate-800" style={{width:`${sb.px}px`}}/>
+              </div>}
+              {mode!=='compare'&&<>
+                <button onClick={toggleHand} title="Verschieben (Pan)" className={`absolute top-2 left-2 z-10 w-9 h-9 rounded-lg shadow flex items-center justify-center transition ${tool==='hand'?'bg-indigo-600 text-white':'bg-white/90 text-slate-600 hover:bg-white'}`}><I n="fa-up-down-left-right"/></button>
+                <div className="absolute top-2 right-2 z-10 flex flex-col items-stretch gap-1">
+                  <button onClick={()=>zoomBy(1.25)} title="Vergrößern" className="w-9 h-9 rounded-lg bg-white/90 hover:bg-white shadow text-slate-600 flex items-center justify-center"><I n="fa-plus"/></button>
+                  <button onClick={()=>zoomBy(0.8)} title="Verkleinern" className="w-9 h-9 rounded-lg bg-white/90 hover:bg-white shadow text-slate-600 flex items-center justify-center"><I n="fa-minus"/></button>
+                  <button onClick={fitView} title="Ansicht zurücksetzen" className="w-9 h-9 rounded-lg bg-white/90 hover:bg-white shadow text-slate-600 flex items-center justify-center"><I n="fa-expand"/></button>
+                  <span className="text-xs text-center text-white bg-black/55 rounded py-0.5 tabular-nums">{Math.round(zoom*100)}%</span>
+                </div>
+              </>}
+              {mode==='compare'&&<>
+                <div className="absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-md bg-black/55 text-white pointer-events-none">Links</div>
+                <div className="absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-md bg-black/55 text-white pointer-events-none">Rechts</div>
+                <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md pointer-events-none" style={{left:`${comparePct}%`}}/>
+                <div onPointerDown={onHandleDown} onPointerMove={onHandleMove} onPointerUp={onHandleUp} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg border border-slate-200 flex items-center justify-center cursor-ew-resize touch-none text-slate-600" style={{left:`${comparePct}%`}}><I n="fa-code-compare"/></div>
+              </>}
             </>}
           </div>
           {hasLayers&&<div className="rounded-xl bg-white border border-slate-200 p-3">
-            {!rt?<p className="text-sm text-slate-400 text-center py-2">{tool==='line'?'Setze zwei Punkte.':tool==='polygon'?'Polygon setzen, dann „Schließen".':'Wähle ein Messwerkzeug.'}</p>:
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3"><div className="flex-1"><p className="text-xs text-slate-400">{rt.label}</p><p className="text-2xl font-bold text-indigo-600 leading-tight">{rt.big}</p><p className="text-xs text-slate-400">{rt.small}</p>{stats&&<div className="flex flex-wrap gap-x-3 mt-1.5 text-xs"><span className="text-red-500">R Ø {stats.r}</span><span className="text-green-600">G Ø {stats.g}</span><span className="text-blue-500">B Ø {stats.b}</span><span className="text-slate-400">{fmt(stats.count)} Px</span></div>}</div>
-            <button onClick={()=>onComplete&&onComplete(rt.value,rt.label)} className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shrink-0"><I n="fa-circle-arrow-right"/> Wert übernehmen</button></div>}
+            {mode==='compare'?<p className="text-sm text-slate-400 text-center py-2">Im Vergleich sind Messungen deaktiviert.</p>:
+             tool==='classify'?(classifySeed?
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-400">Klassifizierte Fläche</p>
+                    <p className="text-2xl font-bold text-fuchsia-600 leading-tight">{fmt(classM2/1e6,2)} km²</p>
+                    <p className="text-xs text-slate-400">{fmt(classM2)} m² · {fmt(classifyCount)} Px · Toleranz {classifyTol}</p>
+                    <div className="flex items-center gap-1.5 mt-1.5"><span className="inline-block w-4 h-4 rounded border border-slate-300" style={{background:`rgb(${classifySeed.r},${classifySeed.g},${classifySeed.b})`}}/><span className="text-xs text-slate-500">Referenzfarbe (rgb {classifySeed.r},{classifySeed.g},{classifySeed.b})</span></div>
+                  </div>
+                  <button onClick={()=>onComplete&&onComplete((classM2/1e6).toFixed(2),'Klassifizierte Fläche')} className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shrink-0"><I n="fa-circle-arrow-right"/> Wert übernehmen</button>
+                </div>
+                :<p className="text-sm text-slate-400 text-center py-2">Klicke im Bild auf eine Fläche, um sie zu klassifizieren.</p>)
+             :rt?
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3"><div className="flex-1"><p className="text-xs text-slate-400">{rt.label}</p><p className="text-2xl font-bold text-indigo-600 leading-tight">{rt.big}</p><p className="text-xs text-slate-400">{rt.small}</p>{stats&&<div className="flex flex-wrap gap-x-3 mt-1.5 text-xs"><span className="text-red-500">R Ø {stats.r}</span><span className="text-green-600">G Ø {stats.g}</span><span className="text-blue-500">B Ø {stats.b}</span><span className="text-slate-400">{fmt(stats.count)} Px</span></div>}</div>
+                <button onClick={()=>onComplete&&onComplete(rt.value,rt.label)} className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shrink-0"><I n="fa-circle-arrow-right"/> Wert übernehmen</button></div>
+             :<p className="text-sm text-slate-400 text-center py-2">{tool==='line'?'Setze zwei Punkte.':tool==='polygon'?'Polygon setzen, dann „Schließen".':'Wähle ein Werkzeug.'}</p>}
           </div>}
         </div>
       </div>
@@ -211,19 +418,45 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
 }
 
 // ============================================================
-// DIE LERN-APP (Test-Hülle, simuliert die spätere Umgebung)
+// DIE LERN-APP (Test-Hülle)
 // ============================================================
 function LernApp(){
   const [open,setOpen]=useState(false);
   const [answer,setAnswer]=useState('');
   const [feedback,setFeedback]=useState(null);
-  const SOLL=12.4, TOL=2.0; // Beispiel-Sollwert in km²
+  const [solved,setSolved]=useState(false);
+  const [resetKey,setResetKey]=useState(0);
+  const SOLL=12.4, TOL=2.0;
 
-  const handleComplete=(value)=>{ setAnswer(value); setOpen(false); };
-  const check=()=>{ const v=parseFloat(answer.replace(',','.')); if(isNaN(v)){setFeedback({ok:false,t:'Bitte zuerst einen Wert ermitteln.'});return;} setFeedback(Math.abs(v-SOLL)<=TOL?{ok:true,t:`Richtig! Die Gletscherfläche beträgt ca. ${SOLL} km².`}:{ok:false,t:`Noch nicht ganz – miss die Fläche im Modul erneut.`}); };
+  const handleComplete=(value)=>{ setAnswer(value); setFeedback(null); setOpen(false); };
 
-  // So würden später die echten Bilder eingebunden (siehe Erklärung unten):
-  const bilder=[]; // z. B. [{url:'./images/gletscher_1990.jpg', name:'Gletscher 1990'}, ...]
+  const check=()=>{
+    const v=parseFloat(answer.replace(',','.'));
+    if(isNaN(v)){ setFeedback({ok:false,t:'Bitte zuerst einen Wert ermitteln.'}); return; }
+    if(Math.abs(v-SOLL)<=TOL){
+      setFeedback({ok:true,t:`Richtig! Die Gletscherfläche beträgt ca. ${SOLL} km².`});
+      setSolved(true);
+      setResetKey((k)=>k+1);
+    }else{
+      setFeedback({ok:false,t:'Noch nicht ganz – öffne das Modul wieder; deine Bilder und Messungen sind noch da. Miss erneut.'});
+    }
+  };
+
+  const manualReset=()=>{ setResetKey((k)=>k+1); setSolved(false); setAnswer(''); setFeedback(null); };
+
+  const bilder=[];
+
+  const schritte=[
+    {title:'Bild sichten', text:'Lade das Bild und verschaffe dir einen Überblick. Zoome in den Gletscher und beachte den Maßstabsbalken unten links.',
+     hint:'Mit dem Mausrad zoomst du auf den Cursor. Über das Symbol oben links im Bild kannst du das Bild verschieben.'},
+    {title:'Echtfarben darstellen', text:'Stelle das Bild in Echtfarben dar, indem du die richtigen Bänder den Kanälen R, G und B zuordnest.',
+     helpMode:'channels', hint:'Wechsle in der Ansicht zu „Kanäle". Für Echtfarben gilt: R = B04 (Rot), G = B03 (Grün), B = B02 (Blau).'},
+    {title:'Fläche messen', text:'Umfahre die Gletscherfläche und schließe das Polygon, um die Fläche in km² abzulesen.',
+     helpMode:'single', helpTool:'polygon', hint:'Das Flächenwerkzeug ist jetzt aktiv. Klicke nacheinander um den Gletscher herum und drücke dann „Schließen".'},
+    {title:'Eis klassifizieren (Kontrolle)', text:'Überprüfe dein Ergebnis: Klassifiziere die Eisfläche über die Pixelauswahl und vergleiche sie mit deiner gemessenen Fläche.',
+     helpTool:'classify', hint:'Das Werkzeug „Pixel auswählen" ist aktiv. Klicke auf helles Eis und stelle die Toleranz so ein, dass nur das Eis markiert ist.'},
+    {title:'Wert übernehmen', text:'Übertrage deinen ermittelten Flächenwert mit „Wert übernehmen" in die Aufgabe.'}
+  ];
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -233,29 +466,56 @@ function LernApp(){
           <h1 className="text-lg font-bold">Gletscherschwund analysieren</h1>
         </div>
         <div className="p-5 space-y-4">
-          <p className="text-sm text-slate-600 leading-relaxed">Öffne das Analyse-Modul, miss mit dem Flächenwerkzeug die Ausdehnung des Gletschers und übertrage den Wert in das Antwortfeld.</p>
-          <button onClick={()=>{setOpen(true);setFeedback(null);}} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"><I n="fa-satellite-dish"/> Bild-Analyse öffnen</button>
+          <p className="text-sm text-slate-600 leading-relaxed">Öffne das Analyse-Modul, arbeite die Schritte selbst durch und übertrage am Ende die Gletscherfläche. Brauchst du Hilfe, gibt es pro Schritt einen Hilfe-Button.</p>
+
+          <div className="flex items-start gap-2 text-xs px-3 py-2 rounded-lg bg-sky-50 border border-sky-100 text-sky-800 leading-relaxed">
+            <I n="fa-floppy-disk" c="mt-0.5 shrink-0"/>
+            <span>Dein Arbeitsstand (Bilder, Messungen, Zoom, aktueller Schritt) bleibt erhalten, bis die Aufgabe korrekt gelöst ist. Du kannst das Modul beliebig schließen und wieder öffnen.</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={()=>{setOpen(true);}} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"><I n="fa-satellite-dish"/> Bild-Analyse öffnen</button>
+            <button onClick={manualReset} title="Modul bewusst von vorne starten (löscht den aktuellen Stand)" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 text-sm transition"><I n="fa-rotate-left"/> Modul zurücksetzen</button>
+          </div>
+
           <div className="flex items-center gap-2">
             <input value={answer} onChange={(e)=>setAnswer(e.target.value)} placeholder="Fläche in km²" className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"/>
             <span className="text-sm text-slate-500">km²</span>
             <button onClick={check} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition">Prüfen</button>
           </div>
           {feedback&&<div className={`flex items-start gap-2 text-sm px-3 py-2 rounded-lg ${feedback.ok?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700'}`}><I n={feedback.ok?'fa-circle-check':'fa-circle-info'} c="mt-0.5"/>{feedback.t}</div>}
+          {solved&&<div className="flex items-center gap-2 text-xs text-slate-400"><I n="fa-broom"/> Aufgabe gelöst – das Modul wurde für die nächste Aufgabe zurückgesetzt.</div>}
         </div>
       </div>
 
-      {open&&<div className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/60 overflow-y-auto">
-        <div className="w-full my-auto">
-          <SatelliteAnalyzer title="Bild-Analyse" defaultGsd={10} images={bilder}
-            task="Aufgabe: Miss mit dem Flächenwerkzeug die Gletscherfläche und übernimm den Wert."
+      <div className={`fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/60 overflow-y-auto ${open?'':'hidden'}`} onClick={()=>setOpen(false)}>
+        <div className="w-full my-auto" onClick={(e)=>e.stopPropagation()}>
+          <SatelliteAnalyzer key={resetKey} title="Bild-Analyse" defaultGsd={10} images={bilder} steps={schritte}
             onComplete={handleComplete} onClose={()=>setOpen(false)}/>
         </div>
-      </div>}
+      </div>
     </div>
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<LernApp/>);
+</script>
+
+<script>
+(function(){
+  try{
+    var src = document.getElementById('app-src').textContent;
+    var out = Babel.transform(src, { presets: [['react', { runtime: 'classic' }]] }).code;
+    var s = document.createElement('script');
+    s.textContent = out;
+    document.body.appendChild(s);
+  }catch(err){
+    document.getElementById('root').innerHTML =
+      '<pre style="color:#f87171;white-space:pre-wrap;font-size:12px;padding:16px;background:#1e293b;border-radius:8px">'
+      + 'Fehler beim Kompilieren:\n\n' + (err && err.message ? err.message : String(err)) + '</pre>';
+    console.error(err);
+  }
+})();
 </script>
 </body>
 </html>
