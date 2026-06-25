@@ -1,1 +1,261 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lern-App · Bild-Analyse (Test)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style> body{background:#0f172a} input[type=range]{accent-color:#4f46e5} </style>
+</head>
+<body class="min-h-screen p-4 flex items-start justify-center">
+<div id="root" class="w-full"></div>
 
+<script type="text/babel" data-presets="react">
+const { useRef, useEffect, useState, useCallback } = React;
+
+function I({ n, c='' }){ return <i className={`fa-solid ${n} ${c}`} aria-hidden="true"></i>; }
+
+// ============================================================
+// Hilfsfunktionen
+// ============================================================
+function imageToLayer(url, name){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const c=document.createElement('canvas');
+      c.width=img.naturalWidth; c.height=img.naturalHeight;
+      const ctx=c.getContext('2d'); ctx.drawImage(img,0,0);
+      try{
+        const d=ctx.getImageData(0,0,c.width,c.height).data;
+        const n=c.width*c.height, rgba=new Uint8ClampedArray(d), gray=new Uint8ClampedArray(n);
+        for(let i=0;i<n;i++) gray[i]=Math.round(0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2]);
+        resolve({id:Math.random().toString(36).slice(2),name,w:c.width,h:c.height,rgba,gray});
+      }catch(e){ reject(new Error('Pixel nicht lesbar (CORS/file://). Über lokalen Server öffnen.')); }
+    };
+    img.onerror = ()=>reject(new Error('Bild nicht ladbar'));
+    img.src=url;
+  });
+}
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function shoelace(p){let s=0;for(let i=0,j=p.length-1;i<p.length;j=i++)s+=(p[j].x+p[i].x)*(p[j].y-p[i].y);return Math.abs(s/2);}
+function pointInPoly(x,y,poly){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const xi=poly[i].x,yi=poly[i].y,xj=poly[j].x,yj=poly[j].y;if(((yi>y)!==(yj>y))&&(x<((xj-xi)*(y-yi))/(yj-yi)+xi))inside=!inside;}return inside;}
+
+function generateDemoLayers(){
+  const w=260,h=260, noise=(x,y)=>{const v=Math.sin(x*12.9898+y*78.233)*43758.5453;return v-Math.floor(v);};
+  const names=['Demo · Blau (B02)','Demo · Grün (B03)','Demo · Rot (B04)','Demo · NIR (B08)'], out=[];
+  for(let bi=0;bi<4;bi++){
+    const gray=new Uint8ClampedArray(w*h), rgba=new Uint8ClampedArray(w*h*4);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const nx=x/w,ny=y/h, isIce=Math.abs(ny-(0.45+0.15*nx))<0.28-0.12*Math.sin(nx*Math.PI), nv=noise(Math.floor(x/6),Math.floor(y/6));
+      let refl; if(isIce)refl=[225,230,232,210]; else if(nv>0.6)refl=[55,70,45,200]; else if(nv>0.35)refl=[115,120,128,140]; else refl=[60,80,95,30];
+      const i=y*w+x, g=Math.max(0,Math.min(255,refl[bi]+(noise(x,y)-0.5)*12));
+      gray[i]=g; rgba[i*4]=g; rgba[i*4+1]=g; rgba[i*4+2]=g; rgba[i*4+3]=255;
+    }
+    out.push({id:'demo'+bi,name:names[bi],w,h,rgba,gray});
+  }
+  return out;
+}
+
+function Section({icon,title,children}){
+  return (<div><div className="flex items-center gap-2 mb-2 text-slate-500">{icon}<h3 className="text-xs font-semibold uppercase tracking-wide">{title}</h3></div>{children}</div>);
+}
+function Slider({icon,label,value,min,max,onChange,suffix}){
+  return (<div className="mb-2.5"><div className="flex items-center justify-between text-xs text-slate-500 mb-1"><span className="flex items-center gap-1.5">{icon} {label}</span><span className="text-slate-700 font-medium tabular-nums">{value}{suffix}</span></div><input type="range" min={min} max={max} value={value} onChange={(e)=>onChange(Number(e.target.value))} className="w-full cursor-pointer"/></div>);
+}
+
+// ============================================================
+// DAS MODUL
+// ============================================================
+function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', images=[], onComplete=null, onClose=null }){
+  const canvasA=useRef(null), canvasB=useRef(null), overlay=useRef(null), wrapRef=useRef(null), draggingRef=useRef(false);
+  const [layers,setLayers]=useState([]); const [loading,setLoading]=useState(false); const [info,setInfo]=useState(null);
+  const [gsd,setGsd]=useState(defaultGsd);
+  const [mode,setMode]=useState('single'); const [singleId,setSingleId]=useState(null);
+  const [channelMap,setChannelMap]=useState({R:null,G:null,B:null}); const [cmp,setCmp]=useState({left:null,right:null}); const [comparePct,setComparePct]=useState(50);
+  const [brightness,setBrightness]=useState(0); const [contrast,setContrast]=useState(100); const [opacity,setOpacity]=useState(100);
+  const [tool,setTool]=useState('none'); const [linePoints,setLinePoints]=useState([]); const [polyPoints,setPolyPoints]=useState([]); const [polyClosed,setPolyClosed]=useState(false);
+  const [result,setResult]=useState(null); const [stats,setStats]=useState(null); const [dims,setDims]=useState({w:1,h:1});
+  const getLayer=useCallback((id)=>layers.find((l)=>l.id===id),[layers]);
+
+  const addLayers=(nl)=>setLayers((prev)=>{
+    const all=[...prev,...nl];
+    if(!singleId&&all[0])setSingleId(all[0].id);
+    setChannelMap((cm)=>({R:cm.R||all[2]?.id||all[0]?.id||null,G:cm.G||all[1]?.id||all[0]?.id||null,B:cm.B||all[0]?.id||null}));
+    setCmp((c)=>({left:c.left||all[0]?.id||null,right:c.right||all[1]?.id||all[0]?.id||null}));
+    return all;
+  });
+
+  // Vom Lehrer / der Lern-App vorgegebene Bilder laden
+  useEffect(()=>{
+    if(!images.length) return;
+    (async()=>{ setLoading(true);
+      try{ const r=[]; for(const im of images) r.push(await imageToLayer(im.url,im.name)); addLayers(r); setInfo({type:'ok',text:`${r.length} vorgegebene Bild(er) geladen`}); }
+      catch(e){ setInfo({type:'err',text:e.message}); } finally{ setLoading(false); }
+    })();
+  },[]);
+
+  const handleUpload=async(fl)=>{ setLoading(true); setInfo(null);
+    try{ const r=[]; for(const f of Array.from(fl)){ const u=URL.createObjectURL(f); r.push(await imageToLayer(u,f.name.replace(/\.[^.]+$/,''))); } addLayers(r); setInfo({type:'ok',text:`${r.length} Ebene(n) geladen`}); }
+    catch(e){ setInfo({type:'err',text:e.message||'Fehler beim Laden.'}); } finally{ setLoading(false); }
+  };
+  const loadDemo=()=>{ setLayers([]); setSingleId(null); setChannelMap({R:null,G:null,B:null}); setCmp({left:null,right:null}); setTimeout(()=>{ addLayers(generateDemoLayers()); setInfo({type:'ok',text:'Demo-Szene geladen'}); },0); };
+  const removeLayer=(id)=>{ setLayers((p)=>p.filter((l)=>l.id!==id)); if(singleId===id)setSingleId(layers.find((l)=>l.id!==id)?.id||null); };
+
+  const applyBC=useCallback((v)=>{ const x=(v-128)*(contrast/100)+128+brightness; return x<0?0:x>255?255:x; },[brightness,contrast]);
+  const drawSingle=useCallback((cv,l)=>{ if(!cv||!l)return; cv.width=l.w; cv.height=l.h; const ctx=cv.getContext('2d'),img=ctx.createImageData(l.w,l.h); for(let i=0;i<l.w*l.h;i++){img.data[i*4]=applyBC(l.rgba[i*4]);img.data[i*4+1]=applyBC(l.rgba[i*4+1]);img.data[i*4+2]=applyBC(l.rgba[i*4+2]);img.data[i*4+3]=255;} ctx.putImageData(img,0,0); },[applyBC]);
+  const drawChannels=useCallback((cv,R,G,B)=>{ const base=R||G||B; if(!cv||!base)return; cv.width=base.w; cv.height=base.h; const ctx=cv.getContext('2d'),img=ctx.createImageData(base.w,base.h),n=base.w*base.h; for(let i=0;i<n;i++){img.data[i*4]=applyBC(R?R.gray[i]:0);img.data[i*4+1]=applyBC(G?G.gray[i]:0);img.data[i*4+2]=applyBC(B?B.gray[i]:0);img.data[i*4+3]=255;} ctx.putImageData(img,0,0); },[applyBC]);
+
+  useEffect(()=>{ if(!layers.length)return;
+    if(mode==='single'){ const l=getLayer(singleId)||layers[0]; if(l){drawSingle(canvasA.current,l);setDims({w:l.w,h:l.h});} }
+    else if(mode==='channels'){ const R=getLayer(channelMap.R),G=getLayer(channelMap.G),B=getLayer(channelMap.B),base=R||G||B; if(base){drawChannels(canvasA.current,R,G,B);setDims({w:base.w,h:base.h});} }
+    else if(mode==='compare'){ const L=getLayer(cmp.left),Rr=getLayer(cmp.right); if(Rr){drawSingle(canvasA.current,Rr);setDims({w:Rr.w,h:Rr.h});} if(L)drawSingle(canvasB.current,L); }
+  },[layers,mode,singleId,channelMap,cmp,brightness,contrast,getLayer,drawSingle,drawChannels]);
+
+  useEffect(()=>{ const c=overlay.current; if(!c)return; c.width=dims.w; c.height=dims.h; const ctx=c.getContext('2d'); ctx.clearRect(0,0,dims.w,dims.h);
+    const lw=Math.max(1.5,dims.w/300), r=Math.max(3,dims.w/80);
+    if(linePoints.length){ ctx.strokeStyle='#0ea5e9';ctx.lineWidth=lw;ctx.beginPath();linePoints.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();linePoints.forEach((p)=>{ctx.fillStyle='#0284c7';ctx.strokeStyle='#fff';ctx.lineWidth=lw;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.3);ctx.fill();ctx.stroke();}); }
+    if(polyPoints.length){ ctx.strokeStyle='#6366f1';ctx.lineWidth=lw;ctx.beginPath();polyPoints.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));if(polyClosed){ctx.closePath();ctx.fillStyle='rgba(99,102,241,0.22)';ctx.fill();}ctx.stroke();polyPoints.forEach((p)=>{ctx.fillStyle='#4f46e5';ctx.strokeStyle='#fff';ctx.lineWidth=lw;ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.3);ctx.fill();ctx.stroke();}); }
+  },[linePoints,polyPoints,polyClosed,dims]);
+
+  useEffect(()=>{ if(tool==='line'&&linePoints.length===2) setResult({type:'distance',meters:dist(linePoints[0],linePoints[1])*gsd}); },[linePoints,tool,gsd]);
+
+  const computeStats=(poly)=>{ const ctx=canvasA.current?.getContext('2d'); if(!ctx)return; const data=ctx.getImageData(0,0,dims.w,dims.h).data;
+    const xs=poly.map((p)=>p.x),ys=poly.map((p)=>p.y),x0=Math.max(0,Math.floor(Math.min(...xs))),x1=Math.min(dims.w-1,Math.ceil(Math.max(...xs))),y0=Math.max(0,Math.floor(Math.min(...ys))),y1=Math.min(dims.h-1,Math.ceil(Math.max(...ys)));
+    let r=0,g=0,b=0,count=0; for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(pointInPoly(x+0.5,y+0.5,poly)){const i=(y*dims.w+x)*4;r+=data[i];g+=data[i+1];b+=data[i+2];count++;}
+    if(count)setStats({r:Math.round(r/count),g:Math.round(g/count),b:Math.round(b/count),count});
+  };
+  const closePolygon=()=>{ if(polyPoints.length<3)return; setPolyClosed(true); setResult({type:'area',m2:shoelace(polyPoints)*gsd*gsd}); computeStats(polyPoints); };
+  const getPos=(e)=>{ const rect=overlay.current.getBoundingClientRect(); return {x:((e.clientX-rect.left)/rect.width)*dims.w,y:((e.clientY-rect.top)/rect.height)*dims.h}; };
+  const onCanvasDown=(e)=>{ if(mode==='compare'||tool==='none')return; const p=getPos(e);
+    if(tool==='line'){ setLinePoints((prev)=>prev.length>=2?[p]:[...prev,p]); if(linePoints.length>=2)setResult(null); }
+    else if(tool==='polygon'){ if(polyClosed){setPolyPoints([p]);setPolyClosed(false);setStats(null);setResult(null);} else setPolyPoints((prev)=>[...prev,p]); }
+  };
+  const clearAll=()=>{ setLinePoints([]);setPolyPoints([]);setPolyClosed(false);setResult(null);setStats(null); };
+  const switchTool=(t)=>{ setTool((c)=>c===t?'none':t); clearAll(); };
+  const undoPoly=()=>{ setPolyClosed(false);setPolyPoints((p)=>p.slice(0,-1));setStats(null);setResult(null); };
+  const onHandleDown=(e)=>{ e.target.setPointerCapture(e.pointerId); draggingRef.current=true; };
+  const onHandleMove=(e)=>{ if(!draggingRef.current||!wrapRef.current)return; const r=wrapRef.current.getBoundingClientRect(); setComparePct(Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100))); };
+  const onHandleUp=()=>{ draggingRef.current=false; };
+
+  const fmt=(n,d=0)=>n.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const resultText=()=>{ if(!result)return null; if(result.type==='distance')return {label:'Strecke',big:`${fmt(result.meters/1000,2)} km`,small:`${fmt(result.meters)} m`,value:(result.meters/1000).toFixed(2)}; return {label:'Fläche',big:`${fmt(result.m2/1e6,2)} km²`,small:`${fmt(result.m2)} m²`,value:(result.m2/1e6).toFixed(2)}; };
+  const rt=resultText();
+  const hasLayers=layers.length>0;
+  const layerOptions=(val,onChange,allowNone=false)=>(<select value={val||''} onChange={(e)=>onChange(e.target.value||null)} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700">{allowNone&&<option value="">— leer —</option>}{layers.map((l)=><option key={l.id} value={l.id}>{l.name}</option>)}</select>);
+
+  return (
+    <div className="relative w-full max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200 text-slate-700">
+      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-600 text-white"><I n="fa-layer-group" c="text-base"/></div>
+        <div className="min-w-0"><h2 className="text-base font-bold text-slate-900 leading-tight">{title}</h2><p className="text-xs text-slate-400">Analyse-Modul</p></div>
+        {onClose&&<button onClick={onClose} className="ml-auto p-2 rounded-lg hover:bg-slate-100 transition text-slate-400"><I n="fa-xmark" c="text-lg"/></button>}
+      </div>
+      {task&&<div className="px-4 py-2.5 bg-indigo-50 border-b border-indigo-100"><p className="text-xs text-indigo-900 leading-relaxed">{task}</p></div>}
+      <div className="flex flex-col md:flex-row">
+        <div className="w-full md:w-72 md:shrink-0 bg-slate-50 md:border-r border-slate-200 p-3 space-y-4 md:max-h-[640px] md:overflow-y-auto">
+          <Section icon={<I n="fa-image"/>} title="Bilder">
+            <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
+            <button onClick={loadDemo} className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 transition"><I n="fa-wand-magic-sparkles"/> Demo-Szene</button>
+            <div className="flex items-center gap-2 mt-2"><label className="text-xs text-slate-500 shrink-0">GSD (m/Px)</label><input type="number" min={0.1} step={0.1} value={gsd} onChange={(e)=>setGsd(Math.max(0.001,Number(e.target.value)||0))} className="w-20 text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white"/></div>
+            {info&&<p className={`mt-2 text-xs flex items-start gap-1 ${info.type==='ok'?'text-emerald-600':'text-amber-600'}`}>{info.type==='ok'&&<I n="fa-check" c="mt-0.5"/>}{info.text}</p>}
+          </Section>
+          <Section icon={<I n="fa-layer-group"/>} title={`Ebenen (${layers.length})`}>
+            {!hasLayers?<p className="text-xs text-slate-400">Noch keine Ebenen.</p>:
+              <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-indigo-50 border-indigo-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-indigo-600':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span><button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button></li>)}</ul>}
+          </Section>
+          {hasLayers&&<Section icon={<I n="fa-up-down-left-right"/>} title="Ansicht">
+            <div className="grid grid-cols-3 gap-1.5 mb-2">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
+            {mode==='single'&&<div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(singleId,setSingleId)}</div>}
+            {mode==='channels'&&<div className="space-y-1.5">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(channelMap[ch],(v)=>setChannelMap((p)=>({...p,[ch]:v})),true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Z. B. Infrarot auf Rot = Falschfarben.</p></div>}
+            {mode==='compare'&&<div className="space-y-1.5"><div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-12">Links</span>{layerOptions(cmp.left,(v)=>setCmp((c)=>({...c,left:v})))}</div><div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-12">Rechts</span>{layerOptions(cmp.right,(v)=>setCmp((c)=>({...c,right:v})))}</div><p className="text-xs text-slate-400 leading-snug">Regler im Bild ziehen.</p></div>}
+          </Section>}
+          {hasLayers&&<Section icon={<I n="fa-sliders"/>} title="Bildanpassung">
+            <Slider icon={<I n="fa-sun"/>} label="Helligkeit" value={brightness} min={-100} max={100} onChange={setBrightness} suffix=""/>
+            <Slider icon={<I n="fa-circle-half-stroke"/>} label="Kontrast" value={contrast} min={0} max={200} onChange={setContrast} suffix="%"/>
+            <Slider icon={<I n="fa-droplet"/>} label="Deckkraft" value={opacity} min={20} max={100} onChange={setOpacity} suffix="%"/>
+            <button onClick={()=>{setBrightness(0);setContrast(100);setOpacity(100);}} className="w-full mt-1 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 transition">Zurücksetzen</button>
+          </Section>}
+          {hasLayers&&<Section icon={<I n="fa-ruler"/>} title="Messwerkzeuge">
+            {mode==='compare'&&<p className="text-xs text-amber-600 mb-2">Im Vergleich deaktiviert.</p>}
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={()=>switchTool('line')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='line'?'bg-sky-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-ruler"/> Strecke</button>
+              <button onClick={()=>switchTool('polygon')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='polygon'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-draw-polygon"/> Fläche</button>
+            </div>
+            {tool==='polygon'&&mode!=='compare'&&<div className="grid grid-cols-2 gap-2 mt-2"><button onClick={closePolygon} disabled={polyPoints.length<3} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white transition"><I n="fa-check"/> Schließen</button><button onClick={undoPoly} disabled={!polyPoints.length} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-40 transition"><I n="fa-rotate-left"/> Zurück</button></div>}
+            <button onClick={clearAll} className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-rose-50 transition"><I n="fa-trash"/> Zeichnung löschen</button>
+          </Section>}
+        </div>
+        <div className="flex-1 p-3 flex flex-col gap-3 bg-slate-100/50">
+          <div ref={wrapRef} className="relative w-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-inner select-none" style={{aspectRatio:`${dims.w} / ${dims.h}`}}>
+            {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">„Bild auswählen" oder „Demo-Szene"</p></div>:
+            <>
+              <canvas ref={canvasA} style={{imageRendering:'pixelated',opacity:opacity/100}} className="absolute inset-0 w-full h-full"/>
+              <canvas ref={canvasB} style={{imageRendering:'pixelated',opacity:opacity/100,clipPath:`inset(0 ${100-comparePct}% 0 0)`,display:mode==='compare'?'block':'none'}} className="absolute inset-0 w-full h-full"/>
+              <canvas ref={overlay} onPointerDown={onCanvasDown} style={{imageRendering:'pixelated',pointerEvents:tool!=='none'&&mode!=='compare'?'auto':'none',cursor:tool!=='none'?'crosshair':'default'}} className="absolute inset-0 w-full h-full"/>
+              {mode==='compare'&&<><div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-md pointer-events-none" style={{left:`${comparePct}%`}}/><div onPointerDown={onHandleDown} onPointerMove={onHandleMove} onPointerUp={onHandleUp} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white shadow-lg border border-slate-200 flex items-center justify-center cursor-ew-resize touch-none text-slate-600" style={{left:`${comparePct}%`}}><I n="fa-code-compare"/></div></>}
+            </>}
+          </div>
+          {hasLayers&&<div className="rounded-xl bg-white border border-slate-200 p-3">
+            {!rt?<p className="text-sm text-slate-400 text-center py-2">{tool==='line'?'Setze zwei Punkte.':tool==='polygon'?'Polygon setzen, dann „Schließen".':'Wähle ein Messwerkzeug.'}</p>:
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3"><div className="flex-1"><p className="text-xs text-slate-400">{rt.label}</p><p className="text-2xl font-bold text-indigo-600 leading-tight">{rt.big}</p><p className="text-xs text-slate-400">{rt.small}</p>{stats&&<div className="flex flex-wrap gap-x-3 mt-1.5 text-xs"><span className="text-red-500">R Ø {stats.r}</span><span className="text-green-600">G Ø {stats.g}</span><span className="text-blue-500">B Ø {stats.b}</span><span className="text-slate-400">{fmt(stats.count)} Px</span></div>}</div>
+            <button onClick={()=>onComplete&&onComplete(rt.value,rt.label)} className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shrink-0"><I n="fa-circle-arrow-right"/> Wert übernehmen</button></div>}
+          </div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// DIE LERN-APP (Test-Hülle, simuliert die spätere Umgebung)
+// ============================================================
+function LernApp(){
+  const [open,setOpen]=useState(false);
+  const [answer,setAnswer]=useState('');
+  const [feedback,setFeedback]=useState(null);
+  const SOLL=12.4, TOL=2.0; // Beispiel-Sollwert in km²
+
+  const handleComplete=(value)=>{ setAnswer(value); setOpen(false); };
+  const check=()=>{ const v=parseFloat(answer.replace(',','.')); if(isNaN(v)){setFeedback({ok:false,t:'Bitte zuerst einen Wert ermitteln.'});return;} setFeedback(Math.abs(v-SOLL)<=TOL?{ok:true,t:`Richtig! Die Gletscherfläche beträgt ca. ${SOLL} km².`}:{ok:false,t:`Noch nicht ganz – miss die Fläche im Modul erneut.`}); };
+
+  // So würden später die echten Bilder eingebunden (siehe Erklärung unten):
+  const bilder=[]; // z. B. [{url:'./images/gletscher_1990.jpg', name:'Gletscher 1990'}, ...]
+
+  return (
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-4 bg-gradient-to-r from-sky-600 to-indigo-600 text-white">
+          <p className="text-xs uppercase tracking-wider opacity-80">Geographie · Etappe 3</p>
+          <h1 className="text-lg font-bold">Gletscherschwund analysieren</h1>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-slate-600 leading-relaxed">Öffne das Analyse-Modul, miss mit dem Flächenwerkzeug die Ausdehnung des Gletschers und übertrage den Wert in das Antwortfeld.</p>
+          <button onClick={()=>{setOpen(true);setFeedback(null);}} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"><I n="fa-satellite-dish"/> Bild-Analyse öffnen</button>
+          <div className="flex items-center gap-2">
+            <input value={answer} onChange={(e)=>setAnswer(e.target.value)} placeholder="Fläche in km²" className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm"/>
+            <span className="text-sm text-slate-500">km²</span>
+            <button onClick={check} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition">Prüfen</button>
+          </div>
+          {feedback&&<div className={`flex items-start gap-2 text-sm px-3 py-2 rounded-lg ${feedback.ok?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700'}`}><I n={feedback.ok?'fa-circle-check':'fa-circle-info'} c="mt-0.5"/>{feedback.t}</div>}
+        </div>
+      </div>
+
+      {open&&<div className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/60 overflow-y-auto">
+        <div className="w-full my-auto">
+          <SatelliteAnalyzer title="Bild-Analyse" defaultGsd={10} images={bilder}
+            task="Aufgabe: Miss mit dem Flächenwerkzeug die Gletscherfläche und übernimm den Wert."
+            onComplete={handleComplete} onClose={()=>setOpen(false)}/>
+        </div>
+      </div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<LernApp/>);
+</script>
+</body>
+</html>
