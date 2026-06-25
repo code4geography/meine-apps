@@ -5,11 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Lern-App · Bild-Analyse (Test)</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#eef3f9',
+            200: '#c0d2e4',
+            300: '#a3bdd9',
+            500: '#6089b7',
+            600: '#6089b7',
+            800: '#3c597b',
+            light: '#7a9ec7',
+            dark: '#4d7299',
+            DEFAULT: '#6089b7'
+          }
+        }
+      }
+    }
+  };
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
-<style> body{background:#0f172a} input[type=range]{accent-color:#4f46e5} </style>
+<style> body{background:#0f172a} input[type=range]{accent-color:#6089b7} </style>
 </head>
 <body class="min-h-screen p-4 flex items-start justify-center">
 <div id="root" class="w-full"></div>
@@ -277,29 +298,31 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
 
   return (
     <div className="relative w-full max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200 text-slate-700">
-      {/* GEÄNDERT: Banner-Header mit Logo. Bilder liegen im App-Ordner (banner.jpg / BAT_logo.gif). */}
+      {/* GEÄNDERT: Banner-Header. Logo = BAT_logo.gif in weißem Eck, volle Bannerhöhe. */}
       <div className="relative w-full h-28 bg-gradient-to-r from-sky-600 to-indigo-600 border-b border-slate-200 overflow-hidden">
         <img src="banner.jpg" alt={title} className="absolute inset-0 w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none';}}/>
-        <img src="BAT_logo.gif" alt="BAT" className="absolute top-3 left-3 h-16 w-auto rounded-lg shadow-md bg-white/90 p-1" onError={(e)=>{e.currentTarget.style.display='none';}}/>
-        {onClose&&<button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-lg bg-white/85 hover:bg-white transition text-slate-600 shadow"><I n="fa-xmark" c="text-lg"/></button>}
+        <div className="absolute top-0 left-0 h-full bg-white flex items-center px-4 py-2 rounded-br-3xl shadow-md z-10">
+          <img src="BAT_logo.jpg" alt="BAT" className="h-full w-auto object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/>
+        </div>
+        {onClose&&<button onClick={onClose} className="absolute top-3 right-3 z-20 p-2 rounded-lg bg-white/85 hover:bg-white transition text-slate-600 shadow"><I n="fa-xmark" c="text-lg"/></button>}
       </div>
       <div className="flex flex-col md:flex-row">
         <div className="w-full md:w-72 md:shrink-0 bg-slate-50 md:border-r border-slate-200 p-3 space-y-4 md:max-h-screen md:overflow-y-auto">
           <Section icon={<I n="fa-image"/>} title="Bilder">
-            <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
+            <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-brand hover:bg-brand-light text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
             {info&&<p className={`mt-2 text-xs flex items-start gap-1 ${info.type==='ok'?'text-emerald-600':'text-amber-600'}`}>{info.type==='ok'&&<I n="fa-check" c="mt-0.5"/>}{info.text}</p>}
           </Section>
           <Section icon={<I n="fa-layer-group"/>} title={`Ebenen (${layers.length})`}>
             {!hasLayers?<p className="text-xs text-slate-400">Noch keine Ebenen.</p>:
-              <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-indigo-50 border-indigo-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-indigo-600':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span><button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button></li>)}</ul>}
+              <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-brand-50 border-brand-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-brand':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span><button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button></li>)}</ul>}
           </Section>
           {hasLayers&&<Section icon={<I n="fa-up-down-left-right"/>} title="Ansicht">
-            <div className="grid grid-cols-3 gap-1.5">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();fitView();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
+            <div className="grid grid-cols-3 gap-1.5">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();fitView();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
             {mode==='single'&&<div className="flex items-center gap-2 mt-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(singleId,setSingleId)}</div>}
             {mode==='channels'&&<div className="space-y-1.5 mt-2">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(channelMap[ch],(v)=>setChannelMap((p)=>({...p,[ch]:v})),true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Ordne den Kanälen selbst die passenden Bänder zu. Echtfarben: R=B04, G=B03, B=B02. Falschfarben: R=B08 (NIR).</p></div>}
             {mode==='compare'&&<div className="space-y-2 mt-2">
-              <div className={`text-xs px-2 py-1.5 rounded-lg border ${activeSide==='L'?'bg-indigo-50 border-indigo-200 text-indigo-800':'bg-amber-50 border-amber-200 text-amber-800'}`}>Du konfigurierst gerade: <b>{activeSide==='L'?'Linke Seite':'Rechte Seite'}</b> <span className="opacity-70">(oben am Bild umschalten)</span></div>
-              <div className="grid grid-cols-2 gap-1.5">{[['single','Einzelbild'],['channels','Kanäle']].map(([t,lbl])=><button key={t} onClick={()=>patchSide({type:t})} className={`text-xs px-1 py-1.5 rounded-lg transition ${activeCfg.type===t?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
+              <div className={`text-xs px-2 py-1.5 rounded-lg border ${activeSide==='L'?'bg-brand-50 border-brand-200 text-brand-800':'bg-amber-50 border-amber-200 text-amber-800'}`}>Du konfigurierst gerade: <b>{activeSide==='L'?'Linke Seite':'Rechte Seite'}</b> <span className="opacity-70">(oben am Bild umschalten)</span></div>
+              <div className="grid grid-cols-2 gap-1.5">{[['single','Einzelbild'],['channels','Kanäle']].map(([t,lbl])=><button key={t} onClick={()=>patchSide({type:t})} className={`text-xs px-1 py-1.5 rounded-lg transition ${activeCfg.type===t?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
               {activeCfg.type==='single'?
                 <div className="flex items-center gap-2"><span className="text-xs text-slate-500 w-10">Bild</span>{layerOptions(activeCfg.layerId,(v)=>{patchSide({layerId:v});})}</div>:
                 <div className="space-y-1.5">{[['R','text-red-500'],['G','text-green-600'],['B','text-blue-500']].map(([ch,col])=><div key={ch} className="flex items-center gap-2"><span className={`font-bold w-4 text-center text-sm ${col}`}>{ch}</span>{layerOptions(activeCfg.channelMap[ch],(v)=>{patchSide({channelMap:{...activeCfg.channelMap,[ch]:v}});},true)}</div>)}<p className="text-xs text-slate-400 leading-snug">Echtfarben: R=B04, G=B03, B=B02.</p></div>}
@@ -307,7 +330,7 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
             </div>}
           </Section>}
           {hasLayers&&<Section icon={<I n="fa-wand-magic-sparkles"/>} title="Auto-Streckung">
-            <button onClick={()=>setAutoStretch((a)=>!a)} className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${autoStretch?'bg-indigo-600 text-white border-indigo-600':'bg-white border-slate-300 hover:bg-slate-100'}`}>
+            <button onClick={()=>setAutoStretch((a)=>!a)} className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${autoStretch?'bg-brand text-white border-brand':'bg-white border-slate-300 hover:bg-slate-100'}`}>
               <span className="flex items-center gap-1.5"><I n="fa-wand-magic-sparkles"/> Kontrast-Streckung</span>
               <span className={`font-semibold ${autoStretch?'text-white':'text-slate-400'}`}>{autoStretch?'AN':'AUS'}</span>
             </button>
@@ -322,8 +345,8 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
           {hasLayers&&<Section icon={<I n="fa-ruler"/>} title="Messwerkzeuge">
             {mode==='compare'&&<p className="text-xs text-amber-600 mb-2">Im Vergleich deaktiviert.</p>}
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={()=>switchTool('line')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='line'?'bg-sky-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-ruler"/> Strecke</button>
-              <button onClick={()=>switchTool('polygon')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='polygon'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-draw-polygon"/> Fläche</button>
+              <button onClick={()=>switchTool('line')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='line'?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-ruler"/> Strecke</button>
+              <button onClick={()=>switchTool('polygon')} disabled={mode==='compare'} className={`flex items-center justify-center gap-1.5 text-xs px-2 py-2 rounded-lg transition disabled:opacity-40 ${tool==='polygon'?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}><I n="fa-draw-polygon"/> Fläche</button>
             </div>
             {tool==='polygon'&&mode!=='compare'&&<div className="grid grid-cols-2 gap-2 mt-2"><button onClick={closePolygon} disabled={polyPoints.length<3} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white transition"><I n="fa-check"/> Schließen</button><button onClick={undoPoly} disabled={!polyPoints.length} className="flex items-center justify-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-40 transition"><I n="fa-rotate-left"/> Zurück</button></div>}
             <button onClick={clearAll} className="w-full mt-2 flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-rose-50 transition"><I n="fa-trash"/> Zeichnung löschen</button>
@@ -340,7 +363,7 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
         <div className="flex-1 p-3 flex flex-col gap-3 bg-slate-100/50">
           {steps.length>0&&curStep&&<div className="rounded-xl bg-white border border-slate-200 overflow-hidden">
             <button onClick={()=>setStepsOpen((o)=>!o)} className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50 transition">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold shrink-0">{stepIdx+1}</span>
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand text-white text-xs font-bold shrink-0">{stepIdx+1}</span>
               <span className="text-xs font-semibold text-slate-700 flex-1 min-w-0 truncate">Schritt {stepIdx+1}/{steps.length}: {curStep.title}</span>
               <I n={stepsOpen?'fa-chevron-up':'fa-chevron-down'} c="text-slate-400"/>
             </button>
@@ -353,15 +376,15 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
               </div>}
               <div className="flex items-center gap-2">
                 <button disabled={stepIdx===0} onClick={()=>gotoStep(stepIdx-1)} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-40 transition"><I n="fa-arrow-left"/> Zurück</button>
-                <button disabled={stepIdx===steps.length-1} onClick={()=>gotoStep(stepIdx+1)} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 transition">Weiter <I n="fa-arrow-right"/></button>
-                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500 transition-all" style={{width:`${((stepIdx+1)/steps.length)*100}%`}}/></div>
+                <button disabled={stepIdx===steps.length-1} onClick={()=>gotoStep(stepIdx+1)} className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-light text-white disabled:opacity-40 transition">Weiter <I n="fa-arrow-right"/></button>
+                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-brand transition-all" style={{width:`${((stepIdx+1)/steps.length)*100}%`}}/></div>
               </div>
             </div>}
           </div>}
           {mode==='compare'&&hasLayers&&<div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2">
             <span className="text-xs text-slate-500 pl-1 shrink-0">Du konfigurierst gerade:</span>
-            <button onClick={()=>setActiveSide('L')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='L'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Links</button>
-            <button onClick={()=>setActiveSide('R')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='R'?'bg-indigo-600 text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Rechts</button>
+            <button onClick={()=>setActiveSide('L')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='L'?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Links</button>
+            <button onClick={()=>setActiveSide('R')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='R'?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Rechts</button>
           </div>}
           <div ref={wrapRef} className="relative w-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-inner select-none" style={{aspectRatio:`${dims.w} / ${dims.h}`}}>
             {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">Lade ein Bild über „Bild auswählen"</p></div>:
@@ -377,7 +400,7 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
                 <div className="h-1.5 bg-white border-l-2 border-r-2 border-b-2 border-slate-800" style={{width:`${sb.px}px`}}/>
               </div>}
               {mode!=='compare'&&<>
-                <button onClick={toggleHand} title="Verschieben (Pan)" className={`absolute top-2 left-2 z-10 w-9 h-9 rounded-lg shadow flex items-center justify-center transition ${tool==='hand'?'bg-indigo-600 text-white':'bg-white/90 text-slate-600 hover:bg-white'}`}><I n="fa-up-down-left-right"/></button>
+                <button onClick={toggleHand} title="Verschieben (Pan)" className={`absolute top-2 left-2 z-10 w-9 h-9 rounded-lg shadow flex items-center justify-center transition ${tool==='hand'?'bg-brand text-white':'bg-white/90 text-slate-600 hover:bg-white'}`}><I n="fa-up-down-left-right"/></button>
                 <div className="absolute top-2 right-2 z-10 flex flex-col items-stretch gap-1">
                   <button onClick={()=>zoomBy(1.25)} title="Vergrößern" className="w-9 h-9 rounded-lg bg-white/90 hover:bg-white shadow text-slate-600 flex items-center justify-center"><I n="fa-plus"/></button>
                   <button onClick={()=>zoomBy(0.8)} title="Verkleinern" className="w-9 h-9 rounded-lg bg-white/90 hover:bg-white shadow text-slate-600 flex items-center justify-center"><I n="fa-minus"/></button>
@@ -407,7 +430,7 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
                 </div>
                 :<p className="text-sm text-slate-400 text-center py-2">Klicke im Bild auf eine Fläche, um sie zu klassifizieren.</p>)
              :rt?
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3"><div className="flex-1"><p className="text-xs text-slate-400">{rt.label}</p><p className="text-2xl font-bold text-indigo-600 leading-tight">{rt.big}</p><p className="text-xs text-slate-400">{rt.small}</p>{stats&&<div className="flex flex-wrap gap-x-3 mt-1.5 text-xs"><span className="text-red-500">R Ø {stats.r}</span><span className="text-green-600">G Ø {stats.g}</span><span className="text-blue-500">B Ø {stats.b}</span><span className="text-slate-400">{fmt(stats.count)} Px</span></div>}</div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3"><div className="flex-1"><p className="text-xs text-slate-400">{rt.label}</p><p className="text-2xl font-bold text-brand leading-tight">{rt.big}</p><p className="text-xs text-slate-400">{rt.small}</p>{stats&&<div className="flex flex-wrap gap-x-3 mt-1.5 text-xs"><span className="text-red-500">R Ø {stats.r}</span><span className="text-green-600">G Ø {stats.g}</span><span className="text-blue-500">B Ø {stats.b}</span><span className="text-slate-400">{fmt(stats.count)} Px</span></div>}</div>
                 <button onClick={()=>onComplete&&onComplete(rt.value,rt.label)} className="flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shrink-0"><I n="fa-circle-arrow-right"/> Wert übernehmen</button></div>
              :<p className="text-sm text-slate-400 text-center py-2">{tool==='line'?'Setze zwei Punkte.':tool==='polygon'?'Polygon setzen, dann „Schließen".':'Wähle ein Werkzeug.'}</p>}
           </div>}
@@ -474,7 +497,7 @@ function LernApp(){
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={()=>{setOpen(true);}} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition"><I n="fa-satellite-dish"/> Bild-Analyse öffnen</button>
+            <button onClick={()=>{setOpen(true);}} className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand hover:bg-brand-light text-white text-sm font-semibold transition"><I n="fa-satellite-dish"/> Bild-Analyse öffnen</button>
             <button onClick={manualReset} title="Modul bewusst von vorne starten (löscht den aktuellen Stand)" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-600 text-sm transition"><I n="fa-rotate-left"/> Modul zurücksetzen</button>
           </div>
 
