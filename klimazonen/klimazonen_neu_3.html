@@ -1356,13 +1356,51 @@ const KF_POINTS=[
 {id:"lerwick",name:"Lerwick",box:"lerjak",x:45.7,y:17.1},
 {id:"jakutsk",name:"Jakutsk",box:"lerjak",x:81.0,y:16.1},
 {id:"alpen",name:"Alpen",box:"alpen",x:48.6,y:25.3},
-{id:"kisangani",name:"Kisangani",box:"kisangani",x:52.7,y:51.7},
+{id:"westusa",name:"Westküste Nordamerika",box:"westusa",x:13.0,y:24.7},
 ];
 const KF_BOXES=[
 {id:"bodo",num:1,title:"Bodø (Norwegen)"},
 {id:"lerjak",num:2,title:"Lerwick & Jakutsk"},
 {id:"alpen",num:3,title:"Alpen"},
-{id:"kisangani",num:4,title:"Kisangani"},
+{id:"westusa",num:4,title:"Westküste Nordamerika"},];
+
+const KF_QUIZ=[
+{q:"Warum ist es in Bodø milder, als man es für die nördliche Breitenlage erwarten würde?",
+options:["Wegen einer warmen Meeresströmung (Golfstrom)","Weil Bodø sehr hoch in den Bergen liegt","Weil dort die Sonne senkrecht steht","Wegen einer kalten Meeresströmung"],answer:0,
+hint:"Denk an das globale Förderband der Ozeane."},
+{q:"Welcher Klimafaktor sorgt dafür, dass warmes Wasser vom Äquator Richtung Pole transportiert wird?",
+options:["Die Höhenlage","Die Meeresströmungen","Das Relief (Gebirge)","Die Nähe zur Wüste"],answer:1,
+hint:"Strömungen wie der Golfstrom."},
+{q:"Jakutsk liegt weit im Landesinneren. Wie ist deshalb sein Klima?",
+options:["Maritim mit geringen Temperaturschwankungen","Kontinental mit sehr großen Temperaturschwankungen","Ganzjährig gleichmäßig warm","Immer kühl und feucht"],answer:1,
+hint:"Land erhitzt und kühlt sehr schnell ab."},
+{q:"Warum hat Lerwick eine viel kleinere thermische Amplitude als Jakutsk?",
+options:["Weil Lerwick weiter südlich liegt","Weil das Meer die Temperaturen ausgleicht (maritimes Klima)","Weil Lerwick höher liegt","Weil es in Lerwick nie regnet"],answer:1,
+hint:"Das Meer ist ein großer Wärmespeicher."},
+{q:"Um wie viel sinkt die Temperatur in den Alpen ungefähr pro 100 m Höhenanstieg (feuchte Luft)?",
+options:["Um 5 °C","Um 0,5 °C","Um 2 °C","Sie bleibt gleich"],answer:1,
+hint:"Das sind 5 °C pro 1.000 m."},
+{q:"Wie verändert sich das Klima an einem Berg mit zunehmender Höhe?",
+options:["Es wird immer wärmer","Es wird immer kälter","Es bleibt gleich","Erst kälter, dann wärmer"],answer:1,
+hint:"Stichwort: thermischer Gradient."},
+{q:"Wie entsteht Steigungsregen an einem Gebirge?",
+options:["Feuchte Luft steigt auf, kühlt ab und regnet ab","Trockene Luft sinkt ab und erwärmt sich","Das Meerwasser verdunstet direkt am Strand","Der Schnee auf dem Gipfel schmilzt"],answer:0,
+hint:"Aufsteigende Luft kühlt ab – kalte Luft kann weniger Feuchtigkeit halten."},
+{q:"Wie nennt man das trockene Gebiet auf der windabgewandten Rückseite eines Gebirges?",
+options:["Steigungsregen","Regenschatten","Golfstrom","Permafrost"],answer:1,
+hint:"Dort kommt der Regen nicht mehr an."},
+{q:"Welche der folgenden Größen ist KEIN Klimafaktor?",
+options:["Meeresströmungen","Höhenlage","Nähe zum Meer","Die Wochentage"],answer:3,
+hint:"Welcher Punkt hat nichts mit dem Klima zu tun?"},
+{q:"Warum folgen die echten Klimazonen nicht exakt den geraden Beleuchtungszonen?",
+options:["Weil die Erde flach ist","Weil zusätzliche Klimafaktoren wirken","Weil die Sonne wandert","Weil es reiner Zufall ist"],answer:1,
+hint:"Strömungen, Höhe, Nähe zum Meer …"},
+{q:"Welche Meeresströmung transportiert kaltes Wasser von den Polen Richtung Äquator?",
+options:["Der Golfstrom","Der Humboldtstrom","Der Nordatlantische Strom","Gar keine"],answer:1,
+hint:"Das Gegenstück zum warmen Golfstrom."},
+{q:"Ein Ort liegt direkt am Meer. Welches Klima ist typisch?",
+options:["Kontinental mit eiskalten Wintern","Maritim mit ausgeglichenen Temperaturen","Trocken wie eine Wüste","Polar mit Permafrost"],answer:1,
+hint:"Das Meer gleicht die Temperaturen aus."},
 ];
 
 builders[3]=()=>{
@@ -1384,11 +1422,15 @@ deinen Aufgaben – die anderen Boxen schließen sich automatisch.</div>
 
 <div class="kf-acc" id="kfAcc"></div>
 
+<h2>🎯 Quiz zu den Klimafaktoren</h2>
+<p>Zeig, was du über die Klimafaktoren gelernt hast. Es kommen <b>8 Fragen</b> aus einem größeren Fragenpool – nach dem 2. Fehlversuch erscheint automatisch eine neue Frage. Danach kannst du den Bereich abschließen.</p>
+<div class="quizbox" id="kfQuiz"></div>
+
 <div class="teacher-row"><button class="teacher-btn" id="teacherOpen3">👩‍🏫 Lehrer-Zugang</button></div>
 <div style="text-align:center;margin-top:8px">
-<button class="btn accent" id="kfDoneTmp">✓ Bereich abschließen (vorläufig)</button>
+<button class="btn accent" id="kfDoneTmp">✓ Bereich abschließen</button>
 </div>
-<p class="hint" id="kf3note" style="text-align:center">Tippe die Punkte auf der Karte an, um die Boxen zu öffnen.</p>
+<p class="hint" id="kf3note" style="text-align:center">Tippe die Punkte an, öffne die Boxen und schließe danach das Quiz ab – dann kannst du den Bereich abschließen.</p>
 </div>`;
 w.appendChild(footer(3));
 
@@ -1593,9 +1635,227 @@ else if(!state.awarded["kf-bodo-real"])renderReal();
 else finish();
 })();
 
-/* Platzhalter-Inhalte (kommen später) */
-w.querySelector("#kfBody-lerjak").innerHTML='<div class="profi-ph">🚧 Inhalt folgt – Lerwick &amp; Jakutsk bauen wir später aus.</div>';
+/* ---- Box 2: Lerwick & Jakutsk (sequenziell) ---- */
+w.querySelector("#kfBody-lerjak").innerHTML=`
+<p><b>Lerwick</b> (Shetlandinseln, Großbritannien) und <b>Jakutsk</b> (Sibirien, Russland) liegen
+fast gleich weit im Norden – und trotzdem ist ihr Klima völlig verschieden. Schau dir zuerst das
+gemeinsame Temperaturdiagramm beider Orte an.</p>
 
+<div class="illu-wrap" style="text-align:center">
+<img src="temperatur.jpg" alt="Temperaturdiagramm von Lerwick und Jakutsk"
+style="width:80%;border-radius:10px;display:inline-block;background:#dde6f2"
+onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="img-fallback" style="display:none">📈<small>temperatur.jpg</small></div>
+<div class="illu-cap">Temperaturverlauf über das Jahr – Lerwick und Jakutsk im Vergleich.</div>
+</div>
+
+<div class="taskbox">
+<div class="progress" id="ljProg"></div>
+<div id="ljStep"></div>
+</div>
+<div id="ljFactor"></div>`;
+
+(function initLerJak(){
+const body=w.querySelector("#kfBody-lerjak");
+const prog=body.querySelector("#ljProg");
+const stepHost=body.querySelector("#ljStep");
+const factor=body.querySelector("#ljFactor");
+
+function showFactor(){
+factor.innerHTML=`
+<div class="box def"><h4>💡 Was bedeutet das?</h4>
+Du siehst: Trotz gleicher Sonneneinstrahlung (gleiche Breitenlage) ist das Klima in Lerwick viel
+gemäßigter – die Winter sind nicht so kalt und die Sommer nicht so warm. Um zu verstehen, warum das
+so ist, erkunde die beiden Kacheln (tippe sie zum Umdrehen an).</div>
+<style>
+.lj-cards{justify-content:center}
+.lj-cards .kzflip{width:21rem;height:21rem;max-width:100%}
+.lj-cards .kzflip-back{overflow:auto}
+.lj-cards .kzfront-name{font-size:1.05rem}
+.lj-cards .kzback-title{font-size:1rem}
+.lj-cards .kzback-list{font-size:.92rem;line-height:1.38}
+</style>
+<div class="kzcards lj-cards" id="ljCards"></div><div class="box tip"><h4>🌊 Klimafaktor: Nähe zum Meer (Kontinentalität)</h4>
+Ob ein Ort <b>am Meer</b> oder <b>weit im Landesinneren</b> liegt, ist ein wichtiger
+<b>Klimafaktor</b>: Das Meer gleicht die Temperaturen aus (maritimes Klima), während es im
+Landesinneren große Schwankungen gibt (kontinentales Klima).</div>
+<div class="feedback ok" style="text-align:center">✓ Ort 2 erforscht – Klimafaktor „Nähe zum Meer" entdeckt!</div>`;
+const cardsHost=factor.querySelector("#ljCards");
+const CARDS=[
+{name:"Lerwick, die Stadt am Meer",img:"lerwick.jpg",color:"#3a86ff",stroke:"#2a6fd6",
+title:"Maritimes Klima · Ozean als Wärmespeicher",
+lines:[
+"Lerwick liegt direkt am Meer.",
+"Das Meer speichert die Sonnenenergie sehr gut, so dass es im Sommer nicht so warm wird.",
+"Im Winter gibt das Meer die Wärme wieder ab, so dass die Winter weniger kalt sind.",
+"In Lerwick herrscht ein maritimes Klima (wird vom Meer geprägt)."]},
+{name:"Jakutsk, die Stadt im Landesinneren",img:"jakutsk.jpg",color:"#e0843a",stroke:"#c2691f",
+title:"Kontinentales Klima · Land als Heizplatte",
+lines:[
+"Jakutsk liegt im Landesinneren, weit weg von den Ozeanen.",
+"Das Land erhitzt sich sehr schnell durch die Sonneneinstrahlung; die Sommer werden brütend heiß.",
+"Im Winter kühlt das Land aber auch sehr schnell ab; die Winter sind deshalb sehr, sehr kalt.",
+"In Jakutsk herrscht ein kontinentales Klima (wird vom Land geprägt)."]},
+];
+CARDS.forEach(c=>{
+const card=document.createElement("div");
+card.className="kzflip";
+card.innerHTML=
+'<div class="kzflip-inner">'+
+'<div class="kzflip-face kzflip-front" style="border-color:'+c.stroke+'">'+
+'<img class="kzfront-photo" src="'+c.img+'" alt="'+c.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">'+
+'<div class="kzfront-fallback" style="display:none;background:'+c.color+'"></div>'+
+'<div class="kzfront-overlay">'+
+'<span class="kzfront-name">'+c.name+'</span>'+
+'<span class="kzfront-hint">Tippen zum Umdrehen</span>'+
+'</div>'+
+'</div>'+
+'<div class="kzflip-face kzflip-back" style="border-color:'+c.stroke+'">'+
+'<p class="kzback-title" style="color:'+c.stroke+';border-color:'+c.color+'">'+c.title+'</p>'+
+'<ul class="kzback-list">'+
+c.lines.map(l=>'<li><span class="kzdotf" style="background:'+c.stroke+'"></span><span>'+l+'</span></li>').join("")+
+'</ul>'+
+'</div>'+
+'</div>';
+card.onclick=()=>card.classList.toggle("flipped");
+cardsHost.appendChild(card);
+});
+}
+
+function finish(){
+prog.textContent="Alle Aufgaben gelöst ✓";
+stepHost.innerHTML='<div class="feedback ok">Stark! Du hast alle Aufgaben zu Lerwick &amp; Jakutsk geschafft.</div>';
+showFactor();
+}
+
+/* --- Aufgabe 1: Koordinaten beider Städte --- */
+function renderCoord(){
+let attempt=0;
+factor.innerHTML="";
+prog.textContent="Aufgabe 1 von 3";
+stepHost.innerHTML=`
+<div class="bodo-tasks">
+<div class="qtext"><b>Aufgabe 1:</b> Suche die beiden Orte <b>Jakutsk</b> und <b>Lerwick</b> in deinem
+Atlas und ermittle ihre geographische Lage (Toleranz ± 3°). Trage dein Ergebnis unten ein – achte
+dabei besonders auf die Breitenlage beider Städte.</div>
+</div>
+<div class="bodo-answer">
+<div class="albl">📍 Deine Lösung – Aufgabe 1 (Koordinaten):</div>
+<div class="bodo-coord">
+<label>Lerwick – Breite: <input class="mini" id="ljLerLat" inputmode="numeric" placeholder="z.B. 60"> ° N</label>
+<label>Länge: <input class="mini" id="ljLerLon" inputmode="numeric" placeholder="z.B. 1"> ° W</label>
+</div>
+<div class="bodo-coord">
+<label>Jakutsk – Breite: <input class="mini" id="ljJakLat" inputmode="numeric" placeholder="z.B. 62"> ° N</label>
+<label>Länge: <input class="mini" id="ljJakLon" inputmode="numeric" placeholder="z.B. 130"> ° E</label>
+</div>
+<button class="btn accent" id="ljCoordBtn">Koordinaten prüfen</button>
+<div class="feedback" id="ljCoordFb"></div>
+</div>`;
+const lerLat=stepHost.querySelector("#ljLerLat"),lerLon=stepHost.querySelector("#ljLerLon");
+const jakLat=stepHost.querySelector("#ljJakLat"),jakLon=stepHost.querySelector("#ljJakLon");
+const btn=stepHost.querySelector("#ljCoordBtn"),fb=stepHost.querySelector("#ljCoordFb");
+btn.onclick=()=>{
+const a=parseNum(lerLat.value),b=parseNum(lerLon.value),c=parseNum(jakLat.value),d=parseNum(jakLon.value);
+if([a,b,c,d].some(isNaN)){fb.className="feedback hint";
+fb.textContent="💡 Bitte trage für beide Städte sowohl die Breite als auch die Länge ein.";return;}
+const lerOk=a>=57&&a<=63&&b>=0&&b<=4;
+const jakOk=c>=59&&c<=65&&d>=127&&d<=133;
+if(lerOk&&jakOk){const pts=attempt===0?10:5;const got=award("kf-lj-coord",3,pts);
+fb.className="feedback ok";fb.textContent="Richtig – Lerwick ≈ 60° N / 1° W, Jakutsk ≈ 62° N / 130° E."+(got?(" +"+pts+" Punkte"):"");
+[lerLat,lerLon,jakLat,jakLon].forEach(i=>i.disabled=true);
+btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>renderLat();
+}else{attempt++;
+if(attempt===1){fb.className="feedback hint";
+fb.textContent="💡 Lerwick liegt nördlich von Schottland (≈ 60° N / 1° W), Jakutsk in Ostsibirien (≈ 62° N / 130° E).";}
+else{fb.className="feedback no";
+fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 Lerwick ≈ 60° N / 1° W, Jakutsk ≈ 62° N / 130° E.";}}
+};
+}
+
+/* --- Aufgabe 2: Breitenlage (MC) --- */
+function renderLat(){
+let sel=null,attempt=0;
+factor.innerHTML="";
+prog.textContent="Aufgabe 2 von 3";
+const OPTS=[
+"Jakutsk liegt viel weiter nördlich als Lerwick.",
+"Beide Städte liegen genau auf dem gleichen Längengrad.",
+"Beide Städte liegen fast auf dem gleichen Breitengrad.",
+"Lerwick liegt viel weiter nördlich als Jakutsk.",
+];
+const OK=2;
+stepHost.innerHTML=`
+<div class="bodo-tasks">
+<div class="qtext"><b>Aufgabe 2:</b> Beobachte die Breitenlage beider Städte. Was fällt dir auf?</div>
+</div>
+<div class="bodo-answer">
+<div class="albl">🌍 Deine Lösung – Aufgabe 2 (Breitenlage):</div>
+<div id="ljLatOpts"></div>
+<button class="btn accent" id="ljLatBtn">Antworten</button>
+<div class="feedback" id="ljLatFb"></div>
+</div>`;
+const host=stepHost.querySelector("#ljLatOpts"),btn=stepHost.querySelector("#ljLatBtn"),fb=stepHost.querySelector("#ljLatFb");
+OPTS.forEach((o,i)=>{const e=document.createElement("label");e.className="opt";e.textContent=o;
+e.onclick=()=>{[...host.children].forEach(c=>c.classList.remove("sel","wrong"));e.classList.add("sel");sel=i;};host.appendChild(e);});
+btn.onclick=()=>{
+if(sel==null){fb.className="feedback hint";fb.textContent="💡 Bitte wähle zuerst eine Antwort.";return;}
+if(sel===OK){host.children[OK].classList.add("correct");
+const pts=attempt===0?10:5;const got=award("kf-lj-lat",3,pts);
+fb.className="feedback ok";fb.textContent="Richtig – beide liegen bei rund 60–62° N, also fast gleich weit im Norden."+(got?(" +"+pts+" Punkte"):"");
+[...host.children].forEach(c=>c.onclick=null);
+btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>renderAmp();
+}else{host.children[sel].classList.add("wrong");attempt++;
+if(attempt===1){fb.className="feedback hint";fb.textContent="💡 Vergleiche die °N-Werte aus Aufgabe 1: 60° N und 62° N.";}
+else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 Beide liegen fast auf demselben Breitengrad.";}}
+};
+}
+
+/* --- Aufgabe 3: Temperaturunterschiede (MC) --- */
+function renderAmp(){
+let sel=null,attempt=0;
+factor.innerHTML="";
+prog.textContent="Aufgabe 3 von 3";
+const OPTS=[
+"In Jakutsk sind die Temperaturschwankungen kleiner als in Lerwick.",
+"In Lerwick sind die Temperaturschwankungen (thermische Amplitude) nicht so ausgeprägt wie in Jakutsk.",
+"In Lerwick ist es im Sommer viel heißer als in Jakutsk.",
+"Beide Orte haben das ganze Jahr über genau dieselben Temperaturen.",
+];
+const OK=1;
+stepHost.innerHTML=`
+<div class="bodo-tasks">
+<div class="qtext"><b>Aufgabe 3:</b> Analysiere jetzt die Temperaturdiagramme beider Orte. Welche
+Unterschiede kannst du feststellen?</div>
+</div>
+<div class="bodo-answer">
+<div class="albl">🌡️ Deine Lösung – Aufgabe 3 (Temperaturunterschiede):</div>
+<div id="ljAmpOpts"></div>
+<button class="btn accent" id="ljAmpBtn">Antworten</button>
+<div class="feedback" id="ljAmpFb"></div>
+</div>`;
+const host=stepHost.querySelector("#ljAmpOpts"),btn=stepHost.querySelector("#ljAmpBtn"),fb=stepHost.querySelector("#ljAmpFb");
+OPTS.forEach((o,i)=>{const e=document.createElement("label");e.className="opt";e.textContent=o;
+e.onclick=()=>{[...host.children].forEach(c=>c.classList.remove("sel","wrong"));e.classList.add("sel");sel=i;};host.appendChild(e);});
+btn.onclick=()=>{
+if(sel==null){fb.className="feedback hint";fb.textContent="💡 Bitte wähle zuerst eine Antwort.";return;}
+if(sel===OK){host.children[OK].classList.add("correct");
+const pts=attempt===0?10:5;const got=award("kf-lj-amp",3,pts);
+fb.className="feedback ok";fb.textContent="Genau – Lerwick hat eine viel kleinere thermische Amplitude als Jakutsk."+(got?(" +"+pts+" Punkte"):"");
+[...host.children].forEach(c=>c.onclick=null);
+btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>finish();
+}else{host.children[sel].classList.add("wrong");attempt++;
+if(attempt===1){fb.className="feedback hint";fb.textContent="💡 Achte im Diagramm auf den Abstand zwischen dem wärmsten und dem kältesten Monat.";}
+else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 In Lerwick ist die Schwankung (Amplitude) viel kleiner als in Jakutsk.";}}
+};
+}
+
+/* --- Start: zur ersten noch nicht gelösten Aufgabe springen --- */
+if(!state.awarded["kf-lj-coord"])renderCoord();
+else if(!state.awarded["kf-lj-lat"])renderLat();
+else if(!state.awarded["kf-lj-amp"])renderAmp();
+else finish();
+})();
 /* ---- Box 3: Alpen (Höhenstufen) – sequenziell, Schema bleibt oben ---- */
    w.querySelector("#kfBody-alpen").innerHTML=`
      <p>In den <b>Alpen</b> ändert sich das Klima nicht von Nord nach Süd, sondern mit der <b>Höhe</b>.
@@ -1840,8 +2100,214 @@ w.querySelector("#kfBody-lerjak").innerHTML='<div class="profi-ph">🚧 Inhalt f
      else if(!state.awarded["alp-climate"])renderClimate();
      else finish();
    })();
-w.querySelector("#kfBody-kisangani").innerHTML='<div class="profi-ph">🚧 Inhalt folgt – Kisangani bauen wir später aus.</div>';
+w.querySelector("#kfBody-westusa").innerHTML=`
+<style>
+.wusa-docs{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0}
+.wusa-doc{flex:1 1 240px;background:#f7faff;border:1px solid var(--soft);border-radius:14px;padding:10px;margin:0;display:flex;flex-direction:column}
+.wusa-doc img,.wusa-doc svg{width:100%;height:auto;border-radius:10px;display:block;background:#dde6f2}
+.wusa-doc figcaption{text-align:center;font-size:.82rem;color:var(--muted);font-weight:700;margin-top:8px}
+.wusa-photos{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0}
+.wusa-photo{flex:1 1 240px;background:#f7faff;border:2px solid var(--soft);border-radius:16px;padding:12px;transition:.15s}
+.wusa-photo.target{border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,157,143,.18);cursor:pointer}
+.wusa-photo figure{margin:0}
+.wusa-photo img{width:100%;border-radius:12px;display:block;aspect-ratio:4 / 3;object-fit:cover;background:#dde6f2}
+.wusa-photo .img-fallback{aspect-ratio:4 / 3}
+.wusa-zonelbl{text-align:center;font-weight:800;color:var(--primary-d);margin:8px 0 2px}
+</style>
+<div class="wusa-docs">
+<figure class="wusa-doc">
+<img src="niederschlag.jpg" alt="Niederschlagskarte Nordamerika" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="img-fallback" style="display:none">🗺️<small>niederschlag.jpg</small></div>
+<figcaption>Niederschlagskarte von Nordamerika</figcaption>
+</figure>
+<figure class="wusa-doc">
+<img src="steigungsregen.jpg" alt="Schema zum Steigungsregen" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="img-fallback" style="display:none">⛰️<small>steigungsregen.jpg</small></div>
+<figcaption>Schema: Steigungsregen am Gebirge</figcaption>
+</figure>
+</div>
+<div class="taskbox">
+<div class="progress" id="wusaProg"></div>
+<div id="wusaStep"></div>
+</div>
+<div id="wusaFactor"></div>`;
 
+(function initWestUSA(){
+const body=w.querySelector("#kfBody-westusa");
+const prog=body.querySelector("#wusaProg");
+const stepHost=body.querySelector("#wusaStep");
+const factor=body.querySelector("#wusaFactor");
+
+const MERK=`<div class="box def"><h4>📌 Merktext</h4>
+Gebirge, vor allem wenn sie quer zur Strömungsrichtung der Luftmassen stehen, verursachen starke
+Niederschläge (<b>Steigungsregen</b>), da die Luftmassen aufsteigen müssen und abkühlen. Kalte Luft
+kann weniger Feuchtigkeit transportieren. Der Überschuss regnet ab. Auf der Rückseite der Gebirge
+herrscht dann trockenes Klima (<b>Regenschatten</b>).</div>
+<div class="feedback ok" style="text-align:center">✓ Ort 4 erforscht – Klimafaktor „Relief / Gebirge (Steigungsregen)" entdeckt!</div>`;
+
+function finish(){
+prog.textContent="Alle Aufgaben gelöst ✓";
+stepHost.innerHTML='<div class="feedback ok">Stark! Du hast alle Aufgaben zur Westküste Nordamerikas geschafft.</div>';
+factor.innerHTML=MERK;
+}
+
+/* --- Aufgabe 1: Niederschläge beschreiben --- */
+function renderDescribe(){
+factor.innerHTML="";
+prog.textContent="Aufgabe 1 von 3";
+const RAW=[
+{t:"An der Westküste von Nordamerika konzentrieren sich sehr starke Niederschläge. Im Inneren des Kontinentes sind die Niederschläge hingegen gering.",ok:true},
+{t:"Im Inneren des Kontinents konzentrieren sich sehr starke Niederschläge, während es an der Westküste sehr trocken ist.",ok:false},
+{t:"Die Niederschläge sind über ganz Nordamerika gleichmäßig verteilt.",ok:false},
+{t:"Nur ganz im Süden Nordamerikas fällt Niederschlag, sonst ist der Kontinent überall gleich trocken.",ok:false},
+];
+const OPTS=shuffle(RAW.slice()),OK=OPTS.findIndex(o=>o.ok);
+stepHost.innerHTML=`
+<div class="bodo-tasks"><div class="qtext"><b>Aufgabe 1:</b> Betrachte die Niederschlagskarte. Beschreibe die Niederschläge im Westen der USA und von Kanada.</div></div>
+<div class="bodo-answer"><div class="albl">🗺️ Deine Lösung – Aufgabe 1:</div>
+<div id="wusaDescOpts"></div>
+<button class="btn accent" id="wusaDescBtn">Antworten</button>
+<div class="feedback" id="wusaDescFb"></div></div>`;
+const host=stepHost.querySelector("#wusaDescOpts"),btn=stepHost.querySelector("#wusaDescBtn"),fb=stepHost.querySelector("#wusaDescFb");
+let sel=null,attempt=0;
+OPTS.forEach((o,i)=>{const e=document.createElement("label");e.className="opt";e.textContent=o.t;
+e.onclick=()=>{[...host.children].forEach(c=>c.classList.remove("sel","wrong"));e.classList.add("sel");sel=i;};host.appendChild(e);});
+btn.onclick=()=>{
+if(sel==null){fb.className="feedback hint";fb.textContent="💡 Bitte wähle zuerst eine Antwort.";return;}
+if(sel===OK){host.children[OK].classList.add("correct");
+const pts=attempt===0?10:5;const got=award("wusa-describe",3,pts);
+fb.className="feedback ok";fb.textContent="Richtig beobachtet!"+(got?(" +"+pts+" Punkte"):"");
+[...host.children].forEach(c=>c.onclick=null);
+btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>renderExplain();
+}else{host.children[sel].classList.add("wrong");attempt++;
+if(attempt===1){fb.className="feedback hint";fb.textContent="💡 Schau, wo auf der Karte die Farben für viel Niederschlag liegen – an der Küste oder im Landesinneren?";}
+else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 Viel Niederschlag an der Westküste, wenig im Inneren des Kontinents.";}}
+};
+}
+
+/* --- Aufgabe 2: Erklärung über das Schema --- */
+function renderExplain(){
+factor.innerHTML="";
+prog.textContent="Aufgabe 2 von 3";
+const RAW=[
+{t:"Warme und feuchte Luftmassen steigen an den Gebirgen auf und es kommt zu Niederschlägen, dem sogenannten Steigungsregen.",ok:true},
+{t:"Das Meerwasser verdunstet direkt an der Küste, deshalb regnet es nur unmittelbar am Wasser.",ok:false},
+{t:"Die Gebirge halten die Sonnenstrahlen ab; dadurch kühlt das Landesinnere ab und es regnet dort.",ok:false},
+{t:"Kalte und trockene Luftmassen sinken an den Gebirgen ab und verursachen dort die starken Niederschläge.",ok:false},
+];
+const OPTS=shuffle(RAW.slice()),OK=OPTS.findIndex(o=>o.ok);
+stepHost.innerHTML=`
+<div class="bodo-tasks"><div class="qtext"><b>Aufgabe 2:</b> Betrachte das Schema zum Steigungsregen. Überlege dir eine Erklärung für deine Beobachtung.</div></div>
+<div class="bodo-answer"><div class="albl">⛰️ Deine Lösung – Aufgabe 2:</div>
+<div id="wusaExpOpts"></div>
+<button class="btn accent" id="wusaExpBtn">Antworten</button>
+<div class="feedback" id="wusaExpFb"></div></div>`;
+const host=stepHost.querySelector("#wusaExpOpts"),btn=stepHost.querySelector("#wusaExpBtn"),fb=stepHost.querySelector("#wusaExpFb");
+let sel=null,attempt=0;
+OPTS.forEach((o,i)=>{const e=document.createElement("label");e.className="opt";e.textContent=o.t;
+e.onclick=()=>{[...host.children].forEach(c=>c.classList.remove("sel","wrong"));e.classList.add("sel");sel=i;};host.appendChild(e);});
+btn.onclick=()=>{
+if(sel==null){fb.className="feedback hint";fb.textContent="💡 Bitte wähle zuerst eine Antwort.";return;}
+if(sel===OK){host.children[OK].classList.add("correct");
+const pts=attempt===0?10:5;const got=award("wusa-explain",3,pts);
+fb.className="feedback ok";fb.textContent="Genau richtig!"+(got?(" +"+pts+" Punkte"):"");
+[...host.children].forEach(c=>c.onclick=null);
+btn.textContent="Weiter →";btn.className="btn";btn.onclick=()=>renderAssign();
+}else{host.children[sel].classList.add("wrong");attempt++;
+if(attempt===1){fb.className="feedback hint";fb.textContent="💡 Folge im Schema dem blauen Pfeil: Was passiert mit der feuchten Luft, wenn sie am Gebirge aufsteigt?";}
+else{fb.className="feedback no";fb.textContent="Noch nicht ganz – schau dir den Hinweis noch mal an: 💡 Aufsteigende, feuchte Luft kühlt ab und regnet ab → Steigungsregen.";}}
+};
+}
+
+/* --- Aufgabe 3: Begriffe den Fotos zuordnen --- */
+function renderAssign(){
+factor.innerHTML="";
+prog.textContent="Aufgabe 3 von 3";
+stepHost.innerHTML=`
+<div class="qtext"><b>Aufgabe 3:</b> Betrachte die beiden Fotos. Tippe einen Begriff an (er wird golden
+markiert) und tippe danach auf das passende Foto. Jedem Foto werden <b>zwei</b> Begriffe zugeordnet.</div>
+<div class="wusa-photos">
+<div class="wusa-photo" data-grp="coast">
+<figure><img src="küste.jpg" alt="Foto A" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="img-fallback" style="display:none">🌧️<small>küste.jpg</small></div></figure>
+<div class="wusa-zonelbl">Foto A</div>
+<div class="drop-zone" data-zone="coast"></div>
+</div>
+<div class="wusa-photo" data-grp="inland">
+<figure><img src="land.jpg" alt="Foto B" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="img-fallback" style="display:none">🏜️<small>land.jpg</small></div></figure>
+<div class="wusa-zonelbl">Foto B</div>
+<div class="drop-zone" data-zone="inland"></div>
+</div>
+</div>
+<div class="sent-pool" id="wusaPool"><div class="pool-lbl">📋 Begriffe – tippe einen an und ordne ihn zu</div><div class="pool-cards" id="wusaPoolCards"></div></div>
+<div style="text-align:center;margin-top:6px">
+<button class="btn accent" id="wusaCheck">Zuordnung prüfen</button>
+<button class="btn ghost" id="wusaReset">Zurücksetzen</button>
+</div>
+<div class="feedback" id="wusaFb" style="text-align:center"></div>`;
+const TERMS=[
+{id:"kueste",t:"Küste",grp:"coast"},
+{id:"steigung",t:"Steigungsregen",grp:"coast"},
+{id:"land",t:"Landesinnere",grp:"inland"},
+{id:"schatten",t:"Regenschatten",grp:"inland"},
+];
+const cols=stepHost.querySelectorAll(".wusa-photo");
+const poolCards=stepHost.querySelector("#wusaPoolCards");
+const pool=stepHost.querySelector("#wusaPool");
+const fb=stepHost.querySelector("#wusaFb");
+const checkBtn=stepHost.querySelector("#wusaCheck");
+const resetBtn=stepHost.querySelector("#wusaReset");
+let loc={},selected=null,locked=false;
+const order=shuffle(TERMS.map(t=>t.id));
+TERMS.forEach(t=>loc[t.id]="pool");
+function byId(id){return TERMS.find(t=>t.id===id);}
+function makeCard(t){
+const c=document.createElement("div");c.className="sent-card";c.textContent=t.t;c.dataset.id=t.id;
+if(selected===t.id)c.classList.add("sel");
+if(locked)c.classList.add("ok");
+c.onclick=ev=>{ev.stopPropagation();if(locked)return;selected=(selected===t.id)?null:t.id;render();};
+return c;
+}
+function render(){
+poolCards.innerHTML="";
+stepHost.querySelectorAll(".drop-zone").forEach(z=>z.innerHTML="");
+const poolIds=order.filter(id=>loc[id]==="pool");
+poolIds.forEach(id=>poolCards.appendChild(makeCard(byId(id))));
+if(!poolIds.length&&!locked){const e=document.createElement("div");e.className="pool-empty";e.textContent="Alle Begriffe zugeordnet – jetzt prüfen!";poolCards.appendChild(e);}
+["coast","inland"].forEach(g=>{const z=stepHost.querySelector('.drop-zone[data-zone="'+g+'"]');
+order.filter(id=>loc[id]===g).forEach(id=>z.appendChild(makeCard(byId(id))));});
+cols.forEach(c=>c.classList.toggle("target",selected!=null));
+pool.classList.toggle("target",selected!=null);
+}
+function moveTo(g){if(locked||selected==null)return;loc[selected]=g;selected=null;render();}
+cols.forEach(c=>c.onclick=()=>moveTo(c.dataset.grp));
+pool.onclick=()=>{if(selected&&!locked){loc[selected]="pool";selected=null;render();}};
+checkBtn.onclick=()=>{
+if(locked)return;
+if(order.some(id=>loc[id]==="pool")){fb.className="feedback hint";fb.textContent="💡 Ordne zuerst alle vier Begriffe zu.";return;}
+const allOk=order.every(id=>loc[id]===byId(id).grp);
+stepHost.querySelectorAll(".drop-zone .sent-card").forEach(c=>{
+const ok=loc[c.dataset.id]===byId(c.dataset.id).grp;
+c.classList.toggle("ok",ok);c.classList.toggle("bad",!ok);});
+if(allOk){
+const got=award("wusa-assign",3,20);
+fb.className="feedback ok";fb.textContent="Alles richtig zugeordnet! 🎉"+(got?" +20 Punkte":"");
+locked=true;checkBtn.disabled=true;resetBtn.disabled=true;render();
+const nx=document.createElement("button");nx.className="btn";nx.textContent="Abschließen →";nx.style.marginTop="8px";
+nx.onclick=()=>finish();fb.after(nx);
+}else{
+fb.className="feedback no";fb.textContent="Einige Begriffe passen noch nicht (rot). Tippe sie an und ordne sie neu zu.";
+}
+};
+resetBtn.onclick=()=>{if(locked)return;selected=null;TERMS.forEach(t=>loc[t.id]="pool");fb.textContent="";render();};
+render();
+}
+
+/* Start: zur ersten noch nicht gelösten Aufgabe springen */
+if(!state.awarded["wusa-describe"])renderDescribe();
+else if(!state.awarded["wusa-explain"])renderExplain();
+else if(!state.awarded["wusa-assign"])renderAssign();
+else finish();
+})();
 /* ---- Öffnen-Logik: immer nur eine Box ---- */
 let openId=null;
 function setActivePoint(pid){pointsHost.querySelectorAll(".kf-point").forEach(pt=>pt.classList.toggle("active",pt.dataset.id===pid));}
@@ -1853,11 +2319,26 @@ openId=boxId;setActivePoint(pointId);
 if(pointId!=null)boxEls[boxId].scrollIntoView({behavior:"smooth",block:"center"});
 }
 
-/* ---- vorläufig + Lehrer ---- */
+/* ---- Quiz + Bereich abschließen + Lehrer ---- */
 w.querySelector("#teacherOpen3").onclick=()=>openTeacher();
+const quizHost=w.querySelector("#kfQuiz");
 const done=w.querySelector("#kfDoneTmp");
-if(state.passed[3]){done.textContent="✓ Abgeschlossen";done.disabled=true;}
-done.onclick=()=>{markPassed(3);done.textContent="✓ Abgeschlossen";done.disabled=true;};
+const note=w.querySelector("#kf3note");
+
+function kfQuizDone(){return !!state.awarded["q-3-7"];}
+function enableDone(){if(!state.passed[3]){done.disabled=false;note.textContent="Quiz geschafft – schließe jetzt den Bereich ab.";}}
+
+if(state.passed[3]){
+quizHost.innerHTML='<div class="boxhead">Quiz</div><div class="feedback ok">🎉 Du hast dieses Quiz bereits geschafft.</div>';
+done.textContent="✓ Abgeschlossen";done.disabled=true;note.textContent="Bereich abgeschlossen ✓";
+}else if(kfQuizDone()){
+quizHost.innerHTML='<div class="boxhead">Quiz</div><div class="progress">Quiz abgeschlossen ✓</div><div class="feedback ok">🎉 Geschafft! Du kannst den Bereich jetzt abschließen.</div>';
+enableDone();
+}else{
+done.disabled=true;
+renderQuiz(quizHost,3,KF_QUIZ,8,()=>{enableDone();});
+}
+done.onclick=()=>{if(done.disabled)return;markPassed(3);done.textContent="✓ Abgeschlossen";done.disabled=true;note.textContent="Bereich abgeschlossen ✓";};
 },30);
 return w;
 };
@@ -1895,7 +2376,7 @@ function resetAll(){try{localStorage.removeItem("klimazonen1");}catch(e){}locati
 SECT[0].max=50;
 SECT[1].max=110;
 SECT[2].max=100;
-SECT[3].max=90;
+SECT[3].max=240;
 SECT[4].max=0;
 SECT[5].max=0;
 updateTotals();setupTeacherModal();buildNav();show(0);
