@@ -380,12 +380,26 @@ function show(id){current=id;buildNav();const main=document.getElementById("main
 let el=document.getElementById("step"+id);
 if(!el){el=builders[id]();el.id="step"+id;el.className="step";main.appendChild(el);}
 el.classList.add("show");window.scrollTo(0,0);}
-function footer(id){const f=document.createElement("div");f.className="foot";
+function footer(id){
+const wrap=document.createElement("div");
+const f=document.createElement("div");f.className="foot";
 const back=document.createElement("button");back.className="btn ghost";back.textContent="← Zurück";
 back.onclick=()=>show(Math.max(0,id-1));back.style.visibility=id===0?"hidden":"visible";
 const next=document.createElement("button");next.className="btn";next.textContent="Weiter →";
 next.onclick=()=>show(id+1);next.disabled=!state.passed[id];nextBtns[id]=next;
-f.append(back,next);return f;}
+f.append(back,next);
+wrap.appendChild(f);
+/* --- Lehrer-Leiste (in jedem Modul) --- */
+const tr=document.createElement("div");tr.className="teacher-row";
+const tIn=document.createElement("button");tIn.className="teacher-btn";
+tIn.innerHTML="👩‍🏫 Lehrer-Zugang";tIn.onclick=()=>openTeacher();
+const tOut=document.createElement("button");tOut.className="teacher-btn";
+tOut.innerHTML="🎓 Lehrermodus beenden";tOut.style.marginLeft="10px";
+tOut.onclick=()=>{teacherMode=false;buildNav();};
+tr.append(tIn,tOut);
+wrap.appendChild(tr);
+return wrap;
+}
 
 /* ====================== LEHRER-ZUGANG (Modal) ====================== */
 const TEACHER_CODE="4711";
@@ -443,7 +457,7 @@ ${intro||""}
 <div class="profi-ph">🚧 Inhalt folgt – diesen Bereich bauen wir als Nächstes gemeinsam auf.</div>
 <div class="box tip" style="margin-top:16px"><h4>Was hier später kommt</h4>
 Erklärungen, interaktive Elemente, Aufgaben (mit Punkten) und ein Quiz – genau wie in der Koordinaten-Reise.</div>
-${withTeacher?'<div class="teacher-row"><button class="teacher-btn" id="teacherOpen">👩‍🏫 Lehrer-Zugang</button></div>':''}
+${withTeacher?'':''}
 <div style="text-align:center;margin-top:18px">
 <button class="btn accent" id="doneBtn">✓ Bereich abschließen (vorläufig)</button>
 </div>
@@ -527,12 +541,11 @@ Eine falsch abgelegte Karte kannst du erneut antippen und verschieben.</div>
 <div id="reflReveal"></div>
 </div>
 
-<div class="teacher-row"><button class="teacher-btn" id="teacherOpen">👩‍🏫 Lehrer-Zugang</button></div>
+
 </div>`;
 w.appendChild(footer(0));
 
 setTimeout(()=>{
-w.querySelector("#teacherOpen").onclick=()=>openTeacher();
 
 const poolCards=w.querySelector("#poolCards");
 const zoneBed=w.querySelector("#zoneBed");
@@ -1353,10 +1366,10 @@ return w;
 /* --- 3 Klimafaktoren --- */
 const KF_POINTS=[
 {id:"bodo",name:"Bodø",box:"bodo",x:49.7,y:13.4},
-{id:"lerwick",name:"Lerwick",box:"lerjak",x:45.7,y:17.1},
-{id:"jakutsk",name:"Jakutsk",box:"lerjak",x:81.0,y:16.1},
-{id:"alpen",name:"Alpen",box:"alpen",x:48.6,y:25.3},
-{id:"westusa",name:"Westküste Nordamerika",box:"westusa",x:13.0,y:24.7},
+{id:"lerwick",name:"Lerwick",box:"lerjak",x:46.7,y:17.1},
+{id:"jakutsk",name:"Jakutsk",box:"lerjak",x:77.0,y:16.1},
+{id:"alpen",name:"Alpen",box:"alpen",x:49.6,y:25.3},
+{id:"westusa",name:"Westküste Nordamerika",box:"westusa",x:17.0,y:24.7},
 ];
 const KF_BOXES=[
 {id:"bodo",num:1,title:"Bodø (Norwegen)"},
@@ -1426,7 +1439,6 @@ deinen Aufgaben – die anderen Boxen schließen sich automatisch.</div>
 <p>Zeig, was du über die Klimafaktoren gelernt hast. Es kommen <b>8 Fragen</b> aus einem größeren Fragenpool – nach dem 2. Fehlversuch erscheint automatisch eine neue Frage. Danach kannst du den Bereich abschließen.</p>
 <div class="quizbox" id="kfQuiz"></div>
 
-<div class="teacher-row"><button class="teacher-btn" id="teacherOpen3">👩‍🏫 Lehrer-Zugang</button></div>
 <div style="text-align:center;margin-top:8px">
 <button class="btn accent" id="kfDoneTmp">✓ Bereich abschließen</button>
 </div>
@@ -1524,8 +1536,8 @@ geographische Lage (Koordinaten, Toleranz ± 2°). Trage dein Ergebnis unten in 
 <div class="bodo-answer">
 <div class="albl">📍 Deine Lösung – Aufgabe 1 (Koordinaten von Bodø):</div>
 <div class="bodo-coord">
-<label>Breite: <input class="mini" id="bodoLat" inputmode="numeric" placeholder="z.B. 67"> ° N</label>
-<label>Länge: <input class="mini" id="bodoLon" inputmode="numeric" placeholder="z.B. 14"> ° E</label>
+<label>Breite: <input class="mini" id="bodoLat" inputmode="numeric" placeholder="z.B. 48"> ° N</label>
+<label>Länge: <input class="mini" id="bodoLon" inputmode="numeric" placeholder="z.B. 9"> ° E</label>
 </div>
 <button class="btn accent" id="bodoCoordBtn">Koordinaten prüfen</button>
 <div class="feedback" id="bodoCoordFb"></div>
@@ -1742,12 +1754,12 @@ dabei besonders auf die Breitenlage beider Städte.</div>
 <div class="bodo-answer">
 <div class="albl">📍 Deine Lösung – Aufgabe 1 (Koordinaten):</div>
 <div class="bodo-coord">
-<label>Lerwick – Breite: <input class="mini" id="ljLerLat" inputmode="numeric" placeholder="z.B. 60"> ° N</label>
-<label>Länge: <input class="mini" id="ljLerLon" inputmode="numeric" placeholder="z.B. 1"> ° W</label>
+<label>Lerwick – Breite: <input class="mini" id="ljLerLat" inputmode="numeric" placeholder="z.B. 48"> ° N</label>
+<label>Länge: <input class="mini" id="ljLerLon" inputmode="numeric" placeholder="z.B. 9"> ° W</label>
 </div>
 <div class="bodo-coord">
-<label>Jakutsk – Breite: <input class="mini" id="ljJakLat" inputmode="numeric" placeholder="z.B. 62"> ° N</label>
-<label>Länge: <input class="mini" id="ljJakLon" inputmode="numeric" placeholder="z.B. 130"> ° E</label>
+<label>Jakutsk – Breite: <input class="mini" id="ljJakLat" inputmode="numeric" placeholder="z.B. 48"> ° N</label>
+<label>Länge: <input class="mini" id="ljJakLon" inputmode="numeric" placeholder="z.B. 100"> ° E</label>
 </div>
 <button class="btn accent" id="ljCoordBtn">Koordinaten prüfen</button>
 <div class="feedback" id="ljCoordFb"></div>
@@ -2320,7 +2332,6 @@ if(pointId!=null)boxEls[boxId].scrollIntoView({behavior:"smooth",block:"center"}
 }
 
 /* ---- Quiz + Bereich abschließen + Lehrer ---- */
-w.querySelector("#teacherOpen3").onclick=()=>openTeacher();
 const quizHost=w.querySelector("#kfQuiz");
 const done=w.querySelector("#kfDoneTmp");
 const note=w.querySelector("#kf3note");
