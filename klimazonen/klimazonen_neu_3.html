@@ -238,8 +238,7 @@ const SECT=[
 {id:1,name:"Entstehung",color:"#e0843a"},
 {id:2,name:"Klimazonen",color:"#2f9e7a"},
 {id:3,name:"Klimafaktoren",color:"#3a86ff"},
-{id:4,name:"Vegetationszonen",color:"#5a9e2f"},
-{id:5,name:"Ergebnis",color:"#8e5fd0",result:true},
+{id:4,name:"Ergebnis",color:"#8e5fd0",result:true},
 ];
 let state={pts:{},passed:{},awarded:{}};
 function load(){try{const s=JSON.parse(localStorage.getItem("klimazonen1"));if(s)state=Object.assign(state,s);}catch(e){}}
@@ -2354,14 +2353,10 @@ done.onclick=()=>{if(done.disabled)return;markPassed(3);done.textContent="✓ Ab
 return w;
 };
 
-/* --- 4 Vegetationszonen --- */
-builders[4]=placeholder(4,"Bereich 5","Vegetationszonen",
-`<p>Wo welches Klima herrscht, wächst auch eine bestimmte Pflanzenwelt. Du verbindest die
-Klimazonen mit ihren typischen <b>Vegetationszonen</b> – von der Tundra bis zum Regenwald.</p>`,
-false);
 
 /* --- 5 Ergebnis --- */
-builders[5]=()=>{const w=document.createElement("div");w.innerHTML=`<div class="card" id="rc"></div>`;
+/* --- 4 Ergebnis --- */
+builders[4]=()=>{const w=document.createElement("div");w.innerHTML=`<div class="card" id="rc"></div>`;
 setTimeout(()=>renderResult(w.querySelector("#rc")),20);return w;};
 function renderResult(host){const tp=totalPts(),tm=totalMax(),pc=tm?Math.round(tp/tm*100):0;
 let emoji="🌱",title="Klima-Entdecker";
@@ -2373,7 +2368,7 @@ const p=state.pts[s.id]||0,mx=s.max||0,perc=mx?Math.round(p/mx*100):0;
 const statusTxt=mx>0?(p+" / "+mx):(passed?"erledigt ✓":"offen");
 const advice=passed?"Bereich abgeschlossen.":"Noch nicht abgeschlossen.";
 rows+=`<tr><td>${s.name}</td><td>${statusTxt}</td><td><div class="bar"><i style="width:${passed?Math.max(perc,8):0}%"></i></div></td><td class="hint">${advice}</td></tr>`;});
-host.innerHTML=`<div class="kicker">Bereich 6 · Ergebnis</div><h1>Deine Auswertung</h1>
+host.innerHTML=`<div class="kicker">Bereich 5 · Ergebnis</div><h1>Deine Auswertung</h1>
 <div class="badge-box"><div class="emoji">${emoji}</div><div class="title">${title}</div>
 <p>Du hast <b>${tp}</b> von <b>${tm}</b> Punkten erreicht (${pc}%).</p>
 <p class="hint">Hinweis: Weitere Punkte werden vergeben, sobald wir die übrigen Bereiche mit Aufgaben füllen.</p></div>
@@ -2389,7 +2384,6 @@ SECT[1].max=110;
 SECT[2].max=100;
 SECT[3].max=240;
 SECT[4].max=0;
-SECT[5].max=0;
 updateTotals();setupTeacherModal();buildNav();show(0);
 window.show=show;window.resetAll=resetAll;
 </script>
