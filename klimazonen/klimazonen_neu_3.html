@@ -1697,13 +1697,13 @@ w.querySelector("#kfBody-lerjak").innerHTML='<div class="profi-ph">🚧 Inhalt f
      }
 
      /* --- Aufgabe 2 von 4: Foto-Zuordnung (Kacheln) --- */
-     function renderAssign(){
+    function renderAssign(){
        factor.innerHTML="";
        prog.textContent="Aufgabe 2 von 4";
        stepHost.innerHTML=`
          <div class="qtext"><b>Aufgabe:</b> Ordne die Fotos den richtigen Höhenstufen zu. Tippe ein Foto an (es wird golden markiert) und tippe danach auf die passende Höhenstufe (nach Höhe geordnet).</div>
-         <div class="assign-photos" id="alpTargets"></div>
-         <div class="sent-pool" id="alpPool"><div class="pool-lbl">📋 Fotos – tippe eins an und ordne es zu</div><div class="pool-cards" id="alpPoolCards" style="flex-direction:row;flex-wrap:wrap"></div></div>
+         <div id="alpTargets" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0;padding:12px;border:2px solid transparent"></div>
+         <div class="sent-pool" id="alpPool"><div class="pool-lbl">📋 Fotos – tippe eins an und ordne es zu</div><div id="alpPoolCards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px"></div></div>
          <div style="text-align:center;margin-top:6px"><button class="btn accent" id="alpAssignCheck">Zuordnung prüfen</button><button class="btn ghost" id="alpAssignReset">Zurücksetzen</button></div>
          <div class="feedback" id="alpAssignFb" style="text-align:center"></div>`;
        const targets=stepHost.querySelector("#alpTargets"),poolCards=stepHost.querySelector("#alpPoolCards"),
@@ -1714,25 +1714,27 @@ w.querySelector("#kfBody-lerjak").innerHTML='<div class="profi-ph">🚧 Inhalt f
        ST.forEach(s=>loc[s.id]="pool");
        function byId(id){return ST.find(s=>s.id===id);}
        targets.innerHTML="";
-       ST.forEach(s=>{const col=document.createElement("div");col.className="photo-col";col.dataset.target=s.id;
-         col.innerHTML='<div class="zone-hint" style="font-size:1rem;color:var(--primary-d)"><b>'+s.range+'</b></div><div class="drop-zone" data-zone="'+s.id+'"></div>';
+       ST.forEach(s=>{const col=document.createElement("div");col.dataset.target=s.id;
+         col.style.cssText="display:flex;flex-direction:column;gap:6px;cursor:pointer";
+         col.innerHTML='<div class="zone-hint" style="font-size:1rem;color:var(--primary-d);margin:0"><b>'+s.range+'</b></div><div class="drop-zone" data-zone="'+s.id+'" style="margin-top:0"></div>';
          col.onclick=()=>placeIn(s.id);targets.appendChild(col);});
-    function makeCard(s){const c=document.createElement("div");c.className="sent-card";c.dataset.id=s.id;
-         c.style.position="relative";c.style.padding="0";c.style.overflow="hidden";c.style.width="100%";c.style.aspectRatio="4 / 3";
+       function makeCard(s){const c=document.createElement("div");c.className="sent-card";c.dataset.id=s.id;
+         c.style.cssText="position:relative;padding:0;overflow:hidden;width:100%;aspect-ratio:4 / 3";
          c.innerHTML='<img src="'+s.img+'" alt="'+s.name+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#dde6f2" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'+
            '<div style="display:none;position:absolute;inset:0;width:100%;height:100%;background:#dde6f2;align-items:center;justify-content:center;font-size:2.4rem">'+s.emoji+'</div>'+
            '<div style="position:absolute;left:0;right:0;bottom:0;padding:7px 8px;background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,0));color:#fff;font-weight:800;font-size:.85rem;line-height:1.2;text-shadow:0 1px 4px rgba(0,0,0,.85)">'+s.name+'</div>';
          if(selected===s.id)c.classList.add("sel");if(locked)c.classList.add("ok");
          c.onclick=ev=>{ev.stopPropagation();if(locked)return;selected=(selected===s.id)?null:s.id;render();};return c;}
+       function placeholderBox(){return '<div class="ph" style="width:100%;aspect-ratio:4 / 3;border:2px dashed #c3cee0;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#9fb0c8;font-size:.8rem;font-weight:700;text-align:center;box-sizing:border-box">Foto hierher</div>';}
        function render(){poolCards.innerHTML="";targets.querySelectorAll(".drop-zone").forEach(z=>z.innerHTML="");
          const poolIds=order.filter(id=>loc[id]==="pool");
-         poolIds.forEach(id=>{const wrap=document.createElement("div");wrap.style.flex="1 1 130px";wrap.appendChild(makeCard(byId(id)));poolCards.appendChild(wrap);});
-         if(!poolIds.length&&!locked){const e=document.createElement("div");e.className="pool-empty";e.textContent="Alle Fotos zugeordnet – jetzt prüfen!";poolCards.appendChild(e);}
+         poolIds.forEach(id=>poolCards.appendChild(makeCard(byId(id))));
+         if(!poolIds.length&&!locked){const e=document.createElement("div");e.className="pool-empty";e.style.gridColumn="1 / -1";e.textContent="Alle Fotos zugeordnet – jetzt prüfen!";poolCards.appendChild(e);}
          ST.forEach(s=>{const placed=order.find(id=>loc[id]===s.id);
            const z=targets.querySelector('.drop-zone[data-zone="'+s.id+'"]');
            if(placed)z.appendChild(makeCard(byId(placed)));
-   else z.innerHTML='<div class="ph" style="width:100%;aspect-ratio:4 / 3;border:2px dashed #c3cee0;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#9fb0c8;font-size:.8rem;font-weight:700;text-align:center">Foto hierher</div>';});
-         targets.querySelectorAll(".photo-col").forEach(c=>c.classList.toggle("target",selected!=null));
+           else z.innerHTML=placeholderBox();});
+         targets.querySelectorAll(".ph").forEach(ph=>ph.style.borderColor=selected!=null?"var(--accent)":"#c3cee0");
          pool.classList.toggle("target",selected!=null);}
        function placeIn(tid){if(locked||selected==null)return;
          const ex=order.find(id=>loc[id]===tid&&id!==selected);if(ex)loc[ex]="pool";
