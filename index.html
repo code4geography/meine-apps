@@ -378,6 +378,12 @@
       a.className = "app-link";
       a.href = app.datei || "#";
 
+      /* Alle Apps in neuem Tab öffnen (außer leere Platzhalter) */
+      if (app.datei) {
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      }
+
       /* Externe Links (http/https) in neuem Tab öffnen */
       if (/^https?:\/\//i.test(app.datei || "")) {
         a.target = "_blank";
