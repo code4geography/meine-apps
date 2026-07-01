@@ -1007,5 +1007,11 @@
 
         init();
     </script>
-</body>
+<script>
+  fetch("https://appkarikaturanalyse-production.up.railway.app/api/count", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ app: "jahreszeiten" })
+  }).catch(() => {});
+</script></body>
 </html>
