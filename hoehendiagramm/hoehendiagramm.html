@@ -1564,5 +1564,12 @@
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<ElevationProfileApp />);
   </script>
+<script>
+  fetch("https://appkarikaturanalyse-production.up.railway.app/api/count", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ app: "hoehendiagramm" })
+  }).catch(() => {});
+</script>
 </body>
 </html>
