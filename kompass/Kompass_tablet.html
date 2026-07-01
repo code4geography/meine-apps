@@ -746,6 +746,10 @@
     display: flex; align-items: center; justify-content: center;
     background: rgba(0,0,0,0.4); padding: 1rem;
   }
+   /* SPRACHBUTTONS */
+  .lang-btn { background:#fff; color:#7A7A85; }
+  .lang-btn:hover { background:#EFE4D2; color:#2E2E36; }
+  .lang-btn.active { background:#7FA9B9; color:#fff; }
   #teacherModal.hidden-stage { display: none; }
 </style>
 </head>
@@ -756,16 +760,20 @@
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-full bg-sage flex items-center justify-center text-white font-bold">K</div>
       <div>
-        <h1 class="text-base sm:text-lg font-bold leading-tight">Kompass &amp; Orientierung</h1>
-        <p class="text-xs text-muted leading-tight">Lern-App für den Geografieunterricht</p>
+        <h1 class="text-base sm:text-lg font-bold leading-tight" data-i18n="hdr.title">Kompass &amp; Orientierung</h1>
+        <p class="text-xs text-muted leading-tight" data-i18n="hdr.subtitle">Lern-App für den Geografieunterricht</p>
       </div>
     </div>
-    <div class="flex items-center gap-3">
-      <button id="teacherBtn" class="tap text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg border border-skyDk text-skyDk hover:bg-skyLt transition">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center rounded-lg border border-sand overflow-hidden">
+        <button id="langDe" class="lang-btn tap text-xs font-bold px-2.5 py-1.5 transition" data-lang="de">DE</button>
+        <button id="langFr" class="lang-btn tap text-xs font-bold px-2.5 py-1.5 transition border-l border-sand" data-lang="fr">FR</button>
+      </div>
+      <button id="teacherBtn" class="tap text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg border border-skyDk text-skyDk hover:bg-skyLt transition" data-i18n="hdr.teacher">
         Lehrerzugang
       </button>
       <div class="text-sm text-muted hidden sm:block">
-        Etappe <span id="etappeAnzeige" class="font-bold text-ink">1</span> / 5
+        <span data-i18n="hdr.stage">Etappe</span> <span id="etappeAnzeige" class="font-bold text-ink">1</span> / 5
       </div>
     </div>
   </div>
@@ -777,8 +785,8 @@
 <!-- LEHRERMODUS-BANNER -->
 <div id="teacherBanner" class="hidden-stage bg-skyLt border-b border-skyDk">
   <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
-    <span class="text-sm font-semibold text-skyDk">🔓 Lehrermodus aktiv – alle Etappen frei wählbar</span>
-    <button id="teacherExit" class="tap text-xs font-semibold px-3 py-1.5 rounded-lg bg-skyDk text-white hover:opacity-90 transition">
+    <span class="text-sm font-semibold text-skyDk" data-i18n="banner.active">🔓 Lehrermodus aktiv – alle Etappen frei wählbar</span>
+    <button id="teacherExit" class="tap text-xs font-semibold px-3 py-1.5 rounded-lg bg-skyDk text-white hover:opacity-90 transition" data-i18n="banner.exit">
       Lehrermodus verlassen
     </button>
   </div>
@@ -789,13 +797,13 @@
   <!-- ETAPPE 1 -->
   <section id="stage-1" class="stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-5 sm:p-7">
-      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk">Etappe 1</span>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2">Was ist Orientierung?</h2>
-      <p class="text-muted mb-6">Lies zuerst die kurzen Erklärungen. Wenn du bereit bist, starte das Quiz.</p>
+      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk" data-i18n="e1.badge">Etappe 1</span>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2" data-i18n="e1.title">Was ist Orientierung?</h2>
+      <p class="text-muted mb-6" data-i18n="e1.intro">Lies zuerst die kurzen Erklärungen. Wenn du bereit bist, starte das Quiz.</p>
 
       <div class="flex items-start gap-3 bg-sageLt/60 border border-sage/30 rounded-xl p-3 mb-6">
         <div id="tintin-1" class="shrink-0"></div>
-        <p class="text-sm text-ink/90 leading-snug">
+        <p class="text-sm text-ink/90 leading-snug" data-i18n="e1.willi">
           <span class="font-semibold">Willi Wegweiser:</span>
           „Hallo! Ich erkläre dir die wichtigsten Grundlagen. Danach testen wir dein Wissen mit acht Fragen."
         </p>
@@ -806,7 +814,7 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-sage">?</div>
             <div class="flex-1">
-              <h3>1. Was bedeutet „Orientierung"?</h3>
+              <h3 data-i18n="e1.c1.h3">1. Was bedeutet „Orientierung"?</h3>
             <figure class="my-3">
   <img
     src="tintin.jpg"
@@ -814,7 +822,7 @@
     class="w-full rounded-xl border border-sand object-cover"
     style="aspect-ratio: 16 / 9;"
   />
-  <figcaption class="text-xs text-muted text-center mt-1">
+  <figcaption class="text-xs text-muted text-center mt-1" data-i18n="e1.c1.figcap">
     Comic-Szene: Die beiden Detektive irren durch die Wüste.
   </figcaption>
 </figure>
@@ -822,19 +830,19 @@
               <div class="reflex-box my-3">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="text-lg">💭</span>
-                  <span class="text-skyDk font-semibold text-sm uppercase tracking-wide">Zum Nachdenken</span>
+                  <span class="text-skyDk font-semibold text-sm uppercase tracking-wide" data-i18n="e1.reflex.label">Zum Nachdenken</span>
                 </div>
-                <p class="text-sm text-ink/85 mb-2">Schau dir das Bild in Ruhe an und überlege:</p>
-                <ul class="text-sm text-ink/90 space-y-1.5 list-disc list-inside marker:text-skyDk">
+                <p class="text-sm text-ink/85 mb-2" data-i18n="e1.reflex.intro">Schau dir das Bild in Ruhe an und überlege:</p>
+                <ul class="text-sm text-ink/90 space-y-1.5 list-disc list-inside marker:text-skyDk" data-i18n="e1.reflex.list">
                   <li>Mit welchem <strong>Problem</strong> sind Schulze und Schulze konfrontiert?</li>
                   <li>Warum finden sie den <strong>Weg heraus aus der Wüste</strong> nicht?</li>
                 </ul>
-                <p class="text-xs text-muted mt-2 italic">
+                <p class="text-xs text-muted mt-2 italic" data-i18n="e1.reflex.note">
                   Diese Fragen musst du nicht beantworten — sie sind dazu da, dass du dir kurz Gedanken machst.
                 </p>
               </div>
 
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e1.c1.p">
                 Sich zu orientieren heißt: <strong>zu wissen, wo man gerade ist</strong> und
                 <strong>in welche Richtung man gehen muss</strong>, um an ein Ziel zu kommen.
                 Auch im Alltag orientieren wir uns ständig — auf dem Schulweg, beim Wandern oder beim Suchen
@@ -848,10 +856,10 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-coral">N</div>
             <div class="flex-1">
-              <h3>2. Die vier Haupthimmelsrichtungen</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-3">
+              <h3 data-i18n="e1.c2.h3">2. Die vier Haupthimmelsrichtungen</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-3" data-i18n="e1.c2.p">
                 Es gibt vier Haupthimmelsrichtungen:
-                <strong>Norden (N)</strong>, <strong>Osten (O)</strong>,
+                <strong>Norden (N)</strong>, <strong>Osten (E)</strong>,
                 <strong>Süden (S)</strong> und <strong>Westen (W)</strong>.
               </p>
               <div class="flex justify-center my-2">
@@ -862,7 +870,7 @@
                   <polygon points="60,16 56,32 60,28 64,32" fill="#C97A6B"/>
                   <text x="60" y="12" text-anchor="middle" font-size="11" font-weight="700" fill="#C97A6B">N</text>
                   <text x="60" y="116" text-anchor="middle" font-size="11" font-weight="700" fill="#2E2E36">S</text>
-                  <text x="112" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="#2E2E36">O</text>
+                  <text x="112" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="#2E2E36">E</text>
                   <text x="8"   y="64" text-anchor="middle" font-size="11" font-weight="700" fill="#2E2E36">W</text>
                 </svg>
               </div>
@@ -874,24 +882,24 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-skyDk">+</div>
             <div class="flex-1">
-              <h3>3. Die Nebenhimmelsrichtungen</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-2">
+              <h3 data-i18n="e1.c3.h3">3. Die Nebenhimmelsrichtungen</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e1.c3.p1">
                 Zwischen den vier Haupthimmelsrichtungen liegen die Nebenhimmelsrichtungen:
               </p>
-              <ul class="text-sm text-ink/80 grid grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside mb-3">
-                <li><strong>Nordosten (NO)</strong> — zwischen N und O</li>
-                <li><strong>Südosten (SO)</strong> — zwischen S und O</li>
+              <ul class="text-sm text-ink/80 grid grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside mb-3" data-i18n="e1.c3.ul1">
+                <li><strong>Nordosten (NE)</strong> — zwischen N und E</li>
+                <li><strong>Südosten (SE)</strong> — zwischen S und E</li>
                 <li><strong>Südwesten (SW)</strong> — zwischen S und W</li>
                 <li><strong>Nordwesten (NW)</strong> — zwischen N und W</li>
               </ul>
-              <p class="text-sm text-ink/80 leading-relaxed mb-2">
+              <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e1.c3.p2">
                 Dazwischen gibt es noch acht weitere, feinere Himmelsrichtungen:
               </p>
-              <ul class="text-sm text-ink/80 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside">
-                <li><strong>Nordnordost (NNO)</strong> — zwischen N und NO</li>
-                <li><strong>Ostnordost (ONO)</strong> — zwischen O und NO</li>
-                <li><strong>Ostsüdost (OSO)</strong> — zwischen O und SO</li>
-                <li><strong>Südsüdost (SSO)</strong> — zwischen S und SO</li>
+              <ul class="text-sm text-ink/80 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside" data-i18n="e1.c3.ul2">
+                <li><strong>Nordnordost (NNE)</strong> — zwischen N und NE</li>
+                <li><strong>Ostnordost (ENE)</strong> — zwischen E und NE</li>
+                <li><strong>Ostsüdost (ESE)</strong> — zwischen E und SE</li>
+                <li><strong>Südsüdost (SSE)</strong> — zwischen S und SE</li>
                 <li><strong>Südsüdwest (SSW)</strong> — zwischen S und SW</li>
                 <li><strong>Westsüdwest (WSW)</strong> — zwischen W und SW</li>
                 <li><strong>Westnordwest (WNW)</strong> — zwischen W und NW</li>
@@ -905,11 +913,11 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-warn text-ink">☀</div>
             <div class="flex-1">
-              <h3>4. Die Sonne als Wegweiser</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-2">
+              <h3 data-i18n="e1.c4.h3">4. Die Sonne als Wegweiser</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e1.c4.p">
                 Auch ohne Kompass kann man sich an der Sonne orientieren:
               </p>
-              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside">
+              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside" data-i18n="e1.c4.ul">
                 <li>Am <strong>Morgen</strong> geht die Sonne im <strong>Osten</strong> auf.</li>
                 <li>Am <strong>Mittag</strong> steht sie ungefähr im <strong>Süden</strong> (auf der Nordhalbkugel).</li>
                 <li>Am <strong>Abend</strong> geht sie im <strong>Westen</strong> unter.</li>
@@ -921,7 +929,7 @@
 
       <div id="theorie-1-actions" class="flex justify-end mb-2">
         <button id="btnQuizStart-1"
-          class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition">
+          class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition" data-i18n="e1.btnQuiz">
           Quiz starten ▸
         </button>
       </div>
@@ -930,7 +938,7 @@
 
       <div class="flex justify-end mt-6">
         <button class="btn-complete tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
-                data-stage="1" disabled>
+                data-stage="1" data-i18n="e1.btnComplete" disabled>
           Etappe abschließen ▸
         </button>
       </div>
@@ -940,13 +948,13 @@
   <!-- ETAPPE 2 -->
   <section id="stage-2" class="stage hidden-stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-5 sm:p-7">
-      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk">Etappe 2</span>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2">Wie kann man sich orientieren?</h2>
-      <p class="text-muted mb-6">Es gibt mehrere Methoden, um die Himmelsrichtungen zu finden. Jede hat ihre Stärken — und ihre Grenzen.</p>
+      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk" data-i18n="e2.badge">Etappe 2</span>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2" data-i18n="e2.title">Wie kann man sich orientieren?</h2>
+      <p class="text-muted mb-6" data-i18n="e2.intro">Es gibt mehrere Methoden, um die Himmelsrichtungen zu finden. Jede hat ihre Stärken — und ihre Grenzen.</p>
 
       <div class="flex items-start gap-3 bg-sageLt/60 border border-sage/30 rounded-xl p-3 mb-6">
         <div id="tintin-2" class="shrink-0"></div>
-        <p class="text-sm text-ink/90 leading-snug">
+        <p class="text-sm text-ink/90 leading-snug" data-i18n="e2.willi">
           <span class="font-semibold">Willi Wegweiser:</span>
           „Schau dir die vier Methoden an. Danach ziehst du jede Situation in das passende Feld."
         </p>
@@ -958,8 +966,8 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-warn text-ink">☀</div>
             <div class="flex-1">
-              <h3>Methode 1 — Die Sonne</h3>
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <h3 data-i18n="e2.m1.h3">Methode 1 — Die Sonne</h3>
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e2.m1.p">
                 Die Sonne wandert tagsüber von <strong>Osten</strong> über <strong>Süden</strong> nach <strong>Westen</strong>.
                 Schon ihr Stand verrät dir grob die Tageszeit und die Himmelsrichtung. Auch der
                 <strong>Schatten</strong> hilft: Er zeigt mittags ungefähr nach Norden.
@@ -976,21 +984,21 @@
                     <line x1="92" y1="20" x2="96" y2="20"/><line x1="124" y1="20" x2="128" y2="20"/>
                   </g></g>
                   <g><circle cx="195" cy="90" r="9" fill="#E8C76F" opacity="0.55"/><text x="195" y="93" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">A</text></g>
-                  <text x="25" y="105" text-anchor="middle" font-size="9" fill="#2E2E36">Osten</text>
-                  <text x="110" y="105" text-anchor="middle" font-size="9" fill="#2E2E36">Süden</text>
-                  <text x="195" y="105" text-anchor="middle" font-size="9" fill="#2E2E36">Westen</text>
-                  <text x="110" y="48" text-anchor="middle" font-size="8" fill="#7A7A85">Mittag</text>
-                  <text x="25" y="76" text-anchor="middle" font-size="8" fill="#7A7A85">Morgen</text>
-                  <text x="195" y="76" text-anchor="middle" font-size="8" fill="#7A7A85">Abend</text>
+                  <text x="25" y="105" text-anchor="middle" font-size="9" fill="#2E2E36" data-i18n="e2.m1.svg.e">Osten</text>
+                  <text x="110" y="105" text-anchor="middle" font-size="9" fill="#2E2E36" data-i18n="e2.m1.svg.s">Süden</text>
+                  <text x="195" y="105" text-anchor="middle" font-size="9" fill="#2E2E36" data-i18n="e2.m1.svg.w">Westen</text>
+                  <text x="110" y="48" text-anchor="middle" font-size="8" fill="#7A7A85" data-i18n="e2.m1.svg.midday">Mittag</text>
+                  <text x="25" y="76" text-anchor="middle" font-size="8" fill="#7A7A85" data-i18n="e2.m1.svg.morning">Morgen</text>
+                  <text x="195" y="76" text-anchor="middle" font-size="8" fill="#7A7A85" data-i18n="e2.m1.svg.evening">Abend</text>
                 </svg>
-                <div class="schema-cap">Tagesbahn der Sonne (Nordhalbkugel)</div>
+                <div class="schema-cap" data-i18n="e2.m1.cap">Tagesbahn der Sonne (Nordhalbkugel)</div>
               </div>
 
               <div class="limit-box">
                 <div class="limit-icon">!</div>
                 <div class="flex-1">
-                  <h4>Limitationen</h4>
-                  <ul>
+                  <h4 data-i18n="e2.limitations">Limitationen</h4>
+                  <ul data-i18n="e2.m1.lim">
                     <li>Funktioniert nur am <strong>Tag</strong> — nicht in der Nacht.</li>
                     <li>Bei <strong>dichter Bewölkung</strong> oder Nebel ist die Sonne nicht sichtbar.</li>
                     <li>Mittags steht die Sonne fast senkrecht — die Richtung ist dann nur ungenau bestimmbar.</li>
@@ -1006,8 +1014,8 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-skyDk">★</div>
             <div class="flex-1">
-              <h3>Methode 2 — Die Sterne</h3>
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <h3 data-i18n="e2.m2.h3">Methode 2 — Die Sterne</h3>
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e2.m2.p">
                 Bei klarem Nachthimmel hilft der <strong>Polarstern</strong>: Er steht fast genau über dem Nordpol
                 und zeigt damit zuverlässig nach <strong>Norden</strong>. Du findest ihn mit Hilfe des
                 <strong>Großen Wagens</strong> — die hinteren beiden Sterne (Kasten-Außenkante) zeigen,
@@ -1048,19 +1056,19 @@
                     <circle cx="60" cy="15" r="6" fill="none" stroke="#E8C76F" stroke-width="0.6" opacity="0.5"/>
                     <circle cx="60" cy="15" r="3.5" fill="#E8C76F"/>
                   </g>
-                  <text x="110" y="120" text-anchor="middle" font-size="9" fill="#FFFFFF">Großer Wagen</text>
-                  <text x="60" y="9" text-anchor="middle" font-size="9" font-weight="700" fill="#E8C76F">Polarstern</text>
+                  <text x="110" y="120" text-anchor="middle" font-size="9" fill="#FFFFFF" data-i18n="e2.m2.svg.wagen">Großer Wagen</text>
+                  <text x="60" y="9" text-anchor="middle" font-size="9" font-weight="700" fill="#E8C76F" data-i18n="e2.m2.svg.polar">Polarstern</text>
                   <text x="105" y="40" text-anchor="middle" font-size="8" fill="#E8C76F" font-style="italic">5×</text>
-                  <text x="60" y="124" text-anchor="middle" font-size="7" fill="#FFFFFF" opacity="0.8">= Norden</text>
+                  <text x="60" y="124" text-anchor="middle" font-size="7" fill="#FFFFFF" opacity="0.8" data-i18n="e2.m2.svg.north">= Norden</text>
                 </svg>
-                <div class="schema-cap" style="color:#B8B8C0">Großer Wagen → Polarstern → Norden</div>
+                <div class="schema-cap" style="color:#B8B8C0" data-i18n="e2.m2.cap">Großer Wagen → Polarstern → Norden</div>
               </div>
 
               <div class="limit-box">
                 <div class="limit-icon">!</div>
                 <div class="flex-1">
-                  <h4>Limitationen</h4>
-                  <ul>
+                  <h4 data-i18n="e2.limitations">Limitationen</h4>
+                  <ul data-i18n="e2.m2.lim">
                     <li>Der Polarstern ist <strong>nur in der Nacht</strong> zu sehen.</li>
                     <li>Bei <strong>bewölktem Himmel</strong> oder in hell beleuchteten Städten (Lichtverschmutzung) sieht man die Sterne kaum.</li>
                     <li>Der Polarstern hilft nur auf der <strong>Nordhalbkugel</strong>. Auf der Südhalbkugel benötigt man das <strong>Kreuz des Südens</strong>.</li>
@@ -1075,8 +1083,8 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-sageDk">🌳</div>
             <div class="flex-1">
-              <h3>Methode 3 — Hinweise in der Natur</h3>
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <h3 data-i18n="e2.m3.h3">Methode 3 — Hinweise in der Natur</h3>
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e2.m3.p">
                 In der Natur gibt es Hinweise auf die Himmelsrichtung: <strong>Moos</strong> wächst meist
                 auf der schattigen, feuchten <strong>Nordseite</strong> von Bäumen, und <strong>Ameisenhaufen</strong>
                 liegen oft an der wärmeren <strong>Südseite</strong>. Auch Baumkronen wachsen tendenziell auf
@@ -1096,19 +1104,19 @@
                     <ellipse cx="103" cy="98" rx="4.5" ry="6" fill="#3A5635" opacity="0.9"/>
                     <ellipse cx="100" cy="73" rx="3.5" ry="5" fill="#3A5635" opacity="0.85"/>
                   </g>
-                  <text x="55" y="78" font-size="9" fill="#3A5635" font-weight="600">Moos</text>
+                  <text x="55" y="78" font-size="9" fill="#3A5635" font-weight="600" data-i18n="e2.m3.svg.moss">Moos</text>
                   <line x1="68" y1="80" x2="95" y2="84" stroke="#3A5635" stroke-width="0.8"/>
                   <g><ellipse cx="170" cy="108" rx="18" ry="6" fill="#A0826D"/><ellipse cx="170" cy="105" rx="10" ry="4" fill="#8B6F47"/></g>
-                  <text x="170" y="118" text-anchor="middle" font-size="8" fill="#7A4F2D" font-weight="600">Ameisenhaufen</text>
+                  <text x="170" y="118" text-anchor="middle" font-size="8" fill="#7A4F2D" font-weight="600" data-i18n="e2.m3.svg.ant">Ameisenhaufen</text>
                 </svg>
-                <div class="schema-cap">Moos zeigt nach Norden, Ameisenhaufen oft nach Süden</div>
+                <div class="schema-cap" data-i18n="e2.m3.cap">Moos zeigt nach Norden, Ameisenhaufen oft nach Süden</div>
               </div>
 
               <div class="limit-box">
                 <div class="limit-icon">!</div>
                 <div class="flex-1">
-                  <h4>Limitationen</h4>
-                  <ul>
+                  <h4 data-i18n="e2.limitations">Limitationen</h4>
+                  <ul data-i18n="e2.m3.lim">
                     <li>Diese Hinweise sind <strong>ungenau</strong> und nicht immer zuverlässig.</li>
                     <li>Lokale Faktoren wie <strong>Wind</strong>, <strong>Schatten</strong> oder <strong>Hanglage</strong> können die Regel überlagern.</li>
                     <li>In dichten Wäldern wachsen Moos und Pflanzen oft rundum am Stamm.</li>
@@ -1124,12 +1132,12 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-coral">🧭</div>
             <div class="flex-1">
-              <h3>Methode 4 — Hilfsmittel</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-2">
+              <h3 data-i18n="e2.m4.h3">Methode 4 — Hilfsmittel</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e2.m4.p">
                 Am zuverlässigsten orientiert man sich mit speziellen Hilfsmitteln. Sie funktionieren bei
                 jedem Wetter und teilweise auch in der Nacht — vorausgesetzt, man weiß, wie man sie benutzt.
               </p>
-              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside mb-2">
+              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside mb-2" data-i18n="e2.m4.ul">
                 <li><strong>Kompass</strong> — eine Magnetnadel zeigt nach Norden.</li>
                 <li><strong>Landkarte</strong> — zeigt das Gelände, mit ihr werden Wege geplant.</li>
                 <li><strong>GPS</strong> — moderne Satelliten-Ortung, zeigt die Position auf wenige Meter genau.</li>
@@ -1147,14 +1155,14 @@
                     <polygon points="0,-16 -4,0 0,-3 4,0" fill="#C97A6B"/>
                     <polygon points="0,16 -4,0 0,3 4,0" fill="#7A7A85"/>
                     <text x="0" y="-24" text-anchor="middle" font-size="7" font-weight="700" fill="#C97A6B">N</text>
-                    <text x="0" y="40" text-anchor="middle" font-size="8" fill="#2E2E36">Kompass</text>
+                    <text x="0" y="40" text-anchor="middle" font-size="8" fill="#2E2E36" data-i18n="e2.m4.svg.compass">Kompass</text>
                   </g>
                   <g transform="translate(78,50)">
                     <rect x="-22" y="-16" width="44" height="32" fill="#FAF6F0" stroke="#7A7A85" stroke-width="1.5" rx="2"/>
                     <path d="M-18,-8 Q-8,-12 0,-6 T18,-2 L16,8 Q4,12 -6,6 T-18,10 Z" fill="#A8C5A0" opacity="0.7"/>
                     <line x1="-18" y1="0" x2="18" y2="0" stroke="#7A7A85" stroke-width="0.5" stroke-dasharray="2,1"/>
                     <line x1="0" y1="-14" x2="0" y2="14" stroke="#7A7A85" stroke-width="0.5" stroke-dasharray="2,1"/>
-                    <text x="0" y="30" text-anchor="middle" font-size="8" fill="#2E2E36">Karte</text>
+                    <text x="0" y="30" text-anchor="middle" font-size="8" fill="#2E2E36" data-i18n="e2.m4.svg.map">Karte</text>
                   </g>
                   <g transform="translate(128,50)">
                     <rect x="-12" y="-18" width="24" height="34" rx="3" fill="#2E3A4F" stroke="#2E2E36" stroke-width="1"/>
@@ -1172,7 +1180,7 @@
                     <line x1="-14" y1="-14" x2="14" y2="14" stroke="#8B6F47" stroke-width="0.5"/>
                     <line x1="-14" y1="14" x2="14" y2="-14" stroke="#8B6F47" stroke-width="0.5"/>
                     <circle r="2" fill="#8B6F47"/>
-                    <text x="0" y="34" text-anchor="middle" font-size="8" fill="#2E2E36">Astrolab</text>
+                    <text x="0" y="34" text-anchor="middle" font-size="8" fill="#2E2E36" data-i18n="e2.m4.svg.astro">Astrolab</text>
                   </g>
                   <g transform="translate(218,50)">
                     <path d="M -18 12 L 18 12 L 14 -10 A 22 22 0 0 0 -14 -10 Z" fill="#B8B8C0" stroke="#2E2E36" stroke-width="1"/>
@@ -1180,17 +1188,17 @@
                     <line x1="0" y1="12" x2="-12" y2="-6" stroke="#2E2E36" stroke-width="1.2"/>
                     <circle cx="0" cy="12" r="1.6" fill="#2E2E36"/>
                     <rect x="-2" y="-12" width="4" height="6" fill="#2E2E36"/>
-                    <text x="0" y="30" text-anchor="middle" font-size="8" fill="#2E2E36">Sextant</text>
+                    <text x="0" y="30" text-anchor="middle" font-size="8" fill="#2E2E36" data-i18n="e2.m4.svg.sextant">Sextant</text>
                   </g>
                 </svg>
-                <div class="schema-cap">Hilfsmittel: vom klassischen Kompass bis zum modernen GPS</div>
+                <div class="schema-cap" data-i18n="e2.m4.cap">Hilfsmittel: vom klassischen Kompass bis zum modernen GPS</div>
               </div>
 
               <div class="limit-box">
                 <div class="limit-icon">!</div>
                 <div class="flex-1">
-                  <h4>Limitationen</h4>
-                  <ul>
+                  <h4 data-i18n="e2.limitations">Limitationen</h4>
+                  <ul data-i18n="e2.m4.lim">
                     <li>Man muss den Umgang mit dem Gerät <strong>kennen und üben</strong>.</li>
                     <li><strong>GPS</strong> braucht einen geladenen Akku und Empfang — in Tunneln, tiefen Tälern oder Schluchten oft nicht zuverlässig.</li>
                     <li>Der <strong>Kompass</strong> kann durch Magnetfelder (z.&nbsp;B. Eisenobjekte, Stromleitungen) gestört werden.</li>
@@ -1204,14 +1212,14 @@
       </div>
 
       <div class="border-t border-sand pt-6">
-        <h3 class="text-xl font-bold mb-1">Aufgabe: Ordne die Situationen zu</h3>
-        <p class="text-sm text-muted mb-4">
+        <h3 class="text-xl font-bold mb-1" data-i18n="e2.task.h3">Aufgabe: Ordne die Situationen zu</h3>
+        <p class="text-sm text-muted mb-4" data-i18n="e2.task.p">
           Ziehe jede Aussage in das passende Feld. Mit dem Finger oder der Maus.
         </p>
 
         <div class="mb-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-semibold text-ink">Situationen</span>
+            <span class="text-sm font-semibold text-ink" data-i18n="e2.task.situations">Situationen</span>
             <span id="dnd-pool-count" class="text-xs text-muted">8 verbleibend</span>
           </div>
           <div id="dnd-pool" class="dnd-pool">
@@ -1224,19 +1232,19 @@
         <div id="dnd-feedback" class="hidden rounded-xl p-3 text-sm mb-4"></div>
 
         <div class="flex flex-wrap gap-2 justify-end">
-          <button id="dnd-reset" class="tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-4 py-2 rounded-xl transition">
+          <button id="dnd-reset" class="tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-4 py-2 rounded-xl transition" data-i18n="e2.task.reset">
             ↻ Zurücksetzen
           </button>
-          <button id="dnd-check" class="tap bg-sky hover:bg-skyDk text-white font-semibold px-5 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+          <button id="dnd-check" class="tap bg-sky hover:bg-skyDk text-white font-semibold px-5 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" data-i18n="e2.task.check" disabled>
             Prüfen
           </button>
         </div>
       </div>
 
       <div class="flex justify-between mt-6">
-        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="2">◂ Zurück</button>
+        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="2" data-i18n="e2.back">◂ Zurück</button>
         <button class="btn-complete tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
-                data-stage="2" disabled>
+                data-stage="2" data-i18n="e2.complete" disabled>
           Etappe abschließen ▸
         </button>
       </div>
@@ -1246,13 +1254,13 @@
   <!-- ETAPPE 3 -->
   <section id="stage-3" class="stage hidden-stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-5 sm:p-7">
-      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk">Etappe 3</span>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2">Der Kompass</h2>
-      <p class="text-muted mb-6">Lerne die Bauteile des Kompasses kennen und probiere ihn direkt selbst aus.</p>
+      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk" data-i18n="e3.badge">Etappe 3</span>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2" data-i18n="e3.title">Der Kompass</h2>
+      <p class="text-muted mb-6" data-i18n="e3.intro">Lerne die Bauteile des Kompasses kennen und probiere ihn direkt selbst aus.</p>
 
       <div class="flex items-start gap-3 bg-sageLt/60 border border-sage/30 rounded-xl p-3 mb-6">
         <div id="tintin-3" class="shrink-0"></div>
-        <p class="text-sm text-ink/90 leading-snug">
+        <p class="text-sm text-ink/90 leading-snug" data-i18n="e3.willi">
           <span class="font-semibold">Willi Wegweiser:</span>
           „Ein Kompass ist dein wichtigster Begleiter im Gelände. Heute lernst du seine Bauteile kennen — und du darfst direkt selbst damit experimentieren!"
         </p>
@@ -1263,8 +1271,8 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-sage">1</div>
             <div class="flex-1">
-              <h3>Was ist ein Kompass?</h3>
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <h3 data-i18n="e3.c1.h3">Was ist ein Kompass?</h3>
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e3.c1.p">
                 Ein Kompass ist ein Werkzeug, das dir die Himmelsrichtung anzeigt. Sein Herzstück ist eine kleine
                 <strong>Magnetnadel</strong>, die sich frei drehen kann. Die Nadel reagiert auf das
                 <strong>Erdmagnetfeld</strong> und richtet sich von selbst nach Norden aus.
@@ -1277,8 +1285,8 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-coral">2</div>
             <div class="flex-1">
-              <h3>Die wichtigsten Bauteile</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-3">
+              <h3 data-i18n="e3.c2.h3">Die wichtigsten Bauteile</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-3" data-i18n="e3.c2.p">
                 Auf dem Kompass siehst du <strong>vier farbige, pulsierende Punkte</strong> bei den wichtigsten Bauteilen.
                 Ziehe jeden Begriff aus der Liste auf das passende Feld mit der gleichen Farbe und Nummer.
                 <em>(Diese Aufgabe muss gelöst sein, damit du diese Etappe abschließen kannst.)</em>
@@ -1310,9 +1318,9 @@
                 </div>
 
                 <div>
-                  <div class="text-xs font-semibold text-ink mb-1">Begriffe (zum Ziehen)</div>
+                  <div class="text-xs font-semibold text-ink mb-1" data-i18n="e3.bauteile.begriffe">Begriffe (zum Ziehen)</div>
                   <div class="e3-bauteile-pool" id="e3-bauteilePool"></div>
-                  <div class="text-xs font-semibold text-ink mt-3 mb-1">Drop-Zonen (zum Ablegen)</div>
+                  <div class="text-xs font-semibold text-ink mt-3 mb-1" data-i18n="e3.bauteile.dropzonen">Drop-Zonen (zum Ablegen)</div>
                   <div class="e3-bauteile-targets" id="e3-bauteileTargets"></div>
                 </div>
               </div>
@@ -1326,13 +1334,13 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-skyDk">3</div>
             <div class="flex-1">
-              <h3>Magnetnadel &amp; magnetischer Norden</h3>
-              <p class="text-sm text-ink/80 leading-relaxed">
+              <h3 data-i18n="e3.c3.h3">Magnetnadel &amp; magnetischer Norden</h3>
+              <p class="text-sm text-ink/80 leading-relaxed" data-i18n="e3.c3.p">
                 Die <span class="text-coralDk font-semibold">rote Spitze</span> der Magnetnadel zeigt zum magnetischen Norden.
                 Egal wie du den Kompass drehst — die Nadel bleibt immer in dieselbe Richtung gedreht, weil sie
                 auf das Erdmagnetfeld reagiert.
               </p>
-              <div class="e3-info-box">💡 Probiere es gleich aus: Dreh den Kompass — und beobachte, was die Nadel macht!</div>
+              <div class="e3-info-box" data-i18n="e3.c3.info">💡 Probiere es gleich aus: Dreh den Kompass — und beobachte, was die Nadel macht!</div>
             </div>
           </div>
         </div>
@@ -1340,23 +1348,23 @@
           <div class="flex items-start gap-3">
             <div class="icon-box bg-warn text-ink">!</div>
             <div class="flex-1">
-              <h3>Was kann den Kompass stören?</h3>
-              <p class="text-sm text-ink/80 leading-relaxed mb-2">Die Magnetnadel reagiert empfindlich auf alles, was magnetisch ist:</p>
-              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside">
+              <h3 data-i18n="e3.c4.h3">Was kann den Kompass stören?</h3>
+              <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e3.c4.p">Die Magnetnadel reagiert empfindlich auf alles, was magnetisch ist:</p>
+              <ul class="text-sm text-ink/80 space-y-1 list-disc list-inside" data-i18n="e3.c4.ul">
                 <li>Eisen und Stahl (z.&nbsp;B. Gürtelschnallen, Autos, Geländer)</li>
                 <li>Andere Magnete (z.&nbsp;B. in Lautsprechern, Handys)</li>
                 <li>Hochspannungsleitungen</li>
               </ul>
-              <p class="text-sm text-ink/80 leading-relaxed mt-2">Halte deinen Kompass deshalb beim Ablesen weg von solchen Quellen!</p>
-              <div class="e3-warn-box">⚠️ Wichtig: Halte den Kompass immer waagerecht, sonst funktioniert er nicht richtig.</div>
+              <p class="text-sm text-ink/80 leading-relaxed mt-2" data-i18n="e3.c4.p2">Halte deinen Kompass deshalb beim Ablesen weg von solchen Quellen!</p>
+              <div class="e3-warn-box" data-i18n="e3.c4.warn">⚠️ Wichtig: Halte den Kompass immer waagerecht, sonst funktioniert er nicht richtig.</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="e3-compass-section mb-6">
-        <h3 class="font-bold text-lg mb-2">🧭 Interaktiver Kompass</h3>
-        <p class="text-sm text-ink/80 mb-2">
+        <h3 class="font-bold text-lg mb-2" data-i18n="e3.compass.h3">🧭 Interaktiver Kompass</h3>
+        <p class="text-sm text-ink/80 mb-2" data-i18n="e3.compass.p">
           Drehe die <strong>Kompassscheibe</strong> (innen ziehen) oder das <strong>ganze Gehäuse</strong>
           (am Rand der Grundplatte ziehen). Die Magnetnadel zeigt immer zum magnetischen Norden!
         </p>
@@ -1393,25 +1401,25 @@
               </g>
             </svg>
           </div>
-          <div class="e3-compass-info" id="e3-compassInfo">
+          <div class="e3-compass-info" id="e3-compassInfo" data-i18n="e3.compass.tip">
             Tipp: Innen ziehen = Scheibe drehen. Am Rand ziehen = ganzes Gehäuse drehen.
           </div>
           <div class="e3-controls">
-            <button id="e3-btnRandom" class="tap bg-sage hover:bg-sageDk text-white font-semibold px-4 py-2 rounded-xl transition">🎲 Magnetfeld neu setzen</button>
-            <button id="e3-btnReset" class="tap bg-warn text-ink hover:opacity-90 font-semibold px-4 py-2 rounded-xl transition">↺ Zurücksetzen</button>
+            <button id="e3-btnRandom" class="tap bg-sage hover:bg-sageDk text-white font-semibold px-4 py-2 rounded-xl transition" data-i18n="e3.btnRandom">🎲 Magnetfeld neu setzen</button>
+            <button id="e3-btnReset" class="tap bg-warn text-ink hover:opacity-90 font-semibold px-4 py-2 rounded-xl transition" data-i18n="e3.btnReset">↺ Zurücksetzen</button>
           </div>
           <div class="e3-legend">
-            <div class="e3-legend-item"><span style="color:#C84040; font-size:1.2em;">↑</span> Magnetnadel (rot/weiß)</div>
-            <div class="e3-legend-item"><span style="color:#C84040; font-size:1.2em;">▲</span> Nordmarke auf Scheibe</div>
-            <div class="e3-legend-item"><span>🔄</span> Drehbare Kompassscheibe</div>
-            <div class="e3-legend-item"><span class="font-semibold">N E S W</span> Himmelsrichtungen</div>
+            <div class="e3-legend-item"><span style="color:#C84040; font-size:1.2em;">↑</span> <span data-i18n="e3.legend1">Magnetnadel (rot/weiß)</span></div>
+            <div class="e3-legend-item"><span style="color:#C84040; font-size:1.2em;">▲</span> <span data-i18n="e3.legend2">Nordmarke auf Scheibe</span></div>
+            <div class="e3-legend-item"><span>🔄</span> <span data-i18n="e3.legend3">Drehbare Kompassscheibe</span></div>
+            <div class="e3-legend-item"><span class="font-semibold">N E S W</span> <span data-i18n="e3.legend4">Himmelsrichtungen</span></div>
           </div>
         </div>
       </div>
 
       <div class="border-t border-sand pt-6 mb-6">
-        <h3 class="text-xl font-bold mb-1">🎯 Aufgaben mit dem Kompass</h3>
-        <p class="text-sm text-muted mb-3">Probiere beide Drehbewegungen am interaktiven Kompass aus.</p>
+        <h3 class="text-xl font-bold mb-1" data-i18n="e3.tasks.h3">🎯 Aufgaben mit dem Kompass</h3>
+        <p class="text-sm text-muted mb-3" data-i18n="e3.tasks.p">Probiere beide Drehbewegungen am interaktiven Kompass aus.</p>
         <div class="e4-checks">
           <div id="e3-task1" class="e4-check">
             <span class="e4-check-icon">⬜</span> <strong>Aufgabe 1:</strong> Drehe das <strong>Gehäuse</strong> mit der Nordmarke (am äußeren Rand der Grundplatte ziehen).
@@ -1424,8 +1432,8 @@
       </div>
 
       <div class="border-t border-sand pt-6 mb-6">
-        <h3 class="text-xl font-bold mb-1">📝 Übung A: Bauteile zuordnen</h3>
-        <p class="text-sm text-muted mb-2">Ziehe die Begriffe links auf die passenden Beschreibungen rechts.</p>
+        <h3 class="text-xl font-bold mb-1" data-i18n="e3.uebungA.h3">📝 Übung A: Bauteile zuordnen</h3>
+        <p class="text-sm text-muted mb-2" data-i18n="e3.uebungA.p">Ziehe die Begriffe links auf die passenden Beschreibungen rechts.</p>
         <div class="e3-dnd-container">
           <div class="e3-dnd-pool" id="e3-dndPool"></div>
           <div class="e3-dnd-targets" id="e3-dndTargets"></div>
@@ -1434,10 +1442,10 @@
       </div>
 
       <div class="border-t border-sand pt-6 mb-6">
-        <h3 class="text-xl font-bold mb-1">🧠 Übung B: Verständnisquiz</h3>
-        <p class="text-sm text-muted mb-3">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
+        <h3 class="text-xl font-bold mb-1" data-i18n="e3.uebungB.h3">🧠 Übung B: Verständnisquiz</h3>
+        <p class="text-sm text-muted mb-3" data-i18n="e3.uebungB.p">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
         <div id="quiz-3-start" class="flex justify-start mb-2">
-          <button id="btnQuizStart-3" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition">
+          <button id="btnQuizStart-3" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition" data-i18n="e3.btnQuiz">
             Quiz starten ▸
           </button>
         </div>
@@ -1445,7 +1453,7 @@
       </div>
 
       <div class="flex justify-between mt-6">
-        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="3">◂ Zurück</button>
+        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="3" data-i18n="e3.back">◂ Zurück</button>
         <button class="btn-complete tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
                 data-stage="3" disabled>
           Etappe abschließen ▸
@@ -1457,13 +1465,13 @@
   <!-- ETAPPE 4 -->
   <section id="stage-4" class="stage hidden-stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-5 sm:p-7">
-      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk">Etappe 4</span>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2">Kompass ausrichten</h2>
-      <p class="text-muted mb-6">Drei einfache Schritte, mit denen du jede Himmelsrichtung sicher bestimmen kannst.</p>
+      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk" data-i18n="e4.badge">Etappe 4</span>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2" data-i18n="e4.title">Kompass ausrichten</h2>
+      <p class="text-muted mb-6" data-i18n="e4.intro">Drei einfache Schritte, mit denen du jede Himmelsrichtung sicher bestimmen kannst.</p>
 
       <div class="flex items-start gap-3 bg-sageLt/60 border border-sage/30 rounded-xl p-3 mb-6">
         <div id="tintin-4" class="shrink-0"></div>
-        <p class="text-sm text-ink/90 leading-snug">
+        <p class="text-sm text-ink/90 leading-snug" data-i18n="e4.willi">
           <span class="font-semibold">Willi Wegweiser:</span>
           „Jetzt wird's praktisch! Drei Schritte — danach kannst du jeden Kompass richtig ablesen. Schau dir zuerst die Theorie an, dann üben wir gemeinsam."
         </p>
@@ -1473,14 +1481,14 @@
         <div class="flex items-start gap-3">
           <div class="icon-box bg-sage">3</div>
           <div class="flex-1">
-            <h3>Die 3 Schritte zur Kompassausrichtung</h3>
-            <p class="text-sm text-ink/80 leading-relaxed mb-2">So gehst du beim Ablesen einer Himmelsrichtung immer vor:</p>
+            <h3 data-i18n="e4.theory.h3">Die 3 Schritte zur Kompassausrichtung</h3>
+            <p class="text-sm text-ink/80 leading-relaxed mb-2" data-i18n="e4.theory.p">So gehst du beim Ablesen einer Himmelsrichtung immer vor:</p>
 
             <div class="e4-steps-grid">
               <div class="e4-step-card">
                 <div class="e4-step-head">
                   <div class="e4-step-num">1</div>
-                  <div class="e4-step-title">Gehäuse drehen</div>
+                  <div class="e4-step-title" data-i18n="e4.step1.title">Gehäuse drehen</div>
                 </div>
                 <div class="e4-step-illu">
                   <svg viewBox="-110 -110 220 220" aria-label="Schritt 1">
@@ -1492,7 +1500,7 @@
                     <circle cx="0" cy="0" r="4" fill="#3A3A3A"/>
                   </svg>
                 </div>
-                <div class="e4-step-text">
+                <div class="e4-step-text" data-i18n="e4.step1.text">
                   Den Kompass <strong>waagerecht</strong> halten und das ganze <strong>Gehäuse</strong> so drehen, dass die <span class="text-coralDk font-semibold">Nordmarke</span> in dieselbe Richtung zeigt wie die <span class="text-coralDk font-semibold">rote Magnetnadel</span>.
                 </div>
               </div>
@@ -1500,7 +1508,7 @@
               <div class="e4-step-card">
                 <div class="e4-step-head">
                   <div class="e4-step-num">2</div>
-                  <div class="e4-step-title">Scheibe drehen</div>
+                  <div class="e4-step-title" data-i18n="e4.step2.title">Scheibe drehen</div>
                 </div>
                 <div class="e4-step-illu">
                   <svg viewBox="-110 -110 220 220" aria-label="Schritt 2">
@@ -1513,7 +1521,7 @@
                     <circle cx="0" cy="0" r="4" fill="#3A3A3A"/>
                   </svg>
                 </div>
-                <div class="e4-step-text">
+                <div class="e4-step-text" data-i18n="e4.step2.text">
                   Die <strong>innere Kompassscheibe</strong> drehen, bis das <span class="text-coralDk font-semibold">N</span> der Skala genau auf die <span class="text-coralDk font-semibold">rote Spitze</span> der Magnetnadel zeigt — <em>Norden auf Norden</em>.
                 </div>
               </div>
@@ -1521,7 +1529,7 @@
               <div class="e4-step-card">
                 <div class="e4-step-head">
                   <div class="e4-step-num">3</div>
-                  <div class="e4-step-title">Richtung ablesen</div>
+                  <div class="e4-step-title" data-i18n="e4.step3.title">Richtung ablesen</div>
                 </div>
                 <div class="e4-step-illu">
                   <svg viewBox="-110 -110 220 220" aria-label="Schritt 3">
@@ -1545,13 +1553,13 @@
                     <circle cx="0" cy="0" r="4" fill="#3A3A3A"/>
                   </svg>
                 </div>
-                <div class="e4-step-text">
+                <div class="e4-step-text" data-i18n="e4.step3.text">
                   Die Himmelsrichtung <strong>ablesen</strong>, die in Richtung des <strong>Ziels</strong> (Marschrichtung) zeigt — im Beispiel: <span class="text-sageDk font-semibold">Nordosten (NE)</span>.
                 </div>
               </div>
             </div>
 
-            <div class="merksatz mt-3">
+            <div class="merksatz mt-3" data-i18n="e4.merksatz">
               <strong>Merksatz:</strong> 1) Gehäuse drehen → Nordmarke auf Nadel · 2) Scheibe drehen → N auf Nadel · 3) Richtung zum Ziel ablesen.
             </div>
           </div>
@@ -1559,18 +1567,18 @@
       </div>
 
       <div class="border-t border-sand pt-6 mb-6">
-        <h3 class="text-xl font-bold mb-1">🧭 Übung A: Kompass ausrichten</h3>
-        <p class="text-sm text-muted mb-3">
+        <h3 class="text-xl font-bold mb-1" data-i18n="e4.uebungA.h3">🧭 Übung A: Kompass ausrichten</h3>
+        <p class="text-sm text-muted mb-3" data-i18n="e4.uebungA.p">
           Bestimme die Himmelsrichtung des Ziels (📍). Schaffe <strong>3 Durchgänge</strong> mit zufälliger Zielrichtung und Magnetfeld.
         </p>
 
         <div class="e4-uebung-section">
           <div class="e4-status-bar">
-            <span>Durchgang <strong id="e4-roundNum">1</strong> / 3</span>
-            <span>Erfolge: <span class="pill" id="e4-successCount">0</span></span>
+            <span><span data-i18n="e4.roundWord">Durchgang</span> <strong id="e4-roundNum">1</strong> / 3</span>
+            <span><span data-i18n="e4.successWord">Erfolge:</span> <span class="pill" id="e4-successCount">0</span></span>
           </div>
 
-          <div id="e4-instruction" class="e4-instruction">Lade …</div>
+          <div id="e4-instruction" class="e4-instruction" data-i18n="e4.loading">Lade …</div>
 
           <div class="e4-compass-wrap">
             <div class="e4-compass-svg-wrap" id="e4-compassWrap">
@@ -1613,13 +1621,13 @@
             <div id="e4-check2" class="e4-check"><span class="e4-check-icon">⬜</span> <strong>Schritt 2:</strong> Scheibe drehen → N der Skala auf rote Nadelspitze</div>
           </div>
 
-          <div class="e4-direction-label">Schritt 3: In welcher Himmelsrichtung liegt das Ziel?</div>
+          <div class="e4-direction-label" data-i18n="e4.dirLabel">Schritt 3: In welcher Himmelsrichtung liegt das Ziel?</div>
           <div id="e4-directions" class="e4-direction-buttons"></div>
 
           <div id="e4-finalBanner" class="e4-final-banner" style="display:none;"></div>
 
           <div class="flex justify-end mt-3">
-            <button id="e4-newRound" class="tap bg-warn text-ink hover:opacity-90 font-semibold px-4 py-2 rounded-xl transition">
+            <button id="e4-newRound" class="tap bg-warn text-ink hover:opacity-90 font-semibold px-4 py-2 rounded-xl transition" data-i18n="e4.newRound">
               ↻ Neuer Durchgang
             </button>
           </div>
@@ -1627,10 +1635,10 @@
       </div>
 
       <div class="border-t border-sand pt-6 mb-2">
-        <h3 class="text-xl font-bold mb-1">🧠 Übung B: Verständnisquiz</h3>
-        <p class="text-sm text-muted mb-3">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
+        <h3 class="text-xl font-bold mb-1" data-i18n="e4.uebungB.h3">🧠 Übung B: Verständnisquiz</h3>
+        <p class="text-sm text-muted mb-3" data-i18n="e4.uebungB.p">Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.</p>
         <div id="quiz-4-start" class="flex justify-start mb-2">
-          <button id="btnQuizStart-4" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition">
+          <button id="btnQuizStart-4" class="tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition" data-i18n="e4.btnQuiz">
             Quiz starten ▸
           </button>
         </div>
@@ -1638,7 +1646,7 @@
       </div>
 
       <div class="flex justify-between mt-6">
-        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="4">◂ Zurück</button>
+        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="4" data-i18n="e4.back">◂ Zurück</button>
         <button class="btn-complete tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
                 data-stage="4" disabled>
           Etappe abschließen ▸
@@ -1650,13 +1658,13 @@
   <!-- ETAPPE 5 -->
   <section id="stage-5" class="stage hidden-stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-5 sm:p-7">
-      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk">Etappe 5</span>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2">Aus welcher Richtung kommen meine Mitschüler?</h2>
-      <p class="text-muted mb-6">Kompass auf der Karte ausrichten und die Himmelsrichtung jedes Heimatdorfs bestimmen.</p>
+      <span class="text-xs font-semibold uppercase tracking-wider text-sageDk" data-i18n="e5.badge">Etappe 5</span>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 mt-2" data-i18n="e5.title">Aus welcher Richtung kommen meine Mitschüler?</h2>
+      <p class="text-muted mb-6" data-i18n="e5.intro">Kompass auf der Karte ausrichten und die Himmelsrichtung jedes Heimatdorfs bestimmen.</p>
 
       <div class="flex items-start gap-3 bg-sageLt/60 border border-sage/30 rounded-xl p-3 mb-6">
         <div id="tintin-5" class="shrink-0"></div>
-        <p class="text-sm text-ink/90 leading-snug">
+        <p class="text-sm text-ink/90 leading-snug" data-i18n="e5.willi">
           <span class="font-semibold">Willi Wegweiser:</span>
           „Letzte Übung! Du hast eine Karte von Luxemburg vor dir. Bestimme für jeden deiner 5 Mitschüler die Himmelsrichtung seines Heimatdorfs — von Luxemburg-Stadt aus gesehen. Nutze den Kompass auf der Karte!"
         </p>
@@ -1668,26 +1676,25 @@
             <span class="task-progress-label" id="e5-progressLabel">Aufgabe 1 von 5</span>
             <div class="task-progress-dots" id="e5-progressDots"></div>
           </div>
-          <div class="task-question" id="e5-taskQuestion">
+          <<div class="task-question" id="e5-taskQuestion">
             <strong id="e5-taskName">Anna</strong> wohnt in <strong id="e5-taskPlace">Echternach</strong>.
           </div>
-          <div class="task-hint-text">
+          <div class="task-hint-text" data-i18n="e5.hintText">
             In welcher Himmelsrichtung liegt das Dorf von Luxembourg-Stadt aus gesehen? <em>(Englische Abkürzung, z. B. NE, SSW, ENE)</em>
           </div>
           <div class="answer-row">
-            <input type="text" class="answer-input" id="e5-answerInput" placeholder="z. B. NE" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false">
-            <button class="check-btn" id="e5-checkBtn">Prüfen</button>
+            <input type="text" class="answer-input" id="e5-answerInput" placeholder="z. B. NE" data-i18n-ph="e5.answerPh" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <button class="check-btn" id="e5-checkBtn" data-i18n="e5.checkBtn">Prüfen</button>
             <button class="hint-btn" id="e5-hintBtn" title="Tipp anzeigen">?</button>
           </div>
           <div class="feedback" id="e5-feedback"></div>
           <div class="legal-codes">
-            <b>Erlaubte Eingaben:</b> N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW
+            <b data-i18n="e5.legalLabel">Erlaubte Eingaben:</b> N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW
           </div>
-        </div>
 
         <div class="completion-card" id="e5-completionCard">
-          <div class="completion-title">🎉 Alle Aufgaben gelöst!</div>
-          <div class="completion-text">Super gemacht — alle 5 Mitschüler richtig zugeordnet.</div>
+          <div class="completion-title" data-i18n="e5.completionTitle">🎉 Alle Aufgaben gelöst!</div>
+          <div class="completion-text" data-i18n="e5.completionText">Super gemacht — alle 5 Mitschüler richtig zugeordnet.</div>
         </div>
 
         <div class="stage-wrapper">
@@ -1699,8 +1706,8 @@
             </div>
 
             <div class="mode-toggle">
-              <button class="mode-btn active" data-e5-mode="rotate"><span>↻</span> Drehen</button>
-              <button class="mode-btn" data-e5-mode="move"><span>✥</span> Verschieben</button>
+              <button class="mode-btn active" data-e5-mode="rotate"><span>↻</span> <span data-i18n="e5.modeRotate">Drehen</span></button>
+              <button class="mode-btn" data-e5-mode="move"><span>✥</span> <span data-i18n="e5.modeMove">Verschieben</span></button>
             </div>
 
             <div class="map-layer" id="e5-mapLayer">
@@ -1811,33 +1818,32 @@
           </div>
 
           <div class="e5-controls">
-            <button class="e5-btn e5-btn-soft" id="e5-resetBtn">Karte zurücksetzen</button>
+            <button class="e5-btn e5-btn-soft" id="e5-resetBtn" data-i18n="e5.resetBtn">Karte zurücksetzen</button>
           </div>
 
           <div class="info-row">
-            <div>Zoom<strong id="e5-zoomVal">100%</strong></div>
-            <div>Karte<strong id="e5-mapRot">0°</strong></div>
-            <div>Gehäuse<strong id="e5-housingRot">0°</strong></div>
-            <div>Scheibe<strong id="e5-discRot">0°</strong></div>
-            <div>Nadel<strong id="e5-needleRot">0°</strong></div>
+            <div><span data-i18n="e5.infoZoom">Zoom</span><strong id="e5-zoomVal">100%</strong></div>
+            <div><span data-i18n="e5.infoMap">Karte</span><strong id="e5-mapRot">0°</strong></div>
+            <div><span data-i18n="e5.infoHousing">Gehäuse</span><strong id="e5-housingRot">0°</strong></div>
+            <div><span data-i18n="e5.infoDisc">Scheibe</span><strong id="e5-discRot">0°</strong></div>
+            <div><span data-i18n="e5.infoNeedle">Nadel</span><strong id="e5-needleRot">0°</strong></div>
           </div>
 
-          <div class="e5-hint">
+          <div class="e5-hint" data-i18n="e5.hint">
             <strong>Tipp:</strong> Drehst du das <strong>Gehäuse</strong> (rotes N), dreht die Skala mit. Drehst du nur die <strong>Skala</strong>, bewegt sich nur diese. Die Nadel zeigt immer nach Norden.
           </div>
-        </div>
 
         <div class="results-card">
           <div class="results-title">
             <span class="results-title-icon">📋</span>
-            Mitschüler — Woher kommen sie?
+            <span data-i18n="e5.resultsTitle">Mitschüler — Woher kommen sie?</span>
           </div>
           <table class="results-table">
             <thead>
               <tr>
-                <th class="col-name">Name</th>
-                <th class="col-place">Dorf</th>
-                <th class="col-answer">Antwort</th>
+                <th class="col-name" data-i18n="e5.colName">Name</th>
+                <th class="col-place" data-i18n="e5.colPlace">Dorf</th>
+                <th class="col-answer" data-i18n="e5.colAnswer">Antwort</th>
               </tr>
             </thead>
             <tbody id="e5-resultsBody"></tbody>
@@ -1846,9 +1852,9 @@
       </div>
 
       <div class="flex justify-between mt-6">
-        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="5">◂ Zurück</button>
+        <button class="btn-back tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-5 py-2.5 rounded-xl transition" data-stage="5" data-i18n="e5.back">◂ Zurück</button>
         <button class="btn-complete tap bg-coral hover:bg-coralDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
-                data-stage="5" disabled>Geschafft 🎉</button>
+                data-stage="5" disabled data-i18n="e5.complete">Geschafft 🎉</button>
       </div>
     </div>
   </section>
@@ -1856,7 +1862,9 @@
   <section id="stage-done" class="stage hidden-stage">
     <div class="bg-surface rounded-2xl shadow-sm border border-sand p-7 text-center">
       <div class="w-16 h-16 mx-auto rounded-full bg-sage flex items-center justify-center text-white text-3xl mb-4">✓</div>
-      <h2 class="text-2xl font-bold mb-2">Alle Etappen abgeschlossen!</h2>
+      <h2 class="text-2xl font-bold mb-2" data-i18n="done.title">Alle Etappen abgeschlossen!</h2>
+      <p class="text-muted mb-6" data-i18n="done.text">Du hast den Lernpfad erfolgreich beendet.</p>
+      <button id="restartBtn" class="tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition" data-i18n="done.restart">Neu starten</button>
       <p class="text-muted mb-6">Du hast den Lernpfad erfolgreich beendet.</p>
       <button id="restartBtn" class="tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition">Neu starten</button>
     </div>
@@ -1867,27 +1875,27 @@
 <div id="teacherModal" class="hidden-stage">
   <div class="bg-surface rounded-2xl shadow-lg border border-sand w-full max-w-md p-6">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold">Lehrerzugang</h3>
+      <h3 class="text-lg font-bold" data-i18n="teacher.title">Lehrerzugang</h3>
       <button id="teacherClose" class="tap text-muted hover:text-ink text-xl leading-none px-2">✕</button>
     </div>
 
     <div id="teacherCodeStep">
-      <p class="text-sm text-muted mb-3">Bitte gib den Zugangscode ein.</p>
+      <p class="text-sm text-muted mb-3" data-i18n="teacher.codePrompt">Bitte gib den Zugangscode ein.</p>
       <input id="teacherCodeInput" type="password" inputmode="numeric"
-             placeholder="Code"
+             placeholder="Code" data-i18n-ph="teacher.codePh"
              class="w-full border-2 border-sand rounded-xl px-4 py-2.5 text-center text-lg tracking-widest focus:border-skyDk outline-none mb-2">
-      <div id="teacherError" class="text-sm text-coralDk mb-2 hidden">Falscher Code. Bitte erneut versuchen.</div>
-      <button id="teacherSubmit" class="tap w-full bg-skyDk hover:opacity-90 text-white font-semibold py-2.5 rounded-xl transition">Bestätigen</button>
+      <div id="teacherError" class="text-sm text-coralDk mb-2 hidden" data-i18n="teacher.error">Falscher Code. Bitte erneut versuchen.</div>
+      <button id="teacherSubmit" class="tap w-full bg-skyDk hover:opacity-90 text-white font-semibold py-2.5 rounded-xl transition" data-i18n="teacher.submit">Bestätigen</button>
     </div>
 
     <div id="teacherJumpStep" class="hidden">
-      <p class="text-sm text-muted mb-3">Wähle eine Etappe, zu der du springen möchtest:</p>
+      <p class="text-sm text-muted mb-3" data-i18n="teacher.jumpPrompt">Wähle eine Etappe, zu der du springen möchtest:</p>
       <div id="teacherEtappenList" class="grid grid-cols-1 gap-2"></div>
     </div>
   </div>
 </div>
 
-<footer class="max-w-5xl mx-auto px-4 py-6 text-xs text-muted text-center">
+<footer class="max-w-5xl mx-auto px-4 py-6 text-xs text-muted text-center" data-i18n="footer">
   Kompass-Lern-App · Version 0.9.4 (Lehrerzugang + Quize E3/E4 = 8 Fragen)
 </footer>
 
@@ -1912,18 +1920,492 @@ function tintinSVG(size = 56) {
 function shuffleArr(arr) {
   return arr.slice().sort(() => Math.random() - 0.5);
 }
+/* ==========================================================================
+   I18N — Sprachverwaltung (DE / FR)  — Rahmen-Ebene (Etappen folgen)
+   ========================================================================== */
+const I18N = {
+  de: {
+    'hdr.title': 'Kompass &amp; Orientierung',
+    'hdr.subtitle': 'Lern-App für den Geografieunterricht',
+    'hdr.teacher': 'Lehrerzugang',
+    'hdr.stage': 'Etappe',
+    'banner.active': '🔓 Lehrermodus aktiv – alle Etappen frei wählbar',
+    'banner.exit': 'Lehrermodus verlassen',
+    'teacher.title': 'Lehrerzugang',
+    'teacher.codePrompt': 'Bitte gib den Zugangscode ein.',
+    'teacher.codePh': 'Code',
+    'teacher.error': 'Falscher Code. Bitte erneut versuchen.',
+    'teacher.submit': 'Bestätigen',
+    'teacher.jumpPrompt': 'Wähle eine Etappe, zu der du springen möchtest:',
+    'teacher.stageWord': 'Etappe',
+    // --- Quiz-Engine (geteilt) ---
+    'quiz.q': 'Frage', 'quiz.of': 'von', 'quiz.correct': 'richtig',
+    'quiz.multi': 'Mehrfachauswahl möglich', 'quiz.single': 'Eine Antwort',
+    'quiz.check': 'Prüfen', 'quiz.next': 'Weiter ▸', 'quiz.result': 'Ergebnis ansehen ▸',
+    'quiz.correctYes': 'Richtig!', 'quiz.correctNo': 'Nicht ganz.',
+    'quiz.perfect': 'Perfekt! Alle Fragen richtig 🎯', 'quiz.verygood': 'Sehr gut!',
+    'quiz.solid': 'Solide — du bist auf dem richtigen Weg.', 'quiz.review': 'Schau dir die Theorie noch einmal an.',
+    'quiz.correctPct': 'richtig', 'quiz.retry': '↻ Nochmal versuchen',
+    // --- Etappe 1 ---
+    'e1.badge': 'Etappe 1',
+    'e1.title': 'Was ist Orientierung?',
+    'e1.intro': 'Lies zuerst die kurzen Erklärungen. Wenn du bereit bist, starte das Quiz.',
+    'e1.willi': '<span class="font-semibold">Willi Wegweiser:</span> „Hallo! Ich erkläre dir die wichtigsten Grundlagen. Danach testen wir dein Wissen mit acht Fragen."',
+    'e1.c1.h3': '1. Was bedeutet „Orientierung"?',
+    'e1.c1.figcap': 'Comic-Szene: Die beiden Detektive irren durch die Wüste.',
+    'e1.reflex.label': 'Zum Nachdenken',
+    'e1.reflex.intro': 'Schau dir das Bild in Ruhe an und überlege:',
+    'e1.reflex.list': '<li>Mit welchem <strong>Problem</strong> sind Schulze und Schulze konfrontiert?</li><li>Warum finden sie den <strong>Weg heraus aus der Wüste</strong> nicht?</li>',
+    'e1.reflex.note': 'Diese Fragen musst du nicht beantworten — sie sind dazu da, dass du dir kurz Gedanken machst.',
+    'e1.c1.p': 'Sich zu orientieren heißt: <strong>zu wissen, wo man gerade ist</strong> und <strong>in welche Richtung man gehen muss</strong>, um an ein Ziel zu kommen. Auch im Alltag orientieren wir uns ständig — auf dem Schulweg, beim Wandern oder beim Suchen eines Treffpunkts.',
+    'e1.c2.h3': '2. Die vier Haupthimmelsrichtungen',
+    'e1.c2.p': 'Es gibt vier Haupthimmelsrichtungen: <strong>Norden (N)</strong>, <strong>Osten (E)</strong>, <strong>Süden (S)</strong> und <strong>Westen (W)</strong>.',
+    'e1.c3.h3': '3. Die Nebenhimmelsrichtungen',
+    'e1.c3.p1': 'Zwischen den vier Haupthimmelsrichtungen liegen die Nebenhimmelsrichtungen:',
+    'e1.c3.ul1': '<li><strong>Nordosten (NE)</strong> — zwischen N und E</li><li><strong>Südosten (SE)</strong> — zwischen S und E</li><li><strong>Südwesten (SW)</strong> — zwischen S und W</li><li><strong>Nordwesten (NW)</strong> — zwischen N und W</li>',
+    'e1.c3.p2': 'Dazwischen gibt es noch acht weitere, feinere Himmelsrichtungen:',
+    'e1.c3.ul2': '<li><strong>Nordnordost (NNE)</strong> — zwischen N und NE</li><li><strong>Ostnordost (ENE)</strong> — zwischen E und NE</li><li><strong>Ostsüdost (ESE)</strong> — zwischen E und SE</li><li><strong>Südsüdost (SSE)</strong> — zwischen S und SE</li><li><strong>Südsüdwest (SSW)</strong> — zwischen S und SW</li><li><strong>Westsüdwest (WSW)</strong> — zwischen W und SW</li><li><strong>Westnordwest (WNW)</strong> — zwischen W und NW</li><li><strong>Nordnordwest (NNW)</strong> — zwischen N und NW</li>',
+    'e1.c4.h3': '4. Die Sonne als Wegweiser',
+    'e1.c4.p': 'Auch ohne Kompass kann man sich an der Sonne orientieren:',
+    'e1.c4.ul': '<li>Am <strong>Morgen</strong> geht die Sonne im <strong>Osten</strong> auf.</li><li>Am <strong>Mittag</strong> steht sie ungefähr im <strong>Süden</strong> (auf der Nordhalbkugel).</li><li>Am <strong>Abend</strong> geht sie im <strong>Westen</strong> unter.</li>',
+    'e1.btnQuiz': 'Quiz starten ▸',
+    'e1.btnComplete': 'Etappe abschließen ▸',
+    // --- Etappe 2 ---
+    'e2.badge': 'Etappe 2',
+    'e2.title': 'Wie kann man sich orientieren?',
+    'e2.intro': 'Es gibt mehrere Methoden, um die Himmelsrichtungen zu finden. Jede hat ihre Stärken — und ihre Grenzen.',
+    'e2.willi': '<span class="font-semibold">Willi Wegweiser:</span> „Schau dir die vier Methoden an. Danach ziehst du jede Situation in das passende Feld."',
+    'e2.limitations': 'Limitationen',
+    'e2.m1.h3': 'Methode 1 — Die Sonne',
+    'e2.m1.p': 'Die Sonne wandert tagsüber von <strong>Osten</strong> über <strong>Süden</strong> nach <strong>Westen</strong>. Schon ihr Stand verrät dir grob die Tageszeit und die Himmelsrichtung. Auch der <strong>Schatten</strong> hilft: Er zeigt mittags ungefähr nach Norden.',
+    'e2.m1.svg.e': 'Osten', 'e2.m1.svg.s': 'Süden', 'e2.m1.svg.w': 'Westen',
+    'e2.m1.svg.midday': 'Mittag', 'e2.m1.svg.morning': 'Morgen', 'e2.m1.svg.evening': 'Abend',
+    'e2.m1.cap': 'Tagesbahn der Sonne (Nordhalbkugel)',
+    'e2.m1.lim': '<li>Funktioniert nur am <strong>Tag</strong> — nicht in der Nacht.</li><li>Bei <strong>dichter Bewölkung</strong> oder Nebel ist die Sonne nicht sichtbar.</li><li>Mittags steht die Sonne fast senkrecht — die Richtung ist dann nur ungenau bestimmbar.</li><li>Auf der Südhalbkugel ist es umgekehrt: Mittags steht die Sonne im <strong>Norden</strong>.</li>',
+    'e2.m2.h3': 'Methode 2 — Die Sterne',
+    'e2.m2.p': 'Bei klarem Nachthimmel hilft der <strong>Polarstern</strong>: Er steht fast genau über dem Nordpol und zeigt damit zuverlässig nach <strong>Norden</strong>. Du findest ihn mit Hilfe des <strong>Großen Wagens</strong> — die hinteren beiden Sterne (Kasten-Außenkante) zeigen, fünfmal verlängert, direkt auf den Polarstern.',
+    'e2.m2.svg.wagen': 'Großer Wagen', 'e2.m2.svg.polar': 'Polarstern', 'e2.m2.svg.north': '= Norden',
+    'e2.m2.cap': 'Großer Wagen → Polarstern → Norden',
+    'e2.m2.lim': '<li>Der Polarstern ist <strong>nur in der Nacht</strong> zu sehen.</li><li>Bei <strong>bewölktem Himmel</strong> oder in hell beleuchteten Städten (Lichtverschmutzung) sieht man die Sterne kaum.</li><li>Der Polarstern hilft nur auf der <strong>Nordhalbkugel</strong>. Auf der Südhalbkugel benötigt man das <strong>Kreuz des Südens</strong>.</li>',
+    'e2.m3.h3': 'Methode 3 — Hinweise in der Natur',
+    'e2.m3.p': 'In der Natur gibt es Hinweise auf die Himmelsrichtung: <strong>Moos</strong> wächst meist auf der schattigen, feuchten <strong>Nordseite</strong> von Bäumen, und <strong>Ameisenhaufen</strong> liegen oft an der wärmeren <strong>Südseite</strong>. Auch Baumkronen wachsen tendenziell auf der Südseite üppiger.',
+    'e2.m3.svg.moss': 'Moos', 'e2.m3.svg.ant': 'Ameisenhaufen',
+    'e2.m3.cap': 'Moos zeigt nach Norden, Ameisenhaufen oft nach Süden',
+    'e2.m3.lim': '<li>Diese Hinweise sind <strong>ungenau</strong> und nicht immer zuverlässig.</li><li>Lokale Faktoren wie <strong>Wind</strong>, <strong>Schatten</strong> oder <strong>Hanglage</strong> können die Regel überlagern.</li><li>In dichten Wäldern wachsen Moos und Pflanzen oft rundum am Stamm.</li><li>Sollte nur als <strong>zusätzlicher Hinweis</strong> genutzt werden, nicht als alleinige Methode.</li>',
+    'e2.m4.h3': 'Methode 4 — Hilfsmittel',
+    'e2.m4.p': 'Am zuverlässigsten orientiert man sich mit speziellen Hilfsmitteln. Sie funktionieren bei jedem Wetter und teilweise auch in der Nacht — vorausgesetzt, man weiß, wie man sie benutzt.',
+    'e2.m4.ul': '<li><strong>Kompass</strong> — eine Magnetnadel zeigt nach Norden.</li><li><strong>Landkarte</strong> — zeigt das Gelände, mit ihr werden Wege geplant.</li><li><strong>GPS</strong> — moderne Satelliten-Ortung, zeigt die Position auf wenige Meter genau.</li><li><strong>Astrolab</strong> — historisches Instrument, mit dem man früher die Höhe der Sonne oder eines Sterns gemessen hat. So konnte man den eigenen <em>Breitengrad</em> bestimmen.</li><li><strong>Sextant</strong> — wurde besonders in der Seefahrt benutzt. Damit misst man den Winkel zwischen einem Gestirn (z.&nbsp;B. der Sonne) und dem Horizont, um die Position auf See zu berechnen.</li>',
+    'e2.m4.svg.compass': 'Kompass', 'e2.m4.svg.map': 'Karte', 'e2.m4.svg.astro': 'Astrolab', 'e2.m4.svg.sextant': 'Sextant',
+    'e2.m4.cap': 'Hilfsmittel: vom klassischen Kompass bis zum modernen GPS',
+    'e2.m4.lim': '<li>Man muss den Umgang mit dem Gerät <strong>kennen und üben</strong>.</li><li><strong>GPS</strong> braucht einen geladenen Akku und Empfang — in Tunneln, tiefen Tälern oder Schluchten oft nicht zuverlässig.</li><li>Der <strong>Kompass</strong> kann durch Magnetfelder (z.&nbsp;B. Eisenobjekte, Stromleitungen) gestört werden.</li><li><strong>Astrolab</strong> und <strong>Sextant</strong> brauchen einen sichtbaren Horizont und ein Gestirn — bei dichter Bewölkung nicht einsetzbar.</li>',
+    'e2.task.h3': 'Aufgabe: Ordne die Situationen zu',
+    'e2.task.p': 'Ziehe jede Aussage in das passende Feld. Mit dem Finger oder der Maus.',
+    'e2.task.situations': 'Situationen',
+    'e2.task.reset': '↻ Zurücksetzen',
+    'e2.task.check': 'Prüfen',
+    'e2.back': '◂ Zurück',
+    'e2.complete': 'Etappe abschließen ▸',
+    'e2.dropHere': 'Hierher ziehen',
+    'e2.allPlaced': 'Alle verteilt',
+    'e2.remaining': 'verbleibend',
+    'e2.fbGood1': 'Sehr gut!',
+    'e2.fbGood2': 'Alle {n} Aussagen sind richtig zugeordnet. 🎯',
+    'e2.fbBad1': 'Noch nicht ganz.',
+    'e2.fbBad2': 'Richtig: {r} von {n}. Verschiebe die rot markierten Aussagen und prüfe erneut.',
+    // --- Etappe 3 ---
+    'e3.badge': 'Etappe 3',
+    'e3.title': 'Der Kompass',
+    'e3.intro': 'Lerne die Bauteile des Kompasses kennen und probiere ihn direkt selbst aus.',
+    'e3.willi': '<span class="font-semibold">Willi Wegweiser:</span> „Ein Kompass ist dein wichtigster Begleiter im Gelände. Heute lernst du seine Bauteile kennen — und du darfst direkt selbst damit experimentieren!"',
+    'e3.c1.h3': 'Was ist ein Kompass?',
+    'e3.c1.p': 'Ein Kompass ist ein Werkzeug, das dir die Himmelsrichtung anzeigt. Sein Herzstück ist eine kleine <strong>Magnetnadel</strong>, die sich frei drehen kann. Die Nadel reagiert auf das <strong>Erdmagnetfeld</strong> und richtet sich von selbst nach Norden aus.',
+    'e3.c2.h3': 'Die wichtigsten Bauteile',
+    'e3.c2.p': 'Auf dem Kompass siehst du <strong>vier farbige, pulsierende Punkte</strong> bei den wichtigsten Bauteilen. Ziehe jeden Begriff aus der Liste auf das passende Feld mit der gleichen Farbe und Nummer. <em>(Diese Aufgabe muss gelöst sein, damit du diese Etappe abschließen kannst.)</em>',
+    'e3.bauteile.begriffe': 'Begriffe (zum Ziehen)',
+    'e3.bauteile.dropzonen': 'Drop-Zonen (zum Ablegen)',
+    'e3.c3.h3': 'Magnetnadel &amp; magnetischer Norden',
+    'e3.c3.p': 'Die <span class="text-coralDk font-semibold">rote Spitze</span> der Magnetnadel zeigt zum magnetischen Norden. Egal wie du den Kompass drehst — die Nadel bleibt immer in dieselbe Richtung gedreht, weil sie auf das Erdmagnetfeld reagiert.',
+    'e3.c3.info': '💡 Probiere es gleich aus: Dreh den Kompass — und beobachte, was die Nadel macht!',
+    'e3.c4.h3': 'Was kann den Kompass stören?',
+    'e3.c4.p': 'Die Magnetnadel reagiert empfindlich auf alles, was magnetisch ist:',
+    'e3.c4.ul': '<li>Eisen und Stahl (z.&nbsp;B. Gürtelschnallen, Autos, Geländer)</li><li>Andere Magnete (z.&nbsp;B. in Lautsprechern, Handys)</li><li>Hochspannungsleitungen</li>',
+    'e3.c4.p2': 'Halte deinen Kompass deshalb beim Ablesen weg von solchen Quellen!',
+    'e3.c4.warn': '⚠️ Wichtig: Halte den Kompass immer waagerecht, sonst funktioniert er nicht richtig.',
+    'e3.compass.h3': '🧭 Interaktiver Kompass',
+    'e3.compass.p': 'Drehe die <strong>Kompassscheibe</strong> (innen ziehen) oder das <strong>ganze Gehäuse</strong> (am Rand der Grundplatte ziehen). Die Magnetnadel zeigt immer zum magnetischen Norden!',
+    'e3.compass.tip': 'Tipp: Innen drehen = Scheibe drehen. Am Rand drehen = ganzes Gehäuse drehen.',
+    'e3.btnRandom': '🎲 Magnetfeld neu setzen',
+    'e3.btnReset': '↺ Zurücksetzen',
+    'e3.legend1': 'Magnetnadel (rot/weiß)',
+    'e3.legend2': 'Nordmarke auf Scheibe',
+    'e3.legend3': 'Drehbare Kompassscheibe',
+    'e3.legend4': 'Himmelsrichtungen',
+    'e3.tasks.h3': '🎯 Aufgaben mit dem Kompass',
+    'e3.tasks.p': 'Probiere beide Drehbewegungen am interaktiven Kompass aus.',
+    'e3.task1.txt': '<strong>Aufgabe 1:</strong> Drehe das <strong>Gehäuse</strong> mit der Nordmarke (am äußeren Rand der Grundplatte drehen).',
+    'e3.task2.txt': '<strong>Aufgabe 2:</strong> Drehe die <strong>Kompassscheibe</strong> mit den Himmelsrichtungen (innen drehen).',
+    'e3.tasksStatus.done': '✓ Beide Aufgaben erledigt!',
+    'e3.tasksStatus.count': '{c} von 2 erledigt',
+    'e3.uebungA.h3': '📝 Übung A: Bauteile zuordnen',
+    'e3.uebungA.p': 'Ziehe die Begriffe links auf die passenden Beschreibungen rechts.',
+    'e3.uebungB.h3': '🧠 Übung B: Verständnisquiz',
+    'e3.uebungB.p': 'Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.',
+    'e3.btnQuiz': 'Quiz starten ▸',
+    'e3.back': '◂ Zurück',
+    'e3.complete': 'Etappe abschließen ▸',
+    'e3.completeProgress': 'Etappe abschließen (Bauteile: {ba} | Kompass: {k} | A: {a} | B: {b})',
+    'e3.flash.newField': 'Neues Magnetfeld gesetzt — die Nadel sucht den magnetischen Norden!',
+    'e3.flash.reset': 'Kompass zurückgesetzt.',
+    'e3.flash.disc': 'Du drehst die Kompassscheibe.',
+    'e3.flash.housing': 'Du drehst das ganze Gehäuse.',
+    'e3.pool.allPlaced': 'Alle Begriffe verteilt',
+    'e3.dropHere': 'Hier ablegen',
+    'e3.bauteileStatus.count': '{n} von 4 zugeordnet',
+    'e3.bauteileStatus.ok': '✓ Alle Bauteile richtig zugeordnet!',
+    'e3.status.wrong': '✗ Noch nicht alles richtig — korrigiere die roten Felder.',
+    'e3.dndStatus.count': '{n} von {t} zugeordnet',
+    'e3.dndStatus.ok': '✓ Alles richtig zugeordnet!',
+    // --- Etappe 4 ---
+    'e4.badge': 'Etappe 4',
+    'e4.title': 'Kompass ausrichten',
+    'e4.intro': 'Drei einfache Schritte, mit denen du jede Himmelsrichtung sicher bestimmen kannst.',
+    'e4.willi': '<span class="font-semibold">Willi Wegweiser:</span> „Jetzt wird\'s praktisch! Drei Schritte — danach kannst du jeden Kompass richtig ablesen. Schau dir zuerst die Theorie an, dann üben wir gemeinsam."',
+    'e4.theory.h3': 'Die 3 Schritte zur Kompassausrichtung',
+    'e4.theory.p': 'So gehst du beim Ablesen einer Himmelsrichtung immer vor:',
+    'e4.step1.title': 'Gehäuse drehen',
+    'e4.step1.text': 'Den Kompass <strong>waagerecht</strong> halten und das ganze <strong>Gehäuse</strong> so drehen, dass die <span class="text-coralDk font-semibold">Nordmarke</span> in dieselbe Richtung zeigt wie die <span class="text-coralDk font-semibold">rote Magnetnadel</span>.',
+    'e4.step2.title': 'Scheibe drehen',
+    'e4.step2.text': 'Die <strong>innere Kompassscheibe</strong> drehen, bis das <span class="text-coralDk font-semibold">N</span> der Skala genau auf die <span class="text-coralDk font-semibold">rote Spitze</span> der Magnetnadel zeigt — <em>Norden auf Norden</em>.',
+    'e4.step3.title': 'Richtung ablesen',
+    'e4.step3.text': 'Die Himmelsrichtung <strong>ablesen</strong>, die in Richtung des <strong>Ziels</strong> (Marschrichtung) zeigt — im Beispiel: <span class="text-sageDk font-semibold">Nordosten (NE)</span>.',
+    'e4.merksatz': '<strong>Merksatz:</strong> 1) Gehäuse drehen → Nordmarke auf Nadel · 2) Scheibe drehen → N auf Nadel · 3) Richtung zum Ziel ablesen.',
+    'e4.uebungA.h3': '🧭 Übung A: Kompass ausrichten',
+    'e4.uebungA.p': 'Bestimme die Himmelsrichtung des Ziels (📍). Schaffe <strong>3 Durchgänge</strong> mit zufälliger Zielrichtung und Magnetfeld.',
+    'e4.roundWord': 'Durchgang',
+    'e4.successWord': 'Erfolge:',
+    'e4.loading': 'Lade …',
+    'e4.check1.txt': '<strong>Schritt 1:</strong> Gehäuse drehen → Nordmarke auf rote Nadelspitze',
+    'e4.check2.txt': '<strong>Schritt 2:</strong> Scheibe drehen → N der Skala auf rote Nadelspitze',
+    'e4.dirLabel': 'Schritt 3: In welcher Himmelsrichtung liegt das Ziel?',
+    'e4.newRound': '↻ Neuer Durchgang',
+    'e4.uebungB.h3': '🧠 Übung B: Verständnisquiz',
+    'e4.uebungB.p': 'Beantworte die 8 Fragen — am Ende siehst du dein Ergebnis.',
+    'e4.btnQuiz': 'Quiz starten ▸',
+    'e4.back': '◂ Zurück',
+    'e4.complete': 'Etappe abschließen ▸',
+    'e4.completeProgress': 'Etappe abschließen (A: {a} | B: {b})',
+    'e4.inst.done': '🎉 Übung A geschafft! Starte jetzt das Verständnisquiz unten.',
+    'e4.inst.step1': 'Schritt 1: Drehe das Gehäuse (am Rand des Kompasses drehen), bis die Nordmarke (rotes Dreieck oben) in dieselbe Richtung zeigt wie die rote Magnetnadel.',
+    'e4.inst.step2': 'Schritt 2: Drehe die Kompassscheibe (innen drehen), bis das N der Skala auf die rote Spitze der Magnetnadel zeigt.',
+    'e4.inst.step3': '✓ Kompass ausgerichtet! Schritt 3: In welcher Himmelsrichtung liegt das blaue Ziel (📍)? Klicke auf die richtige Richtung unten.',
+    'e4.fb.correct': '✓ Richtig! Das Ziel liegt im {full} ({name}).',
+    'e4.fb.final': '🎯 Übung A geschafft — {s} von {t} Durchgängen erfolgreich!',
+    'e4.fb.wrong': '✗ Leider falsch. Das Ziel lag im {full} ({name}). Klicke „Neuer Durchgang" für einen neuen Versuch.',
+    // --- Etappe 5 ---
+    'e5.badge': 'Etappe 5',
+    'e5.title': 'Aus welcher Richtung kommen meine Mitschüler?',
+    'e5.intro': 'Kompass auf der Karte ausrichten und die Himmelsrichtung jedes Heimatdorfs bestimmen.',
+    'e5.willi': '<span class="font-semibold">Willi Wegweiser:</span> „Letzte Übung! Du hast eine Karte von Luxemburg vor dir. Bestimme für jeden deiner 5 Mitschüler die Himmelsrichtung seines Heimatdorfs — von Luxemburg-Stadt aus gesehen. Nutze den Kompass auf der Karte!"',
+    'e5.progressLabel': 'Aufgabe {n} von {t}',
+    'e5.taskQ': '<strong>{name}</strong> wohnt in <strong>{place}</strong>.',
+    'e5.hintText': 'In welcher Himmelsrichtung liegt das Dorf von Luxembourg-Stadt aus gesehen? <em>(Englische Abkürzung, z. B. NE, SSW, ENE)</em>',
+    'e5.answerPh': 'z. B. NE',
+    'e5.checkBtn': 'Prüfen',
+    'e5.legalLabel': 'Erlaubte Eingaben:',
+    'e5.completionTitle': '🎉 Alle Aufgaben gelöst!',
+    'e5.completionText': 'Super gemacht — alle 5 Mitschüler richtig zugeordnet.',
+    'e5.modeRotate': 'Drehen',
+    'e5.modeMove': 'Verschieben',
+    'e5.resetBtn': 'Karte zurücksetzen',
+    'e5.infoZoom': 'Zoom',
+    'e5.infoMap': 'Karte',
+    'e5.infoHousing': 'Gehäuse',
+    'e5.infoDisc': 'Scheibe',
+    'e5.infoNeedle': 'Nadel',
+    'e5.hint': '<strong>Tipp:</strong> Drehst du das <strong>Gehäuse</strong> (rotes N), dreht die Skala mit. Drehst du nur die <strong>Skala</strong>, bewegt sich nur diese. Die Nadel zeigt immer nach Norden.',
+    'e5.resultsTitle': 'Mitschüler — Woher kommen sie?',
+    'e5.colName': 'Name',
+    'e5.colPlace': 'Dorf',
+    'e5.colAnswer': 'Antwort',
+    'e5.back': '◂ Zurück',
+    'e5.complete': 'Geschafft 🎉',
+    'e5.fb.empty': 'Bitte gib eine Himmelsrichtung ein.',
+    'e5.fb.german': 'Bitte nur englische Abkürzungen verwenden (z. B. NE statt NO, S statt Süd).',
+    'e5.fb.invalid': 'Ungültige Eingabe. Erlaubt: N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW.',
+    'e5.fb.correct': 'Richtig! {place} liegt im {dir} von Luxembourg-Stadt.',
+    'e5.fb.wrong': 'Nicht ganz — {dir} ist es nicht. Versuche es nochmal.',
+    'e5.hintTip': 'Tipp: Die richtige Richtung beginnt mit „{c}".','done.title': 'Alle Etappen abgeschlossen!',
+    'done.text': 'Du hast den Lernpfad erfolgreich beendet.',
+    'done.restart': 'Neu starten',
+    'footer': 'Kompass-Lern-App · Version 0.9.4 (Lehrerzugang + Quize E3/E4 = 8 Fragen)',    
+  },
+  fr: {
+    'hdr.title': 'Boussole &amp; orientation',
+    'hdr.subtitle': 'Application d\'apprentissage pour le cours de géographie',
+    'hdr.teacher': 'Accès enseignant',
+    'hdr.stage': 'Étape',
+    'banner.active': '🔓 Mode enseignant actif – toutes les étapes accessibles',
+    'banner.exit': 'Quitter le mode enseignant',
+    'teacher.title': 'Accès enseignant',
+    'teacher.codePrompt': 'Veuillez saisir le code d\'accès.',
+    'teacher.codePh': 'Code',
+    'teacher.error': 'Code incorrect. Veuillez réessayer.',
+    'teacher.submit': 'Confirmer',
+    'teacher.jumpPrompt': 'Choisis une étape vers laquelle aller :',
+    'teacher.stageWord': 'Étape',
+    // --- Moteur de quiz (partagé) ---
+    'quiz.q': 'Question', 'quiz.of': 'sur', 'quiz.correct': 'correctes',
+    'quiz.multi': 'Plusieurs réponses possibles', 'quiz.single': 'Une seule réponse',
+    'quiz.check': 'Vérifier', 'quiz.next': 'Continuer ▸', 'quiz.result': 'Voir le résultat ▸',
+    'quiz.correctYes': 'Correct !', 'quiz.correctNo': 'Pas tout à fait.',
+    'quiz.perfect': 'Parfait ! Toutes les réponses correctes 🎯', 'quiz.verygood': 'Très bien !',
+    'quiz.solid': 'Solide — tu es sur la bonne voie.', 'quiz.review': 'Revois encore une fois la théorie.',
+    'quiz.correctPct': 'correctes', 'quiz.retry': '↻ Réessayer',
+    // --- Étape 1 ---
+    'e1.badge': 'Étape 1',
+    'e1.title': 'Qu\'est-ce que l\'orientation ?',
+    'e1.intro': 'Lis d\'abord les brèves explications. Quand tu es prêt, lance le quiz.',
+    'e1.willi': '<span class="font-semibold">Boris Boussole :</span> « Bonjour ! Je t\'explique les bases essentielles. Ensuite, nous testerons tes connaissances avec huit questions. »',
+    'e1.c1.h3': '1. Que signifie « orientation » ?',
+    'e1.c1.figcap': 'Scène de BD : les deux détectives errent dans le désert.',
+    'e1.reflex.label': 'À réfléchir',
+    'e1.reflex.intro': 'Observe l\'image tranquillement et réfléchis :',
+    'e1.reflex.list': '<li>À quel <strong>problème</strong> Dupont et Dupond sont-ils confrontés ?</li><li>Pourquoi ne trouvent-ils pas le <strong>chemin pour sortir du désert</strong> ?</li>',
+    'e1.reflex.note': 'Tu n\'es pas obligé de répondre à ces questions — elles servent juste à te faire réfléchir un instant.',
+    'e1.c1.p': 'S\'orienter, c\'est : <strong>savoir où l\'on se trouve</strong> et <strong>dans quelle direction aller</strong> pour atteindre un but. Au quotidien aussi, nous nous orientons sans cesse — sur le chemin de l\'école, en randonnée ou en cherchant un lieu de rendez-vous.',
+    'e1.c2.h3': '2. Les quatre points cardinaux principaux',
+    'e1.c2.p': 'Il existe quatre points cardinaux principaux : <strong>le nord (N)</strong>, <strong>l\'est (E)</strong>, <strong>le sud (S)</strong> et <strong>l\'ouest (W)</strong>.',
+    'e1.c3.h3': '3. Les points cardinaux intermédiaires',
+    'e1.c3.p1': 'Entre les quatre points cardinaux principaux se trouvent les points intermédiaires :',
+    'e1.c3.ul1': '<li><strong>Nord-est (NE)</strong> — entre N et E</li><li><strong>Sud-est (SE)</strong> — entre S et E</li><li><strong>Sud-ouest (SW)</strong> — entre S et W</li><li><strong>Nord-ouest (NW)</strong> — entre N et W</li>',
+    'e1.c3.p2': 'Entre ceux-ci, il existe encore huit directions plus fines :',
+    'e1.c3.ul2': '<li><strong>Nord-nord-est (NNE)</strong> — entre N et NE</li><li><strong>Est-nord-est (ENE)</strong> — entre E et NE</li><li><strong>Est-sud-est (ESE)</strong> — entre E et SE</li><li><strong>Sud-sud-est (SSE)</strong> — entre S et SE</li><li><strong>Sud-sud-ouest (SSW)</strong> — entre S et SW</li><li><strong>Ouest-sud-ouest (WSW)</strong> — entre W et SW</li><li><strong>Ouest-nord-ouest (WNW)</strong> — entre W et NW</li><li><strong>Nord-nord-ouest (NNW)</strong> — entre N et NW</li>',
+    'e1.c4.h3': '4. Le soleil comme repère',
+    'e1.c4.p': 'Même sans boussole, on peut s\'orienter grâce au soleil :',
+    'e1.c4.ul': '<li>Le <strong>matin</strong>, le soleil se lève à l\'<strong>est</strong>.</li><li>À <strong>midi</strong>, il se trouve à peu près au <strong>sud</strong> (dans l\'hémisphère nord).</li><li>Le <strong>soir</strong>, il se couche à l\'<strong>ouest</strong>.</li>',
+    'e1.btnQuiz': 'Démarrer le quiz ▸',
+    'e1.btnComplete': 'Terminer l\'étape ▸',
+    // --- Étape 2 ---
+    'e2.badge': 'Étape 2',
+    'e2.title': 'Comment peut-on s\'orienter ?',
+    'e2.intro': 'Il existe plusieurs méthodes pour trouver les points cardinaux. Chacune a ses forces — et ses limites.',
+    'e2.willi': '<span class="font-semibold">Boris Boussole :</span> « Regarde les quatre méthodes. Ensuite, fais glisser chaque situation dans la bonne case. »',
+    'e2.limitations': 'Limites',
+    'e2.m1.h3': 'Méthode 1 — Le soleil',
+    'e2.m1.p': 'Au cours de la journée, le soleil se déplace de l\'<strong>est</strong> vers l\'<strong>ouest</strong> en passant par le <strong>sud</strong>. Sa position te donne déjà une idée de l\'heure et de la direction. L\'<strong>ombre</strong> aide aussi : à midi, elle pointe à peu près vers le nord.',
+    'e2.m1.svg.e': 'Est', 'e2.m1.svg.s': 'Sud', 'e2.m1.svg.w': 'Ouest',
+    'e2.m1.svg.midday': 'Midi', 'e2.m1.svg.morning': 'Matin', 'e2.m1.svg.evening': 'Soir',
+    'e2.m1.cap': 'Trajectoire du soleil (hémisphère nord)',
+    'e2.m1.lim': '<li>Ne fonctionne que le <strong>jour</strong> — pas la nuit.</li><li>Par <strong>ciel très couvert</strong> ou brouillard, le soleil n\'est pas visible.</li><li>À midi, le soleil est presque à la verticale — la direction n\'est alors qu\'approximative.</li><li>Dans l\'hémisphère sud, c\'est l\'inverse : à midi, le soleil est au <strong>nord</strong>.</li>',
+    'e2.m2.h3': 'Méthode 2 — Les étoiles',
+    'e2.m2.p': 'Par nuit claire, l\'<strong>étoile polaire</strong> aide : elle se trouve presque exactement au-dessus du pôle Nord et indique donc de façon fiable le <strong>nord</strong>. Tu la trouves à l\'aide de la <strong>Grande Ourse</strong> — les deux étoiles arrière (bord extérieur du chariot), prolongées cinq fois, pointent directement vers l\'étoile polaire.',
+    'e2.m2.svg.wagen': 'Grande Ourse', 'e2.m2.svg.polar': 'Étoile polaire', 'e2.m2.svg.north': '= Nord',
+    'e2.m2.cap': 'Grande Ourse → Étoile polaire → Nord',
+    'e2.m2.lim': '<li>L\'étoile polaire n\'est visible que <strong>la nuit</strong>.</li><li>Par <strong>ciel nuageux</strong> ou dans les villes très éclairées (pollution lumineuse), on voit à peine les étoiles.</li><li>L\'étoile polaire n\'aide que dans l\'<strong>hémisphère nord</strong>. Dans l\'hémisphère sud, il faut la <strong>Croix du Sud</strong>.</li>',
+    'e2.m3.h3': 'Méthode 3 — Les indices dans la nature',
+    'e2.m3.p': 'Dans la nature, il existe des indices sur la direction : la <strong>mousse</strong> pousse le plus souvent sur le côté <strong>nord</strong> ombragé et humide des arbres, et les <strong>fourmilières</strong> se trouvent souvent du côté <strong>sud</strong> plus chaud. Les cimes des arbres poussent aussi plus abondamment du côté sud.',
+    'e2.m3.svg.moss': 'Mousse', 'e2.m3.svg.ant': 'Fourmilière',
+    'e2.m3.cap': 'La mousse indique le nord, la fourmilière souvent le sud',
+    'e2.m3.lim': '<li>Ces indices sont <strong>imprécis</strong> et pas toujours fiables.</li><li>Des facteurs locaux comme le <strong>vent</strong>, l\'<strong>ombre</strong> ou la <strong>pente</strong> peuvent fausser la règle.</li><li>Dans les forêts denses, la mousse et les plantes poussent souvent tout autour du tronc.</li><li>À n\'utiliser que comme <strong>indice complémentaire</strong>, pas comme seule méthode.</li>',
+    'e2.m4.h3': 'Méthode 4 — Les instruments',
+    'e2.m4.p': 'C\'est avec des instruments spéciaux que l\'on s\'oriente le plus sûrement. Ils fonctionnent par tous les temps et parfois même la nuit — à condition de savoir les utiliser.',
+    'e2.m4.ul': '<li><strong>Boussole</strong> — une aiguille aimantée indique le nord.</li><li><strong>Carte</strong> — montre le terrain et sert à planifier les itinéraires.</li><li><strong>GPS</strong> — localisation par satellite moderne, indique la position à quelques mètres près.</li><li><strong>Astrolabe</strong> — instrument historique avec lequel on mesurait autrefois la hauteur du soleil ou d\'une étoile. On pouvait ainsi déterminer sa propre <em>latitude</em>.</li><li><strong>Sextant</strong> — utilisé surtout en navigation maritime. Il mesure l\'angle entre un astre (p.&nbsp;ex. le soleil) et l\'horizon pour calculer la position en mer.</li>',
+    'e2.m4.svg.compass': 'Boussole', 'e2.m4.svg.map': 'Carte', 'e2.m4.svg.astro': 'Astrolabe', 'e2.m4.svg.sextant': 'Sextant',
+    'e2.m4.cap': 'Instruments : de la boussole classique au GPS moderne',
+    'e2.m4.lim': '<li>Il faut <strong>connaître et s\'entraîner</strong> à l\'utilisation de l\'appareil.</li><li>Le <strong>GPS</strong> a besoin d\'une batterie chargée et de réception — souvent peu fiable dans les tunnels, les vallées profondes ou les gorges.</li><li>La <strong>boussole</strong> peut être perturbée par des champs magnétiques (p.&nbsp;ex. objets en fer, lignes électriques).</li><li>L\'<strong>astrolabe</strong> et le <strong>sextant</strong> nécessitent un horizon visible et un astre — inutilisables par ciel très couvert.</li>',
+    'e2.task.h3': 'Exercice : associe les situations',
+    'e2.task.p': 'Fais glisser chaque affirmation dans la bonne case. Avec le doigt ou la souris.',
+    'e2.task.situations': 'Situations',
+    'e2.task.reset': '↻ Réinitialiser',
+    'e2.task.check': 'Vérifier',
+    'e2.back': '◂ Retour',
+    'e2.complete': 'Terminer l\'étape ▸',
+    'e2.dropHere': 'Glisser ici',
+    'e2.allPlaced': 'Tout est placé',
+    'e2.remaining': 'restantes',
+    'e2.fbGood1': 'Très bien !',
+    'e2.fbGood2': 'Les {n} affirmations sont correctement classées. 🎯',
+    'e2.fbBad1': 'Pas tout à fait.',
+    'e2.fbBad2': 'Correct : {r} sur {n}. Déplace les affirmations en rouge et vérifie à nouveau.',
+    // --- Étape 3 ---
+    'e3.badge': 'Étape 3',
+    'e3.title': 'La boussole',
+    'e3.intro': 'Découvre les composants de la boussole et essaie-la directement toi-même.',
+    'e3.willi': '<span class="font-semibold">Boris Boussole :</span> « Une boussole est ton compagnon le plus important sur le terrain. Aujourd\'hui, tu découvres ses composants — et tu peux directement expérimenter toi-même ! »',
+    'e3.c1.h3': 'Qu\'est-ce qu\'une boussole ?',
+    'e3.c1.p': 'Une boussole est un outil qui t\'indique la direction. Son cœur est une petite <strong>aiguille aimantée</strong> qui peut tourner librement. L\'aiguille réagit au <strong>champ magnétique terrestre</strong> et s\'oriente d\'elle-même vers le nord.',
+    'e3.c2.h3': 'Les composants les plus importants',
+    'e3.c2.p': 'Sur la boussole, tu vois <strong>quatre points colorés et clignotants</strong> près des composants les plus importants. Fais glisser chaque terme de la liste sur la case de même couleur et numéro. <em>(Cet exercice doit être résolu pour pouvoir terminer cette étape.)</em>',
+    'e3.bauteile.begriffe': 'Termes (à glisser)',
+    'e3.bauteile.dropzonen': 'Zones de dépôt (à déposer)',
+    'e3.c3.h3': 'Aiguille aimantée &amp; nord magnétique',
+    'e3.c3.p': 'La <span class="text-coralDk font-semibold">pointe rouge</span> de l\'aiguille aimantée indique le nord magnétique. Peu importe comment tu tournes la boussole — l\'aiguille reste toujours orientée dans la même direction, car elle réagit au champ magnétique terrestre.',
+    'e3.c3.info': '💡 Essaie tout de suite : tourne la boussole — et observe ce que fait l\'aiguille !',
+    'e3.c4.h3': 'Qu\'est-ce qui peut perturber la boussole ?',
+    'e3.c4.p': 'L\'aiguille aimantée réagit avec sensibilité à tout ce qui est magnétique :',
+    'e3.c4.ul': '<li>Fer et acier (p.&nbsp;ex. boucles de ceinture, voitures, rampes)</li><li>Autres aimants (p.&nbsp;ex. dans les haut-parleurs, téléphones)</li><li>Lignes à haute tension</li>',
+    'e3.c4.p2': 'Tiens donc ta boussole à l\'écart de telles sources pendant la lecture !',
+    'e3.c4.warn': '⚠️ Important : tiens toujours la boussole à l\'horizontale, sinon elle ne fonctionne pas correctement.',
+    'e3.compass.h3': '🧭 Boussole interactive',
+    'e3.compass.p': 'Tourne le <strong>cadran de la boussole</strong> (tirer à l\'intérieur) ou tout le <strong>boîtier</strong> (tirer au bord de la plaque de base). L\'aiguille aimantée indique toujours le nord magnétique !',
+    'e3.compass.tip': 'Astuce : tirer à l\'intérieur = tourner le cadran. Tirer au bord = tourner tout le boîtier.',
+    'e3.btnRandom': '🎲 Redéfinir le champ magnétique',
+    'e3.btnReset': '↺ Réinitialiser',
+    'e3.legend1': 'Aiguille aimantée (rouge/blanc)',
+    'e3.legend2': 'Repère nord sur le cadran',
+    'e3.legend3': 'Cadran de boussole rotatif',
+    'e3.legend4': 'Points cardinaux',
+    'e3.tasks.h3': '🎯 Exercices avec la boussole',
+    'e3.tasks.p': 'Essaie les deux mouvements de rotation sur la boussole interactive.',
+    'e3.task1.txt': '<strong>Exercice 1 :</strong> Tourne le <strong>boîtier</strong> avec le repère nord (tirer au bord extérieur de la plaque de base).',
+    'e3.task2.txt': '<strong>Exercice 2 :</strong> Tourne le <strong>cadran</strong> avec les points cardinaux (tirer à l\'intérieur).',
+    'e3.tasksStatus.done': '✓ Les deux exercices sont faits !',
+    'e3.tasksStatus.count': '{c} sur 2 faits',
+    'e3.uebungA.h3': '📝 Exercice A : associer les composants',
+    'e3.uebungA.p': 'Fais glisser les termes de gauche sur les bonnes descriptions à droite.',
+    'e3.uebungB.h3': '🧠 Exercice B : quiz de compréhension',
+    'e3.uebungB.p': 'Réponds aux 8 questions — à la fin, tu vois ton résultat.',
+    'e3.btnQuiz': 'Démarrer le quiz ▸',
+    'e3.back': '◂ Retour',
+    'e3.complete': 'Terminer l\'étape ▸',
+    'e3.completeProgress': 'Terminer l\'étape (Composants : {ba} | Boussole : {k} | A : {a} | B : {b})',
+    'e3.flash.newField': 'Nouveau champ magnétique défini — l\'aiguille cherche le nord magnétique !',
+    'e3.flash.reset': 'Boussole réinitialisée.',
+    'e3.flash.disc': 'Tu tournes le cadran de la boussole.',
+    'e3.flash.housing': 'Tu tournes tout le boîtier.',
+    'e3.pool.allPlaced': 'Tous les termes sont placés',
+    'e3.dropHere': 'Déposer ici',
+    'e3.bauteileStatus.count': '{n} sur 4 associés',
+    'e3.bauteileStatus.ok': '✓ Tous les composants sont correctement associés !',
+    'e3.status.wrong': '✗ Ce n\'est pas encore tout juste — corrige les cases rouges.',
+    'e3.dndStatus.count': '{n} sur {t} associés',
+    'e3.dndStatus.ok': '✓ Tout est correctement associé !',
+    // --- Étape 4 ---
+    'e4.badge': 'Étape 4',
+    'e4.title': 'Orienter la boussole',
+    'e4.intro': 'Trois étapes simples pour déterminer avec certitude n\'importe quel point cardinal.',
+    'e4.willi': '<span class="font-semibold">Boris Boussole :</span> « Maintenant, on passe à la pratique ! Trois étapes — ensuite, tu sauras lire correctement n\'importe quelle boussole. Regarde d\'abord la théorie, puis nous nous entraînons ensemble. »',
+    'e4.theory.h3': 'Les 3 étapes pour orienter la boussole',
+    'e4.theory.p': 'Voici comment procéder pour lire un point cardinal :',
+    'e4.step1.title': 'Tourner le boîtier',
+    'e4.step1.text': 'Tenir la boussole <strong>à l\'horizontale</strong> et tourner tout le <strong>boîtier</strong> de sorte que le <span class="text-coralDk font-semibold">repère nord</span> pointe dans la même direction que l\'<span class="text-coralDk font-semibold">aiguille rouge</span>.',
+    'e4.step2.title': 'Tourner le cadran',
+    'e4.step2.text': 'Tourner le <strong>cadran intérieur</strong> jusqu\'à ce que le <span class="text-coralDk font-semibold">N</span> de l\'échelle pointe exactement sur la <span class="text-coralDk font-semibold">pointe rouge</span> de l\'aiguille — <em>nord sur nord</em>.',
+    'e4.step3.title': 'Lire la direction',
+    'e4.step3.text': '<strong>Lire</strong> le point cardinal qui pointe en direction du <strong>but</strong> (direction de marche) — dans l\'exemple : <span class="text-sageDk font-semibold">nord-est (NE)</span>.',
+    'e4.merksatz': '<strong>À retenir :</strong> 1) Tourner le boîtier → repère nord sur l\'aiguille · 2) Tourner le cadran → N sur l\'aiguille · 3) Lire la direction du but.',
+    'e4.uebungA.h3': '🧭 Exercice A : orienter la boussole',
+    'e4.uebungA.p': 'Détermine le point cardinal du but (📍). Réussis <strong>3 tours</strong> avec direction et champ magnétique aléatoires.',
+    'e4.roundWord': 'Tour',
+    'e4.successWord': 'Réussites :',
+    'e4.loading': 'Chargement …',
+    'e4.check1.txt': '<strong>Étape 1 :</strong> Tourner le boîtier → repère nord sur la pointe rouge',
+    'e4.check2.txt': '<strong>Étape 2 :</strong> Tourner le cadran → N de l\'échelle sur la pointe rouge',
+    'e4.dirLabel': 'Étape 3 : dans quelle direction se trouve le but ?',
+    'e4.newRound': '↻ Nouveau tour',
+    'e4.uebungB.h3': '🧠 Exercice B : quiz de compréhension',
+    'e4.uebungB.p': 'Réponds aux 8 questions — à la fin, tu vois ton résultat.',
+    'e4.btnQuiz': 'Démarrer le quiz ▸',
+    'e4.back': '◂ Retour',
+    'e4.complete': 'Terminer l\'étape ▸',
+    'e4.completeProgress': 'Terminer l\'étape (A : {a} | B : {b})',
+    'e4.inst.done': '🎉 Exercice A réussi ! Lance maintenant le quiz de compréhension ci-dessous.',
+    'e4.inst.step1': 'Étape 1 : Tourne le boîtier (au bord de la boussole) jusqu\'à ce que le repère nord (triangle rouge en haut) pointe dans la même direction que l\'aiguille rouge.',
+    'e4.inst.step2': 'Étape 2 : Tourne le cadran (à l\'intérieur) jusqu\'à ce que le N de l\'échelle pointe sur la pointe rouge de l\'aiguille.',
+    'e4.inst.step3': '✓ Boussole orientée ! Étape 3 : dans quelle direction se trouve le but bleu (📍) ? Clique sur la bonne direction ci-dessous.',
+    'e4.fb.correct': '✓ Correct ! Le but se trouve vers {full} ({name}).',
+    'e4.fb.final': '🎯 Exercice A réussi — {s} tours sur {t} réussis !',
+    'e4.fb.wrong': '✗ Dommage, ce n\'est pas ça. Le but se trouvait vers {full} ({name}). Clique sur « Nouveau tour » pour réessayer.',
+    // --- Étape 5 ---
+    'e5.badge': 'Étape 5',
+    'e5.title': 'D\'où viennent mes camarades ?',
+    'e5.intro': 'Orienter la boussole sur la carte et déterminer le point cardinal de chaque village d\'origine.',
+    'e5.willi': '<span class="font-semibold">Boris Boussole :</span> « Dernier exercice ! Tu as une carte du Luxembourg devant toi. Pour chacun de tes 5 camarades, détermine le point cardinal de son village d\'origine — vu de la ville de Luxembourg. Utilise la boussole sur la carte ! »',
+    'e5.progressLabel': 'Tâche {n} sur {t}',
+    'e5.taskQ': '<strong>{name}</strong> habite à <strong>{place}</strong>.',
+    'e5.hintText': 'Dans quelle direction se trouve le village vu de la ville de Luxembourg ? <em>(Abréviation anglaise, p. ex. NE, SSW, ENE)</em>',
+    'e5.answerPh': 'p. ex. NE',
+    'e5.checkBtn': 'Vérifier',
+    'e5.legalLabel': 'Saisies autorisées :',
+    'e5.completionTitle': '🎉 Toutes les tâches résolues !',
+    'e5.completionText': 'Bravo — les 5 camarades correctement placés.',
+    'e5.modeRotate': 'Tourner',
+    'e5.modeMove': 'Déplacer',
+    'e5.resetBtn': 'Réinitialiser la carte',
+    'e5.infoZoom': 'Zoom',
+    'e5.infoMap': 'Carte',
+    'e5.infoHousing': 'Boîtier',
+    'e5.infoDisc': 'Cadran',
+    'e5.infoNeedle': 'Aiguille',
+    'e5.hint': '<strong>Astuce :</strong> Si tu tournes le <strong>boîtier</strong> (N rouge), l\'échelle tourne avec. Si tu tournes seulement l\'<strong>échelle</strong>, seule celle-ci bouge. L\'aiguille indique toujours le nord.',
+    'e5.resultsTitle': 'Camarades — d\'où viennent-ils ?',
+    'e5.colName': 'Nom',
+    'e5.colPlace': 'Village',
+    'e5.colAnswer': 'Réponse',
+    'e5.back': '◂ Retour',
+    'e5.complete': 'Terminé 🎉',
+    'e5.fb.empty': 'Merci de saisir un point cardinal.',
+    'e5.fb.german': 'Utilise uniquement les abréviations anglaises (p. ex. NE au lieu de NO, S au lieu de Sud).',
+    'e5.fb.invalid': 'Saisie invalide. Autorisé : N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW.',
+    'e5.fb.correct': 'Correct ! {place} se trouve au {dir} de la ville de Luxembourg.',
+    'e5.fb.wrong': 'Pas tout à fait — ce n\'est pas {dir}. Réessaie.',
+    'e5.hintTip': 'Astuce : la bonne direction commence par « {c} ».','done.title': 'Toutes les étapes terminées !',
+    'done.text': 'Tu as terminé le parcours avec succès.',
+    'done.restart': 'Recommencer',
+    'footer': 'Application Boussole · Version 0.9.4',
+  }
+};
 
+function T(key) {
+  const l = (typeof state !== 'undefined' && state.lang) ? state.lang : 'de';
+  if (I18N[l] && I18N[l][key] != null) return I18N[l][key];
+  if (I18N.de[key] != null) return I18N.de[key];
+  return key;
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = T(el.dataset.i18n);
+    if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const v = T(el.dataset.i18nPh);
+    if (v != null) el.placeholder = v;
+  });
+}
+
+function updateLangButtons() {
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === state.lang);
+  });
+}
+
+function setLanguage(lang) {
+  state.lang = (lang === 'fr') ? 'fr' : 'de';
+  document.documentElement.lang = state.lang;
+  applyI18n();
+  updateLangButtons();
+  if (typeof renderNav === 'function') renderNav();
+  if (typeof dndInitialized !== 'undefined' && dndInitialized && typeof dndRelabel === 'function') dndRelabel();
+  if (typeof e3Initialized !== 'undefined' && e3Initialized && typeof e3Relabel === 'function') e3Relabel();
+  if (typeof e4Initialized !== 'undefined' && e4Initialized && typeof e4Relabel === 'function') e4Relabel();
+  if (typeof e5Initialized !== 'undefined' && e5Initialized && typeof e5Relabel === 'function') e5Relabel();
+}
+
+document.getElementById('langDe').addEventListener('click', () => setLanguage('de'));
+document.getElementById('langFr').addEventListener('click', () => setLanguage('fr'));
 /* ==========================================================================
    QUIZ-ENGINE (sequenziell, wiederverwendbar für E1, E3, E4)
    ========================================================================== */
 class QuizEngine {
   constructor({ hostId, fragen, onFinish }) {
     this.host = document.getElementById(hostId);
-    this.fragen = fragen;
+    this.getFragen = (typeof fragen === 'function') ? fragen : () => fragen;
     this.onFinish = onFinish || (() => {});
     this.idx = 0; this.score = 0; this.answers = [];
   }
   start() {
+    this.fragen = this.getFragen();
     this.idx = 0; this.score = 0; this.answers = [];
     this.host.classList.remove('hidden');
     this.renderFrage();
@@ -1935,21 +2417,21 @@ class QuizEngine {
     this.host.innerHTML = `
       <div class="q-fade">
         <div class="flex items-center justify-between text-xs text-muted mb-2">
-          <span>Frage ${this.idx + 1} von ${total}</span>
-          <span>${this.score} richtig</span>
+          <span>${T('quiz.q')} ${this.idx + 1} ${T('quiz.of')} ${total}</span>
+          <span>${this.score} ${T('quiz.correct')}</span>
         </div>
         <div class="w-full h-2 bg-sand rounded-full overflow-hidden mb-5">
           <div class="h-full bg-sage transition-all" style="width:${fortschritt}%"></div>
         </div>
         <div class="mb-2 text-sm text-coralDk font-semibold">
-          ${frage.typ === 'multi' ? 'Mehrfachauswahl möglich' : 'Eine Antwort'}
+          ${frage.typ === 'multi' ? T('quiz.multi') : T('quiz.single')}
         </div>
         <h3 class="text-lg sm:text-xl font-bold mb-4">${frage.frage}</h3>
         <div id="opts" class="space-y-2"></div>
         <div id="feedback" class="mt-4 hidden rounded-xl p-3 text-sm"></div>
         <div class="mt-5 flex justify-end gap-2">
-          <button id="btnCheck" class="tap bg-sky hover:bg-skyDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>Prüfen</button>
-          <button id="btnNext"  class="tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition hidden">Weiter ▸</button>
+          <button id="btnCheck" class="tap bg-sky hover:bg-skyDk text-white font-semibold px-5 py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>${T('quiz.check')}</button>
+          <button id="btnNext"  class="tap bg-sage hover:bg-sageDk text-white font-semibold px-5 py-2.5 rounded-xl transition hidden">${T('quiz.next')}</button>
         </div>
       </div>`;
     const optsHost = this.host.querySelector('#opts');
@@ -2007,17 +2489,17 @@ class QuizEngine {
     fb.classList.remove('hidden');
     if (korrekt) {
       fb.className = 'mt-4 rounded-xl p-3 text-sm bg-sageLt border border-sage/40 text-ink';
-      fb.innerHTML = `<strong>Richtig!</strong> ${frage.erklärung || ''}`;
+      fb.innerHTML = `<strong>${T('quiz.correctYes')}</strong> ${frage.erklärung || ''}`;
       this.score++;
     } else {
       fb.className = 'mt-4 rounded-xl p-3 text-sm bg-coralLt border border-coral/40 text-ink';
-      fb.innerHTML = `<strong>Nicht ganz.</strong> ${frage.erklärung || ''}`;
+      fb.innerHTML = `<strong>${T('quiz.correctNo')}</strong> ${frage.erklärung || ''}`;
     }
     this.answers.push({ korrekt, gewählt: [...gewählt] });
     this.host.querySelector('#btnCheck').classList.add('hidden');
     this.host.querySelector('#btnNext').classList.remove('hidden');
     if (this.idx === this.fragen.length - 1) {
-      this.host.querySelector('#btnNext').textContent = 'Ergebnis ansehen ▸';
+      this.host.querySelector('#btnNext').textContent = T('quiz.result');
     }
   }
   next() {
@@ -2029,16 +2511,16 @@ class QuizEngine {
     const total = this.fragen.length;
     const prozent = Math.round((this.score / total) * 100);
     let bewertung = '';
-    if (prozent === 100)    bewertung = 'Perfekt! Alle Fragen richtig 🎯';
-    else if (prozent >= 75) bewertung = 'Sehr gut!';
-    else if (prozent >= 50) bewertung = 'Solide — du bist auf dem richtigen Weg.';
-    else                    bewertung = 'Schau dir die Theorie noch einmal an.';
+    if (prozent === 100)    bewertung = T('quiz.perfect');
+    else if (prozent >= 75) bewertung = T('quiz.verygood');
+    else if (prozent >= 50) bewertung = T('quiz.solid');
+    else                    bewertung = T('quiz.review');
     this.host.innerHTML = `
       <div class="q-fade text-center bg-sageLt/60 border border-sage/30 rounded-xl p-6">
         <div class="text-5xl font-bold text-sageDk mb-1">${this.score} / ${total}</div>
-        <div class="text-sm text-muted mb-4">${prozent}% richtig</div>
+        <div class="text-sm text-muted mb-4">${prozent}% ${T('quiz.correctPct')}</div>
         <div class="text-base font-semibold mb-4">${bewertung}</div>
-        <button id="btnRetry" class="tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-4 py-2 rounded-xl transition">↻ Nochmal versuchen</button>
+        <button id="btnRetry" class="tap bg-white border border-sand hover:bg-sand text-ink font-semibold px-4 py-2 rounded-xl transition">${T('quiz.retry')}</button>
       </div>`;
     this.host.querySelector('#btnRetry').addEventListener('click', () => this.start());
     this.onFinish({ score: this.score, total });
@@ -2048,106 +2530,182 @@ class QuizEngine {
 /* ==========================================================================
    FRAGEN ETAPPE 1 (8 Fragen)
    ========================================================================== */
-const FRAGEN_E1 = [
-  { typ:'single', frage:'Was bedeutet „sich orientieren"?',
-    optionen:['Möglichst schnell laufen','Wissen, wo man ist und in welche Richtung man muss','Eine Karte auswendig lernen','Den Wetterbericht verstehen'],
-    richtig:[1], erklärung:'Orientierung heißt: seinen Standort kennen und die richtige Richtung bestimmen.' },
-  { typ:'single', frage:'Wie viele Haupthimmelsrichtungen gibt es?',
-    optionen:['2','4','6','8'], richtig:[1], erklärung:'Es gibt vier Haupthimmelsrichtungen: Norden, Osten, Süden und Westen.' },
-  { typ:'multi', frage:'Welche der folgenden Richtungen sind Haupthimmelsrichtungen?',
-    optionen:['Norden','Nordosten','Süden','Westen'], richtig:[0,2,3], erklärung:'Norden, Süden und Westen sind Haupthimmelsrichtungen. Nordosten ist eine Nebenhimmelsrichtung.' },
-  { typ:'single', frage:'Welche Himmelsrichtung liegt direkt gegenüber von Norden?',
-    optionen:['Osten','Westen','Süden','Nordosten'], richtig:[2], erklärung:'Norden und Süden liegen sich direkt gegenüber.' },
-  { typ:'single', frage:'In welche Richtung zeigt der Merksatz „Nie Ohne Seife Waschen"?',
-    optionen:['Norden – Westen – Süden – Osten','Norden – Osten – Süden – Westen','Süden – Osten – Norden – Westen','Osten – Süden – Westen – Norden'],
-    richtig:[1], erklärung:'Im Uhrzeigersinn: Norden → Osten → Süden → Westen.' },
-  { typ:'single', frage:'Welche Himmelsrichtung liegt zwischen Süden und Westen?',
-    optionen:['Südosten','Südwesten','Nordwesten','Nordosten'], richtig:[1], erklärung:'Zwischen Süden und Westen liegt der Südwesten (SW).' },
-  { typ:'single', frage:'In welcher Richtung geht die Sonne morgens auf?',
-    optionen:['Norden','Osten','Süden','Westen'], richtig:[1], erklärung:'Die Sonne geht im Osten auf und im Westen unter.' },
-  { typ:'multi', frage:'Wofür ist Orientierung im Alltag nützlich?',
-    optionen:['Den Schulweg finden','Beim Wandern den Rückweg kennen','Einen Treffpunkt erreichen','Eine Mathematikaufgabe lösen'],
-    richtig:[0,1,2], erklärung:'Orientierung hilft im Alltag, Wege zu finden und Ziele zu erreichen.' }
-];
+const FRAGEN_E1 = {
+  de: [
+    { typ:'single', frage:'Was bedeutet „sich orientieren"?',
+      optionen:['Möglichst schnell laufen','Wissen, wo man ist und in welche Richtung man muss','Eine Karte auswendig lernen','Den Wetterbericht verstehen'],
+      richtig:[1], erklärung:'Orientierung heißt: seinen Standort kennen und die richtige Richtung bestimmen.' },
+    { typ:'single', frage:'Wie viele Haupthimmelsrichtungen gibt es?',
+      optionen:['2','4','6','8'], richtig:[1], erklärung:'Es gibt vier Haupthimmelsrichtungen: Norden, Osten, Süden und Westen.' },
+    { typ:'multi', frage:'Welche der folgenden Richtungen sind Haupthimmelsrichtungen?',
+      optionen:['Norden','Nordosten','Süden','Westen'], richtig:[0,2,3], erklärung:'Norden, Süden und Westen sind Haupthimmelsrichtungen. Nordosten ist eine Nebenhimmelsrichtung.' },
+    { typ:'single', frage:'Welche Himmelsrichtung liegt direkt gegenüber von Norden?',
+      optionen:['Osten','Westen','Süden','Nordosten'], richtig:[2], erklärung:'Norden und Süden liegen sich direkt gegenüber.' },
+    { typ:'single', frage:'Welche international übliche Abkürzung steht für Osten?',
+      optionen:['N','E','S','W'], richtig:[1], erklärung:'Osten wird international mit „E" (von englisch East) abgekürzt. In der ganzen App gilt: N, S, E, W.' },
+    { typ:'single', frage:'Welche Himmelsrichtung liegt zwischen Süden und Westen?',
+      optionen:['Südosten','Südwesten','Nordwesten','Nordosten'], richtig:[1], erklärung:'Zwischen Süden und Westen liegt der Südwesten (SW).' },
+    { typ:'single', frage:'In welcher Richtung geht die Sonne morgens auf?',
+      optionen:['Norden','Osten','Süden','Westen'], richtig:[1], erklärung:'Die Sonne geht im Osten auf und im Westen unter.' },
+    { typ:'multi', frage:'Wofür ist Orientierung im Alltag nützlich?',
+      optionen:['Den Schulweg finden','Beim Wandern den Rückweg kennen','Einen Treffpunkt erreichen','Eine Mathematikaufgabe lösen'],
+      richtig:[0,1,2], erklärung:'Orientierung hilft im Alltag, Wege zu finden und Ziele zu erreichen.' }
+  ],
+  fr: [
+    { typ:'single', frage:'Que signifie « s\'orienter » ?',
+      optionen:['Courir le plus vite possible','Savoir où l\'on est et dans quelle direction aller','Apprendre une carte par cœur','Comprendre la météo'],
+      richtig:[1], erklärung:'S\'orienter, c\'est connaître sa position et déterminer la bonne direction.' },
+    { typ:'single', frage:'Combien y a-t-il de points cardinaux principaux ?',
+      optionen:['2','4','6','8'], richtig:[1], erklärung:'Il y a quatre points cardinaux principaux : le nord, l\'est, le sud et l\'ouest.' },
+    { typ:'multi', frage:'Lesquelles de ces directions sont des points cardinaux principaux ?',
+      optionen:['Le nord','Le nord-est','Le sud','L\'ouest'], richtig:[0,2,3], erklärung:'Le nord, le sud et l\'ouest sont des points cardinaux principaux. Le nord-est est un point intermédiaire.' },
+    { typ:'single', frage:'Quel point cardinal se trouve juste en face du nord ?',
+      optionen:['L\'est','L\'ouest','Le sud','Le nord-est'], richtig:[2], erklärung:'Le nord et le sud sont directement opposés.' },
+    { typ:'single', frage:'Quelle abréviation internationale désigne l\'est ?',
+      optionen:['N','E','S','W'], richtig:[1], erklärung:'L\'est s\'abrège internationalement par « E » (de l\'anglais East). Dans toute l\'application : N, S, E, W.' },
+    { typ:'single', frage:'Quel point cardinal se situe entre le sud et l\'ouest ?',
+      optionen:['Le sud-est','Le sud-ouest','Le nord-ouest','Le nord-est'], richtig:[1], erklärung:'Entre le sud et l\'ouest se trouve le sud-ouest (SW).' },
+    { typ:'single', frage:'Dans quelle direction le soleil se lève-t-il le matin ?',
+      optionen:['Au nord','À l\'est','Au sud','À l\'ouest'], richtig:[1], erklärung:'Le soleil se lève à l\'est et se couche à l\'ouest.' },
+    { typ:'multi', frage:'À quoi l\'orientation est-elle utile au quotidien ?',
+      optionen:['Trouver le chemin de l\'école','Connaître le chemin du retour en randonnée','Rejoindre un lieu de rendez-vous','Résoudre un exercice de mathématiques'],
+      richtig:[0,1,2], erklärung:'L\'orientation aide au quotidien à trouver son chemin et à atteindre ses objectifs.' }
+  ]
+};
 
 /* ==========================================================================
    FRAGEN ETAPPE 3 (8 Fragen)
    ========================================================================== */
-const FRAGEN_E3 = [
-  { typ:'single', frage:'Worauf reagiert die Magnetnadel des Kompasses?',
-    optionen:['Auf das Erdmagnetfeld','Auf die Schwerkraft','Auf das Sonnenlicht','Auf den Wind'],
-    richtig:[0], erklärung:'Die Magnetnadel ist ein kleiner Magnet, der sich nach dem Erdmagnetfeld ausrichtet.' },
-  { typ:'single', frage:'Was passiert, wenn du die Kompassscheibe oder das Gehäuse drehst?',
-    optionen:['Die Magnetnadel bleibt zum magnetischen Norden ausgerichtet','Die Magnetnadel dreht sich mit','Die Magnetnadel zeigt zur Marschrichtung','Die Magnetnadel hört auf zu zeigen'],
-    richtig:[0], erklärung:'Die Nadel ist frei drehbar gelagert und folgt immer dem Erdmagnetfeld — egal wie du den Kompass hältst.' },
-  { typ:'single', frage:'Was kann einen Kompass stören und falsche Werte verursachen?',
-    optionen:['Eisen, Magnete und Hochspannungsleitungen','Sonnenlicht','Regen','Die Höhe über dem Meer'],
-    richtig:[0], erklärung:'Alles, was magnetisch ist oder ein Magnetfeld erzeugt, kann die Nadel ablenken.' },
-  { typ:'single', frage:'Wie musst du den Kompass beim Ablesen halten?',
-    optionen:['Waagerecht','Senkrecht','Schräg nach oben','Auf den Kopf'],
-    richtig:[0], erklärung:'Damit sich die Magnetnadel frei drehen kann, muss der Kompass waagerecht gehalten werden.' },
-  { typ:'single', frage:'Welcher Teil des Kompasses zeigt zuverlässig nach Norden?',
-    optionen:['Die rote Spitze der Magnetnadel','Die weiße Spitze der Magnetnadel','Das Gehäuse','Die Gradskala'],
-    richtig:[0], erklärung:'Die rote Spitze der Magnetnadel zeigt immer zum magnetischen Norden.' },
-  { typ:'single', frage:'Wozu dient die drehbare Kompassscheibe?',
-    optionen:['Um die Skala mit den Himmelsrichtungen auszurichten','Um die Nadel zu bremsen','Um den Kompass schwerer zu machen','Um die Sonne zu messen'],
-    richtig:[0], erklärung:'Die drehbare Scheibe trägt die Skala (N, E, S, W) und wird zum Ausrichten gedreht.' },
-  { typ:'single', frage:'Was ist die Nordmarke am Kompass?',
-    optionen:['Eine feste Markierung, die zeigt, wo „N" liegt','Ein zweiter Magnet','Eine kleine Lampe','Der Tragriemen'],
-    richtig:[0], erklärung:'Die Nordmarke ist fest auf dem Gehäuse/der Scheibe und markiert die Nordrichtung.' },
-  { typ:'multi', frage:'Was gehört zu den wichtigen Bauteilen eines Kompasses?',
-    optionen:['Magnetnadel','Drehbare Kompassscheibe','Himmelsrichtungen & Gradskala','Ein Akku'],
-    richtig:[0,1,2], erklärung:'Magnetnadel, drehbare Scheibe und die Skala sind zentrale Bauteile. Ein klassischer Kompass braucht keinen Akku.' }
-];
-
+const FRAGEN_E3 = {
+  de: [
+    { typ:'single', frage:'Worauf reagiert die Magnetnadel des Kompasses?',
+      optionen:['Auf das Erdmagnetfeld','Auf die Schwerkraft','Auf das Sonnenlicht','Auf den Wind'],
+      richtig:[0], erklärung:'Die Magnetnadel ist ein kleiner Magnet, der sich nach dem Erdmagnetfeld ausrichtet.' },
+    { typ:'single', frage:'Was passiert, wenn du die Kompassscheibe oder das Gehäuse drehst?',
+      optionen:['Die Magnetnadel bleibt zum magnetischen Norden ausgerichtet','Die Magnetnadel dreht sich mit','Die Magnetnadel zeigt zur Marschrichtung','Die Magnetnadel hört auf zu zeigen'],
+      richtig:[0], erklärung:'Die Nadel ist frei drehbar gelagert und folgt immer dem Erdmagnetfeld — egal wie du den Kompass hältst.' },
+    { typ:'single', frage:'Was kann einen Kompass stören und falsche Werte verursachen?',
+      optionen:['Eisen, Magnete und Hochspannungsleitungen','Sonnenlicht','Regen','Die Höhe über dem Meer'],
+      richtig:[0], erklärung:'Alles, was magnetisch ist oder ein Magnetfeld erzeugt, kann die Nadel ablenken.' },
+    { typ:'single', frage:'Wie musst du den Kompass beim Ablesen halten?',
+      optionen:['Waagerecht','Senkrecht','Schräg nach oben','Auf den Kopf'],
+      richtig:[0], erklärung:'Damit sich die Magnetnadel frei drehen kann, muss der Kompass waagerecht gehalten werden.' },
+    { typ:'single', frage:'Welcher Teil des Kompasses zeigt zuverlässig nach Norden?',
+      optionen:['Die rote Spitze der Magnetnadel','Die weiße Spitze der Magnetnadel','Das Gehäuse','Die Gradskala'],
+      richtig:[0], erklärung:'Die rote Spitze der Magnetnadel zeigt immer zum magnetischen Norden.' },
+    { typ:'single', frage:'Wozu dient die drehbare Kompassscheibe?',
+      optionen:['Um die Skala mit den Himmelsrichtungen auszurichten','Um die Nadel zu bremsen','Um den Kompass schwerer zu machen','Um die Sonne zu messen'],
+      richtig:[0], erklärung:'Die drehbare Scheibe trägt die Skala (N, E, S, W) und wird zum Ausrichten gedreht.' },
+    { typ:'single', frage:'Was ist die Nordmarke am Kompass?',
+      optionen:['Eine feste Markierung, die zeigt, wo „N" liegt','Ein zweiter Magnet','Eine kleine Lampe','Der Tragriemen'],
+      richtig:[0], erklärung:'Die Nordmarke ist fest auf dem Gehäuse/der Scheibe und markiert die Nordrichtung.' },
+    { typ:'multi', frage:'Was gehört zu den wichtigen Bauteilen eines Kompasses?',
+      optionen:['Magnetnadel','Drehbare Kompassscheibe','Himmelsrichtungen & Gradskala','Ein Akku'],
+      richtig:[0,1,2], erklärung:'Magnetnadel, drehbare Scheibe und die Skala sind zentrale Bauteile. Ein klassischer Kompass braucht keinen Akku.' }
+  ],
+  fr: [
+    { typ:'single', frage:'À quoi réagit l\'aiguille aimantée de la boussole ?',
+      optionen:['Au champ magnétique terrestre','À la gravité','À la lumière du soleil','Au vent'],
+      richtig:[0], erklärung:'L\'aiguille aimantée est un petit aimant qui s\'oriente selon le champ magnétique terrestre.' },
+    { typ:'single', frage:'Que se passe-t-il quand tu tournes le cadran ou le boîtier ?',
+      optionen:['L\'aiguille aimantée reste orientée vers le nord magnétique','L\'aiguille aimantée tourne avec','L\'aiguille aimantée indique la direction de marche','L\'aiguille aimantée cesse d\'indiquer'],
+      richtig:[0], erklärung:'L\'aiguille tourne librement et suit toujours le champ magnétique terrestre — peu importe comment tu tiens la boussole.' },
+    { typ:'single', frage:'Qu\'est-ce qui peut perturber une boussole et fausser les valeurs ?',
+      optionen:['Le fer, les aimants et les lignes à haute tension','La lumière du soleil','La pluie','L\'altitude au-dessus du niveau de la mer'],
+      richtig:[0], erklärung:'Tout ce qui est magnétique ou crée un champ magnétique peut dévier l\'aiguille.' },
+    { typ:'single', frage:'Comment dois-tu tenir la boussole pour la lire ?',
+      optionen:['À l\'horizontale','À la verticale','Inclinée vers le haut','À l\'envers'],
+      richtig:[0], erklärung:'Pour que l\'aiguille aimantée puisse tourner librement, la boussole doit être tenue à l\'horizontale.' },
+    { typ:'single', frage:'Quelle partie de la boussole indique de façon fiable le nord ?',
+      optionen:['La pointe rouge de l\'aiguille aimantée','La pointe blanche de l\'aiguille aimantée','Le boîtier','L\'échelle graduée'],
+      richtig:[0], erklärung:'La pointe rouge de l\'aiguille aimantée indique toujours le nord magnétique.' },
+    { typ:'single', frage:'À quoi sert le cadran rotatif de la boussole ?',
+      optionen:['À orienter l\'échelle avec les points cardinaux','À freiner l\'aiguille','À alourdir la boussole','À mesurer le soleil'],
+      richtig:[0], erklärung:'Le cadran rotatif porte l\'échelle (N, E, S, W) et se tourne pour orienter.' },
+    { typ:'single', frage:'Qu\'est-ce que le repère nord de la boussole ?',
+      optionen:['Un repère fixe qui montre où se trouve le « N »','Un deuxième aimant','Une petite lampe','La sangle de transport'],
+      richtig:[0], erklärung:'Le repère nord est fixé sur le boîtier/le cadran et marque la direction du nord.' },
+    { typ:'multi', frage:'Qu\'est-ce qui fait partie des composants importants d\'une boussole ?',
+      optionen:['Aiguille aimantée','Cadran de boussole rotatif','Points cardinaux & échelle graduée','Une batterie'],
+      richtig:[0,1,2], erklärung:'L\'aiguille aimantée, le cadran rotatif et l\'échelle sont des composants centraux. Une boussole classique n\'a pas besoin de batterie.' }
+  ]
+};
 /* ==========================================================================
    FRAGEN ETAPPE 4 (8 Fragen)
    ========================================================================== */
-const FRAGEN_E4 = [
-  { typ:'single', frage:'Was ist der erste Schritt beim Ausrichten des Kompasses?',
-    optionen:['Das Gehäuse drehen, bis die Nordmarke auf die rote Magnetnadel zeigt','Die Kompassscheibe drehen, bis das N auf die Nadel zeigt','Direkt die Himmelsrichtung zum Ziel ablesen','Den Kompass schütteln, damit die Nadel sich bewegt'],
-    richtig:[0], erklärung:'Schritt 1: Das ganze Gehäuse drehen, bis die Nordmarke und die rote Magnetnadel in dieselbe Richtung zeigen.' },
-  { typ:'single', frage:'Wozu drehst du in Schritt 2 die Kompassscheibe?',
-    optionen:['Damit das N der Skala genau auf die rote Nadelspitze zeigt','Damit die Magnetnadel aufhört, sich zu bewegen','Damit das Gehäuse fixiert wird','Damit die Sonne in die richtige Richtung scheint'],
-    richtig:[0], erklärung:'Die Kompassscheibe muss so gedreht werden, dass das N auf die rote Nadelspitze zeigt — Norden auf Norden.' },
-  { typ:'single', frage:'Wenn der Kompass korrekt ausgerichtet ist, worauf zeigt die rote Spitze der Magnetnadel?',
-    optionen:['Auf die Nordmarke des Gehäuses und auf das N der Skala','Auf das Ziel (die Marschrichtung)','Auf die Sonne','Auf den Süden der Skala'],
-    richtig:[0], erklärung:'Bei korrekter Ausrichtung zeigen Nordmarke, N der Skala und rote Nadelspitze alle in dieselbe Richtung.' },
-  { typ:'single', frage:'Wie liest du in Schritt 3 die Himmelsrichtung zum Ziel ab?',
-    optionen:['Du schaust, welche Himmelsrichtung der Skala in Richtung des Ziels zeigt','Du liest die Richtung ab, in die die Magnetnadel zeigt','Du nimmst immer die Himmelsrichtung gegenüber der Nadel','Du wählst die Richtung, die am nächsten zur Sonne liegt'],
-    richtig:[0], erklärung:'Der Kompass ist zur Realität ausgerichtet — du liest einfach die Richtung zum Ziel ab.' },
-  { typ:'single', frage:'Wie muss der Kompass beim Ausrichten gehalten werden?',
-    optionen:['Waagerecht','Senkrecht','Mit der Skala nach unten','Schräg gegen die Sonne'],
-    richtig:[0], erklärung:'Nur waagerecht kann sich die Magnetnadel frei drehen und korrekt anzeigen.' },
-  { typ:'single', frage:'In welcher Reihenfolge gehst du beim Ausrichten vor?',
-    optionen:['Gehäuse drehen → Scheibe drehen → Richtung ablesen','Richtung ablesen → Gehäuse drehen → Scheibe drehen','Scheibe drehen → Richtung ablesen → Gehäuse drehen','Gehäuse drehen → Richtung ablesen → Scheibe drehen'],
-    richtig:[0], erklärung:'Erst Gehäuse, dann Scheibe (Norden auf Norden), zuletzt die Richtung zum Ziel ablesen.' },
-  { typ:'single', frage:'Was zeigt die Magnetnadel immer an — egal wie du den Kompass drehst?',
-    optionen:['Den magnetischen Norden','Die Marschrichtung','Den Süden','Die Sonne'],
-    richtig:[0], erklärung:'Die frei drehbare Magnetnadel folgt stets dem Erdmagnetfeld und zeigt nach magnetisch Norden.' },
-  { typ:'single', frage:'Was bedeutet „Marschrichtung"?',
-    optionen:['Die Himmelsrichtung, in die du zum Ziel gehen musst','Die Richtung, aus der der Wind kommt','Die Richtung zur Sonne','Die Richtung der weißen Nadelspitze'],
-    richtig:[0], erklärung:'Die Marschrichtung ist die abgelesene Himmelsrichtung, in die dein Ziel liegt.' }
-];
+const FRAGEN_E4 = {
+  de: [
+    { typ:'single', frage:'Was ist der erste Schritt beim Ausrichten des Kompasses?',
+      optionen:['Das Gehäuse drehen, bis die Nordmarke auf die rote Magnetnadel zeigt','Die Kompassscheibe drehen, bis das N auf die Nadel zeigt','Direkt die Himmelsrichtung zum Ziel ablesen','Den Kompass schütteln, damit die Nadel sich bewegt'],
+      richtig:[0], erklärung:'Schritt 1: Das ganze Gehäuse drehen, bis die Nordmarke und die rote Magnetnadel in dieselbe Richtung zeigen.' },
+    { typ:'single', frage:'Wozu drehst du in Schritt 2 die Kompassscheibe?',
+      optionen:['Damit das N der Skala genau auf die rote Nadelspitze zeigt','Damit die Magnetnadel aufhört, sich zu bewegen','Damit das Gehäuse fixiert wird','Damit die Sonne in die richtige Richtung scheint'],
+      richtig:[0], erklärung:'Die Kompassscheibe muss so gedreht werden, dass das N auf die rote Nadelspitze zeigt — Norden auf Norden.' },
+    { typ:'single', frage:'Wenn der Kompass korrekt ausgerichtet ist, worauf zeigt die rote Spitze der Magnetnadel?',
+      optionen:['Auf die Nordmarke des Gehäuses und auf das N der Skala','Auf das Ziel (die Marschrichtung)','Auf die Sonne','Auf den Süden der Skala'],
+      richtig:[0], erklärung:'Bei korrekter Ausrichtung zeigen Nordmarke, N der Skala und rote Nadelspitze alle in dieselbe Richtung.' },
+    { typ:'single', frage:'Wie liest du in Schritt 3 die Himmelsrichtung zum Ziel ab?',
+      optionen:['Du schaust, welche Himmelsrichtung der Skala in Richtung des Ziels zeigt','Du liest die Richtung ab, in die die Magnetnadel zeigt','Du nimmst immer die Himmelsrichtung gegenüber der Nadel','Du wählst die Richtung, die am nächsten zur Sonne liegt'],
+      richtig:[0], erklärung:'Der Kompass ist zur Realität ausgerichtet — du liest einfach die Richtung zum Ziel ab.' },
+    { typ:'single', frage:'Wie muss der Kompass beim Ausrichten gehalten werden?',
+      optionen:['Waagerecht','Senkrecht','Mit der Skala nach unten','Schräg gegen die Sonne'],
+      richtig:[0], erklärung:'Nur waagerecht kann sich die Magnetnadel frei drehen und korrekt anzeigen.' },
+    { typ:'single', frage:'In welcher Reihenfolge gehst du beim Ausrichten vor?',
+      optionen:['Gehäuse drehen → Scheibe drehen → Richtung ablesen','Richtung ablesen → Gehäuse drehen → Scheibe drehen','Scheibe drehen → Richtung ablesen → Gehäuse drehen','Gehäuse drehen → Richtung ablesen → Scheibe drehen'],
+      richtig:[0], erklärung:'Erst Gehäuse, dann Scheibe (Norden auf Norden), zuletzt die Richtung zum Ziel ablesen.' },
+    { typ:'single', frage:'Was zeigt die Magnetnadel immer an — egal wie du den Kompass drehst?',
+      optionen:['Den magnetischen Norden','Die Marschrichtung','Den Süden','Die Sonne'],
+      richtig:[0], erklärung:'Die frei drehbare Magnetnadel folgt stets dem Erdmagnetfeld und zeigt nach magnetisch Norden.' },
+    { typ:'single', frage:'Was bedeutet „Marschrichtung"?',
+      optionen:['Die Himmelsrichtung, in die du zum Ziel gehen musst','Die Richtung, aus der der Wind kommt','Die Richtung zur Sonne','Die Richtung der weißen Nadelspitze'],
+      richtig:[0], erklärung:'Die Marschrichtung ist die abgelesene Himmelsrichtung, in die dein Ziel liegt.' }
+  ],
+  fr: [
+    { typ:'single', frage:'Quelle est la première étape pour orienter la boussole ?',
+      optionen:['Tourner le boîtier jusqu\'à ce que le repère nord pointe vers l\'aiguille rouge','Tourner le cadran jusqu\'à ce que le N pointe vers l\'aiguille','Lire directement la direction du but','Secouer la boussole pour que l\'aiguille bouge'],
+      richtig:[0], erklärung:'Étape 1 : tourner tout le boîtier jusqu\'à ce que le repère nord et l\'aiguille rouge pointent dans la même direction.' },
+    { typ:'single', frage:'Pourquoi tournes-tu le cadran à l\'étape 2 ?',
+      optionen:['Pour que le N de l\'échelle pointe exactement sur la pointe rouge de l\'aiguille','Pour que l\'aiguille aimantée cesse de bouger','Pour bloquer le boîtier','Pour que le soleil brille dans la bonne direction'],
+      richtig:[0], erklärung:'Le cadran doit être tourné pour que le N pointe sur la pointe rouge de l\'aiguille — nord sur nord.' },
+    { typ:'single', frage:'Quand la boussole est correctement orientée, vers quoi pointe la pointe rouge de l\'aiguille ?',
+      optionen:['Vers le repère nord du boîtier et vers le N de l\'échelle','Vers le but (la direction de marche)','Vers le soleil','Vers le sud de l\'échelle'],
+      richtig:[0], erklärung:'Quand tout est bien orienté, le repère nord, le N de l\'échelle et la pointe rouge pointent tous dans la même direction.' },
+    { typ:'single', frage:'Comment lis-tu la direction du but à l\'étape 3 ?',
+      optionen:['Tu regardes quel point cardinal de l\'échelle pointe vers le but','Tu lis la direction dans laquelle pointe l\'aiguille','Tu prends toujours le point cardinal opposé à l\'aiguille','Tu choisis la direction la plus proche du soleil'],
+      richtig:[0], erklärung:'La boussole est orientée par rapport à la réalité — il suffit de lire la direction du but.' },
+    { typ:'single', frage:'Comment la boussole doit-elle être tenue lors de l\'orientation ?',
+      optionen:['À l\'horizontale','À la verticale','L\'échelle vers le bas','Inclinée vers le soleil'],
+      richtig:[0], erklärung:'Ce n\'est qu\'à l\'horizontale que l\'aiguille peut tourner librement et indiquer correctement.' },
+    { typ:'single', frage:'Dans quel ordre procèdes-tu pour orienter la boussole ?',
+      optionen:['Tourner le boîtier → tourner le cadran → lire la direction','Lire la direction → tourner le boîtier → tourner le cadran','Tourner le cadran → lire la direction → tourner le boîtier','Tourner le boîtier → lire la direction → tourner le cadran'],
+      richtig:[0], erklärung:'D\'abord le boîtier, puis le cadran (nord sur nord), enfin lire la direction du but.' },
+    { typ:'single', frage:'Qu\'indique toujours l\'aiguille aimantée — peu importe comment tu tournes la boussole ?',
+      optionen:['Le nord magnétique','La direction de marche','Le sud','Le soleil'],
+      richtig:[0], erklärung:'L\'aiguille aimantée, libre de tourner, suit toujours le champ magnétique terrestre et indique le nord magnétique.' },
+    { typ:'single', frage:'Que signifie « direction de marche » ?',
+      optionen:['Le point cardinal dans lequel tu dois aller vers le but','La direction d\'où vient le vent','La direction du soleil','La direction de la pointe blanche de l\'aiguille'],
+      richtig:[0], erklärung:'La direction de marche est le point cardinal lu, dans lequel se trouve ton but.' }
+  ]
+};
 
 /* ==========================================================================
    DRAG & DROP — ETAPPE 2
    ========================================================================== */
 const DND_ZONES = [
-  { id:'sonne', titel:'Die Sonne',     icon:'☀', color:'#E8C76F', textColor:'#2E2E36' },
-  { id:'sterne',titel:'Die Sterne',    icon:'★', color:'#7FA9B9', textColor:'#FFFFFF' },
-  { id:'natur', titel:'Hinweise in der Natur', icon:'🌳', color:'#6E9A6E', textColor:'#FFFFFF' },
-  { id:'tools', titel:'Hilfsmittel',   icon:'🧭', color:'#C97A6B', textColor:'#FFFFFF' },
+  { id:'sonne', titel:{ de:'Die Sonne', fr:'Le soleil' },              icon:'☀', color:'#E8C76F', textColor:'#2E2E36' },
+  { id:'sterne',titel:{ de:'Die Sterne', fr:'Les étoiles' },           icon:'★', color:'#7FA9B9', textColor:'#FFFFFF' },
+  { id:'natur', titel:{ de:'Hinweise in der Natur', fr:'Indices dans la nature' }, icon:'🌳', color:'#6E9A6E', textColor:'#FFFFFF' },
+  { id:'tools', titel:{ de:'Hilfsmittel', fr:'Instruments' },          icon:'🧭', color:'#C97A6B', textColor:'#FFFFFF' },
 ];
 const DND_ITEMS = [
-  { id:'i1', text:'Es ist Mittag — die Sonne steht hoch am Himmel.',          zone:'sonne'  },
-  { id:'i2', text:'Dein Schatten am Mittag zeigt nach Norden.',               zone:'sonne'  },
-  { id:'i3', text:'Du suchst nachts den Polarstern.',                         zone:'sterne' },
-  { id:'i4', text:'Du findest am Himmel den Großen Wagen.',                   zone:'sterne' },
-  { id:'i5', text:'Auf der Nordseite eines Baumes wächst Moos.',              zone:'natur'  },
-  { id:'i6', text:'Ein Ameisenhaufen liegt an der wärmeren Seite des Baums.', zone:'natur'  },
-  { id:'i7', text:'Du benutzt einen Sextanten auf einem Schiff.',             zone:'tools'  },
-  { id:'i8', text:'Du benutzt einen Kompass mit Magnetnadel.',                zone:'tools'  },
+  { id:'i1', text:{ de:'Es ist Mittag — die Sonne steht hoch am Himmel.',          fr:'Il est midi — le soleil est haut dans le ciel.' },        zone:'sonne'  },
+  { id:'i2', text:{ de:'Dein Schatten am Mittag zeigt nach Norden.',               fr:'À midi, ton ombre pointe vers le nord.' },                 zone:'sonne'  },
+  { id:'i3', text:{ de:'Du suchst nachts den Polarstern.',                         fr:'La nuit, tu cherches l\'étoile polaire.' },                zone:'sterne' },
+  { id:'i4', text:{ de:'Du findest am Himmel den Großen Wagen.',                   fr:'Tu repères la Grande Ourse dans le ciel.' },               zone:'sterne' },
+  { id:'i5', text:{ de:'Auf der Nordseite eines Baumes wächst Moos.',              fr:'De la mousse pousse du côté nord d\'un arbre.' },           zone:'natur'  },
+  { id:'i6', text:{ de:'Ein Ameisenhaufen liegt an der wärmeren Seite des Baums.', fr:'Une fourmilière se trouve du côté le plus chaud de l\'arbre.' }, zone:'natur'  },
+  { id:'i7', text:{ de:'Du benutzt einen Sextanten auf einem Schiff.',             fr:'Tu utilises un sextant sur un bateau.' },                  zone:'tools'  },
+  { id:'i8', text:{ de:'Du benutzt einen Kompass mit Magnetnadel.',                fr:'Tu utilises une boussole à aiguille aimantée.' },          zone:'tools'  },
 ];
 let dnd = { placement: {}, locked: false };
 
@@ -2163,10 +2721,10 @@ function dndInit() {
     el.innerHTML = `
       <div class="dnd-zone-header">
         <span class="dnd-zone-icon" style="background:${z.color};color:${z.textColor}">${z.icon}</span>
-        <span>${z.titel}</span>
+        <span>${z.titel[state.lang]}</span>
       </div>
       <div class="dnd-zone-list" data-zone-list="${z.id}">
-        <div class="dnd-zone-empty">Hierher ziehen</div>
+        <div class="dnd-zone-empty">${T('e2.dropHere')}</div>
       </div>`;
     zonesHost.appendChild(el);
   });
@@ -2183,7 +2741,7 @@ function dndInit() {
         <circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/>
         <circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/>
       </svg>
-      <span class="flex-1">${it.text}</span>`;
+      <span class="flex-1">${it.text[state.lang]}</span>`;
     pool.appendChild(el);
     bindDrag(el);
   });
@@ -2196,7 +2754,7 @@ function dndInit() {
 function updatePoolCount() {
   const remaining = Object.values(dnd.placement).filter(z => z === 'pool').length;
   document.getElementById('dnd-pool-count').textContent =
-    remaining === 0 ? 'Alle verteilt' : `${remaining} verbleibend`;
+    remaining === 0 ? T('e2.allPlaced') : `${remaining} ${T('e2.remaining')}`;
 }
 function updateCheckButton() {
   const allPlaced = Object.values(dnd.placement).every(z => z !== 'pool');
@@ -2209,10 +2767,46 @@ function refreshZoneEmptyHints() {
     if (!hasItems && !hint) {
       hint = document.createElement('div');
       hint.className = 'dnd-zone-empty';
-      hint.textContent = 'Hierher ziehen';
+      hint.textContent = T('e2.dropHere');
       list.appendChild(hint);
     } else if (hasItems && hint) { hint.remove(); }
   });
+}
+function dndCheck() {
+  let alleRichtig = true; let richtigCount = 0;
+  DND_ITEMS.forEach(it => {
+    const placedZone = dnd.placement[it.id];
+    const itemEl = document.querySelector(`.dnd-item[data-id="${it.id}"]`);
+    if (!itemEl) return;
+    if (placedZone === it.zone) { itemEl.dataset.state = 'correct'; richtigCount++; }
+    else { itemEl.dataset.state = 'wrong'; alleRichtig = false; }
+  });
+  const fb = document.getElementById('dnd-feedback');
+  fb.classList.remove('hidden');
+  if (alleRichtig) {
+    fb.className = 'rounded-xl p-3 text-sm bg-sageLt border border-sage/40 text-ink mb-4';
+    fb.innerHTML = `<strong>${T('e2.fbGood1')}</strong> ${T('e2.fbGood2').replace('{n}', DND_ITEMS.length)}`;
+    dnd.locked = true;
+    document.querySelector('.btn-complete[data-stage="2"]').disabled = false;
+    document.getElementById('dnd-check').disabled = true;
+  } else {
+    fb.className = 'rounded-xl p-3 text-sm bg-coralLt border border-coral/40 text-ink mb-4';
+    fb.innerHTML = `<strong>${T('e2.fbBad1')}</strong> ${T('e2.fbBad2').replace('{r}', richtigCount).replace('{n}', DND_ITEMS.length)}`;
+  }
+}
+function dndRelabel() {
+  document.querySelectorAll('.dnd-zone').forEach(zoneEl => {
+    const z = DND_ZONES.find(d => d.id === zoneEl.dataset.zone);
+    if (!z) return;
+    const titleSpan = zoneEl.querySelector('.dnd-zone-header span:last-child');
+    if (titleSpan) titleSpan.textContent = z.titel[state.lang];
+  });
+  document.querySelectorAll('.dnd-zone-empty').forEach(h => h.textContent = T('e2.dropHere'));
+  DND_ITEMS.forEach(it => {
+    const span = document.querySelector(`.dnd-item[data-id="${it.id}"] span.flex-1`);
+    if (span) span.textContent = it.text[state.lang];
+  });
+  updatePoolCount();
 }
 function bindDrag(el) {
   let pointerId = null, startX = 0, startY = 0, offsetX = 0, offsetY = 0;
@@ -2307,51 +2901,30 @@ function elContains(el, x, y) {
   const r = el.getBoundingClientRect();
   return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
-function dndCheck() {
-  let alleRichtig = true; let richtigCount = 0;
-  DND_ITEMS.forEach(it => {
-    const placedZone = dnd.placement[it.id];
-    const itemEl = document.querySelector(`.dnd-item[data-id="${it.id}"]`);
-    if (!itemEl) return;
-    if (placedZone === it.zone) { itemEl.dataset.state = 'correct'; richtigCount++; }
-    else { itemEl.dataset.state = 'wrong'; alleRichtig = false; }
-  });
-  const fb = document.getElementById('dnd-feedback');
-  fb.classList.remove('hidden');
-  if (alleRichtig) {
-    fb.className = 'rounded-xl p-3 text-sm bg-sageLt border border-sage/40 text-ink mb-4';
-    fb.innerHTML = `<strong>Sehr gut!</strong> Alle ${DND_ITEMS.length} Aussagen sind richtig zugeordnet. 🎯`;
-    dnd.locked = true;
-    document.querySelector('.btn-complete[data-stage="2"]').disabled = false;
-    document.getElementById('dnd-check').disabled = true;
-  } else {
-    fb.className = 'rounded-xl p-3 text-sm bg-coralLt border border-coral/40 text-ink mb-4';
-    fb.innerHTML = `<strong>Noch nicht ganz.</strong> Richtig: ${richtigCount} von ${DND_ITEMS.length}. Verschiebe die rot markierten Aussagen und prüfe erneut.`;
-  }
-}
+
 
 /* ==========================================================================
    ETAPPE 3
    ========================================================================== */
 const E3_DND_ITEMS = [
-  { id:'a', label:'Magnetnadel', match:'t1' },
-  { id:'b', label:'Nordmarke', match:'t2' },
-  { id:'c', label:'Drehbare Kompassscheibe', match:'t3' },
-  { id:'d', label:'Himmelsrichtungen & Gradangaben', match:'t4' },
+  { id:'a', label:{ de:'Magnetnadel', fr:'Aiguille aimantée' }, match:'t1' },
+  { id:'b', label:{ de:'Nordmarke', fr:'Repère nord' }, match:'t2' },
+  { id:'c', label:{ de:'Drehbare Kompassscheibe', fr:'Cadran de boussole rotatif' }, match:'t3' },
+  { id:'d', label:{ de:'Himmelsrichtungen & Gradangaben', fr:'Points cardinaux & degrés' }, match:'t4' },
 ];
 const E3_DND_TARGETS = [
-  { id:'t1', desc:'Reagiert auf das Erdmagnetfeld; die rote Spitze zeigt nach magnetisch Norden.' },
-  { id:'t2', desc:'Fest auf der Scheibe markiert — zeigt dir, wo das „N" der Skala ist.' },
-  { id:'t3', desc:'Der Teil, den du drehen kannst, um die Skala auszurichten.' },
-  { id:'t4', desc:'N, E, S, W und die Skala von 0° bis 360° auf der Scheibe.' },
+  { id:'t1', desc:{ de:'Reagiert auf das Erdmagnetfeld; die rote Spitze zeigt nach magnetisch Norden.', fr:'Réagit au champ magnétique terrestre ; la pointe rouge indique le nord magnétique.' } },
+  { id:'t2', desc:{ de:'Fest auf der Scheibe markiert — zeigt dir, wo das „N" der Skala ist.', fr:'Marqué de façon fixe sur le cadran — t\'indique où se trouve le « N » de l\'échelle.' } },
+  { id:'t3', desc:{ de:'Der Teil, den du drehen kannst, um die Skala auszurichten.', fr:'La partie que tu peux tourner pour orienter l\'échelle.' } },
+  { id:'t4', desc:{ de:'N, E, S, W und die Skala von 0° bis 360° auf der Scheibe.', fr:'N, E, S, W et l\'échelle de 0° à 360° sur le cadran.' } },
 ];
 
 /* Bauteile-Aufgabe */
 const E3_BAUTEILE = [
-  { num:1, id:'magnetnadel',       label:'Magnetnadel',                     pos:{x:18,  y:-65}, color:'#C84040' },
-  { num:2, id:'nordmarke',         label:'Nordmarke',                       pos:{x:0,   y:-178}, color:'#3060B0' },
-  { num:3, id:'kompassscheibe',    label:'Drehbare Kompassscheibe',         pos:{x:-110, y:110}, color:'#3A8A3A' },
-  { num:4, id:'himmelsrichtungen', label:'Himmelsrichtungen & Gradangaben', pos:{x:135, y:-2 }, color:'#B07820' },
+  { num:1, id:'magnetnadel',       label:{ de:'Magnetnadel', fr:'Aiguille aimantée' },                       pos:{x:18,  y:-65}, color:'#C84040' },
+  { num:2, id:'nordmarke',         label:{ de:'Nordmarke', fr:'Repère nord' },                               pos:{x:0,   y:-178}, color:'#3060B0' },
+  { num:3, id:'kompassscheibe',    label:{ de:'Drehbare Kompassscheibe', fr:'Cadran de boussole rotatif' },  pos:{x:-110, y:110}, color:'#3A8A3A' },
+  { num:4, id:'himmelsrichtungen', label:{ de:'Himmelsrichtungen & Gradangaben', fr:'Points cardinaux & degrés' }, pos:{x:135, y:-2 }, color:'#B07820' },
 ];
 
 let e3State = {
@@ -2370,10 +2943,14 @@ function e3UpdateCompleteBtn() {
   const tasksDone = e3State.housingRotated && e3State.discRotated;
   const allDone = e3State.dndDone && e3State.quizDone && tasksDone && e3State.bauteileDone;
   if (allDone) {
-    btn.disabled = false; btn.textContent = 'Etappe abschließen ▸';
+    btn.disabled = false; btn.textContent = T('e3.complete');
   } else {
     btn.disabled = true;
-    btn.textContent = `Etappe abschließen (Bauteile: ${e3State.bauteileDone?'✓':'…'} | Kompass: ${tasksDone?'✓':'…'} | A: ${e3State.dndDone?'✓':'…'} | B: ${e3State.quizDone?'✓':'…'})`;
+    btn.textContent = T('e3.completeProgress')
+      .replace('{ba}', e3State.bauteileDone?'✓':'…')
+      .replace('{k}', tasksDone?'✓':'…')
+      .replace('{a}', e3State.dndDone?'✓':'…')
+      .replace('{b}', e3State.quizDone?'✓':'…');
   }
 }
 function e3UpdateCompass() {
@@ -2388,18 +2965,18 @@ function e3UpdateCompassTasks() {
   const t1 = document.getElementById('e3-task1');
   const t2 = document.getElementById('e3-task2');
   if (t1) {
-    t1.innerHTML = `<span class="e4-check-icon">${e3State.housingRotated ? '✅' : '⬜'}</span> <strong>Aufgabe 1:</strong> Drehe das <strong>Gehäuse</strong> mit der Nordmarke (am äußeren Rand der Grundplatte drehen).`;
+    t1.innerHTML = `<span class="e4-check-icon">${e3State.housingRotated ? '✅' : '⬜'}</span> ${T('e3.task1.txt')}`;
     t1.classList.toggle('ok', e3State.housingRotated);
   }
   if (t2) {
-    t2.innerHTML = `<span class="e4-check-icon">${e3State.discRotated ? '✅' : '⬜'}</span> <strong>Aufgabe 2:</strong> Drehe die <strong>Kompassscheibe</strong> mit den Himmelsrichtungen (innen drehen).`;
+    t2.innerHTML = `<span class="e4-check-icon">${e3State.discRotated ? '✅' : '⬜'}</span> ${T('e3.task2.txt')}`;
     t2.classList.toggle('ok', e3State.discRotated);
   }
   const status = document.getElementById('e3-tasksStatus');
   if (status) {
     const c = (e3State.housingRotated ? 1 : 0) + (e3State.discRotated ? 1 : 0);
-    if (c === 2) { status.textContent = '✓ Beide Aufgaben erledigt!'; status.style.color = '#6E9A6E'; }
-    else { status.textContent = `${c} von 2 erledigt`; status.style.color = '#7A7A85'; }
+    if (c === 2) { status.textContent = T('e3.tasksStatus.done'); status.style.color = '#6E9A6E'; }
+    else { status.textContent = T('e3.tasksStatus.count').replace('{c}', c); status.style.color = '#7A7A85'; }
   }
 }
 function e3FlashInfo(msg) {
@@ -2407,19 +2984,19 @@ function e3FlashInfo(msg) {
   info.textContent = msg; info.style.background = '#FFF4E0';
   if (e3State.flashTimer) clearTimeout(e3State.flashTimer);
   e3State.flashTimer = setTimeout(() => {
-    info.textContent = 'Tipp: Innen drehen = Scheibe drehen. Am Rand drehen = ganzes Gehäuse drehen.';
+    info.textContent = T('e3.compass.tip');
     info.style.background = 'rgba(255,255,255,0.75)';
   }, 2500);
 }
 function e3RandomizeMagneticNorth() {
   e3State.magneticNorth = Math.random() * 360;
   e3UpdateCompass();
-  e3FlashInfo('Neues Magnetfeld gesetzt — die Nadel sucht den magnetischen Norden!');
+  e3FlashInfo(T('e3.flash.newField'));
 }
 function e3ResetCompass() {
   e3State.dialRotation = 0; e3State.housingRotation = 0;
   e3UpdateCompass();
-  e3FlashInfo('Kompass zurückgesetzt.');
+  e3FlashInfo(T('e3.flash.reset'));
 }
 function e3GenerateMarks() {
   const marks = document.getElementById('e3-degreeMarks');
@@ -2451,6 +3028,31 @@ function e3GenerateMarks() {
     t.textContent = deg;
     numbers.appendChild(t);
   }
+}
+function e3RenderBauteilePool() {
+  const pool = document.getElementById('e3-bauteilePool');
+  if (!pool) return;
+  pool.innerHTML = '';
+  const placed = new Set(Object.values(e3State.bauteilePlaced));
+  const remaining = E3_BAUTEILE.filter(b => !placed.has(b.id));
+  if (remaining.length === 0) {
+    pool.innerHTML = `<div class="e3-bauteile-pool-empty">${T('e3.pool.allPlaced')}</div>`;
+    return;
+  }
+  shuffleArr(remaining).forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'e3-bauteile-item';
+    div.draggable = true;
+    div.dataset.id = b.id;
+    div.innerHTML = `<span>${b.label[state.lang]}</span>`;
+    div.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', b.id);
+      div.classList.add('dragging');
+    });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    e3AddBauteileTouchDrag(div, b.id);
+    pool.appendChild(div);
+  });
 }
 function e3GenerateBauteileMarks() {
   const marks = document.getElementById('e3-bauteileMarks');
@@ -2503,31 +3105,6 @@ function e3RenderBauteileMarkers() {
     g.appendChild(grp);
   });
 }
-function e3RenderBauteilePool() {
-  const pool = document.getElementById('e3-bauteilePool');
-  if (!pool) return;
-  pool.innerHTML = '';
-  const placed = new Set(Object.values(e3State.bauteilePlaced));
-  const remaining = E3_BAUTEILE.filter(b => !placed.has(b.id));
-  if (remaining.length === 0) {
-    pool.innerHTML = '<div class="e3-bauteile-pool-empty">Alle Begriffe verteilt</div>';
-    return;
-  }
-  shuffleArr(remaining).forEach(b => {
-    const div = document.createElement('div');
-    div.className = 'e3-bauteile-item';
-    div.draggable = true;
-    div.dataset.id = b.id;
-    div.innerHTML = `<span>${b.label}</span>`;
-    div.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', b.id);
-      div.classList.add('dragging');
-    });
-    div.addEventListener('dragend', () => div.classList.remove('dragging'));
-    e3AddBauteileTouchDrag(div, b.id);
-    pool.appendChild(div);
-  });
-}
 function e3RenderBauteileTargets() {
   const targets = document.getElementById('e3-bauteileTargets');
   if (!targets) return;
@@ -2544,13 +3121,13 @@ function e3RenderBauteileTargets() {
       div.innerHTML = `
         <div class="e3-bauteile-num" style="background:${b.color}">${b.num}</div>
         <div class="e3-bauteile-placed">
-          <span>${placed.label}</span>
+          <span>${placed.label[state.lang]}</span>
           <button data-remove="${b.num}" type="button">✕</button>
         </div>`;
     } else {
       div.innerHTML = `
         <div class="e3-bauteile-num" style="background:${b.color}">${b.num}</div>
-        <span class="e3-bauteile-empty">Hier ablegen</span>`;
+        <span class="e3-bauteile-empty">${T('e3.dropHere')}</span>`;
     }
     div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('over'); });
     div.addEventListener('dragleave', () => div.classList.remove('over'));
@@ -2587,7 +3164,7 @@ function e3CheckBauteile() {
   if (!status) return;
   const placed = Object.keys(e3State.bauteilePlaced).length;
   if (placed < 4) {
-    status.textContent = `${placed} von 4 zugeordnet`;
+    status.textContent = T('e3.bauteileStatus.count').replace('{n}', placed);
     status.style.color = '#7A7A85';
     e3State.bauteileDone = false;
   } else {
@@ -2596,11 +3173,11 @@ function e3CheckBauteile() {
       return target && target.id === id;
     });
     if (ok) {
-      status.textContent = '✓ Alle Bauteile richtig zugeordnet!';
+      status.textContent = T('e3.bauteileStatus.ok');
       status.style.color = '#6E9A6E';
       e3State.bauteileDone = true;
     } else {
-      status.textContent = '✗ Noch nicht alles richtig — korrigiere die roten Felder.';
+      status.textContent = T('e3.status.wrong');
       status.style.color = '#C97A6B';
       e3State.bauteileDone = false;
     }
@@ -2655,8 +3232,8 @@ function e3BindCompass() {
     e.preventDefault();
     const rad = getRadius(e.clientX, e.clientY);
     needle.style.transition = 'none';
-    if (rad < 145) { dragMode = 'dial'; dragStartRotation = e3State.dialRotation; e3FlashInfo('Du drehst die Kompassscheibe.'); }
-    else { dragMode = 'housing'; dragStartRotation = e3State.housingRotation; e3FlashInfo('Du drehst das ganze Gehäuse.'); }
+    if (rad < 145) { dragMode = 'dial'; dragStartRotation = e3State.dialRotation; e3FlashInfo(T('e3.flash.disc')); }
+    else { dragMode = 'housing'; dragStartRotation = e3State.housingRotation; e3FlashInfo(T('e3.flash.housing')); }
     dragStartAngle = getAngle(e.clientX, e.clientY);
     wrap.classList.add('grabbing');
     try { wrap.setPointerCapture(e.pointerId); } catch(_) {}
@@ -2702,7 +3279,7 @@ function e3RenderDnd() {
     if (placedItems.has(it.id)) return;
     const div = document.createElement('div');
     div.className = 'e3-dnd-item';
-    div.draggable = true; div.dataset.id = it.id; div.textContent = it.label;
+    div.draggable = true; div.dataset.id = it.id; div.textContent = it.label[state.lang];
     div.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', it.id); div.classList.add('dragging'); });
     div.addEventListener('dragend', () => div.classList.remove('dragging'));
     e3AddTouchDrag(div, it.id);
@@ -2715,10 +3292,10 @@ function e3RenderDnd() {
     let placedHtml = '';
     if (e3State.placed[t.id]) {
       const item = E3_DND_ITEMS.find(i => i.id === e3State.placed[t.id]);
-      placedHtml = `<div class="e3-placed"><span>${item.label}</span><button data-remove="${t.id}">✕</button></div>`;
+      placedHtml = `<div class="e3-placed"><span>${item.label[state.lang]}</span><button data-remove="${t.id}">✕</button></div>`;
       div.classList.add(item.match === t.id ? 'correct' : 'wrong');
     }
-    div.innerHTML = `<div class="e3-desc">${idx+1}. ${t.desc}</div>${placedHtml}`;
+    div.innerHTML = `<div class="e3-desc">${idx+1}. ${t.desc[state.lang]}</div>${placedHtml}`;
     div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('over'); });
     div.addEventListener('dragleave', () => div.classList.remove('over'));
     div.addEventListener('drop', e => {
@@ -2743,14 +3320,24 @@ function e3CheckDnd() {
   const placedCount = Object.keys(e3State.placed).length;
   const total = E3_DND_TARGETS.length;
   if (placedCount < total) {
-    status.textContent = `${placedCount} von ${total} zugeordnet`;
+    status.textContent = T('e3.dndStatus.count').replace('{n}', placedCount).replace('{t}', total);
     status.style.color = '#7A7A85'; e3State.dndDone = false;
   } else {
     const ok = Object.entries(e3State.placed).every(([t,i]) => E3_DND_ITEMS.find(x=>x.id===i).match === t);
-    if (ok) { status.textContent = '✓ Alles richtig zugeordnet!'; status.style.color = '#6E9A6E'; e3State.dndDone = true; }
-    else    { status.textContent = '✗ Noch nicht alles richtig — korrigiere die roten Felder.'; status.style.color = '#C97A6B'; e3State.dndDone = false; }
+    if (ok) { status.textContent = T('e3.dndStatus.ok'); status.style.color = '#6E9A6E'; e3State.dndDone = true; }
+    else    { status.textContent = T('e3.status.wrong'); status.style.color = '#C97A6B'; e3State.dndDone = false; }
   }
   e3UpdateCompleteBtn();
+}
+function e3Relabel() {
+  if (!e3Initialized) return;
+  e3RenderBauteilePool();
+  e3RenderBauteileTargets();
+  e3RenderDnd();
+  e3UpdateCompassTasks();
+  e3UpdateCompleteBtn();
+  const info = document.getElementById('e3-compassInfo');
+  if (info) info.textContent = T('e3.compass.tip');
 }
 function e3AddTouchDrag(el, itemId) {
   let ghost = null, active = false;
@@ -2813,7 +3400,7 @@ function initE3() {
   document.getElementById('e3-btnReset').addEventListener('click', e3ResetCompass);
   e3RenderDnd();
   quizE3 = new QuizEngine({
-    hostId: 'quiz-3', fragen: FRAGEN_E3,
+    hostId: 'quiz-3', fragen: () => FRAGEN_E3[state.lang],
     onFinish: () => { e3State.quizDone = true; e3UpdateCompleteBtn(); }
   });
   document.getElementById('btnQuizStart-3').addEventListener('click', () => {
@@ -2829,14 +3416,14 @@ function initE3() {
    ETAPPE 4
    ========================================================================== */
 const E4_DIRS = [
-  { name:'N',  deg:0,   full:'Norden' },
-  { name:'NE', deg:45,  full:'Nordosten' },
-  { name:'E',  deg:90,  full:'Osten' },
-  { name:'SE', deg:135, full:'Südosten' },
-  { name:'S',  deg:180, full:'Süden' },
-  { name:'SW', deg:225, full:'Südwesten' },
-  { name:'W',  deg:270, full:'Westen' },
-  { name:'NW', deg:315, full:'Nordwesten' },
+  { name:'N',  deg:0,   full:{ de:'Norden',      fr:'le nord' } },
+  { name:'NE', deg:45,  full:{ de:'Nordosten',   fr:'le nord-est' } },
+  { name:'E',  deg:90,  full:{ de:'Osten',       fr:'l\'est' } },
+  { name:'SE', deg:135, full:{ de:'Südosten',    fr:'le sud-est' } },
+  { name:'S',  deg:180, full:{ de:'Süden',       fr:'le sud' } },
+  { name:'SW', deg:225, full:{ de:'Südwesten',   fr:'le sud-ouest' } },
+  { name:'W',  deg:270, full:{ de:'Westen',      fr:'l\'ouest' } },
+  { name:'NW', deg:315, full:{ de:'Nordwesten',  fr:'le nord-ouest' } },
 ];
 const E4_TOLERANCE = 12;
 const E4_TARGET_RADIUS = 215;
@@ -2861,12 +3448,12 @@ function e4UpdateCompleteBtn() {
   const btn = document.querySelector('.btn-complete[data-stage="4"]');
   if (!btn) return;
   if (e4State.uebungADone && e4State.uebungBDone) {
-    btn.disabled = false; btn.textContent = 'Etappe abschließen ▸';
+    btn.disabled = false; btn.textContent = T('e4.complete');
   } else {
     btn.disabled = true;
-    const a = e4State.uebungADone ? '✓' : '…';
-    const b = e4State.uebungBDone ? '✓' : '…';
-    btn.textContent = `Etappe abschließen (A: ${a} | B: ${b})`;
+    btn.textContent = T('e4.completeProgress')
+      .replace('{a}', e4State.uebungADone ? '✓' : '…')
+      .replace('{b}', e4State.uebungBDone ? '✓' : '…');
   }
 }
 function e4UpdateCompass() {
@@ -2894,9 +3481,9 @@ function e4UpdateUI() {
   e4ValidateSteps();
   const c1 = document.getElementById('e4-check1');
   const c2 = document.getElementById('e4-check2');
-  c1.innerHTML = `<span class="e4-check-icon">${e4State.step1OK ? '✅' : '⬜'}</span> <strong>Schritt 1:</strong> Gehäuse drehen → Nordmarke auf rote Nadelspitze`;
+  c1.innerHTML = `<span class="e4-check-icon">${e4State.step1OK ? '✅' : '⬜'}</span> ${T('e4.check1.txt')}`;
   c1.classList.toggle('ok', e4State.step1OK);
-  c2.innerHTML = `<span class="e4-check-icon">${e4State.step2OK ? '✅' : '⬜'}</span> <strong>Schritt 2:</strong> Scheibe drehen → N der Skala auf rote Nadelspitze`;
+  c2.innerHTML = `<span class="e4-check-icon">${e4State.step2OK ? '✅' : '⬜'}</span> ${T('e4.check2.txt')}`;
   c2.classList.toggle('ok', e4State.step2OK);
   document.getElementById('e4-roundNum').textContent = e4State.round;
   document.getElementById('e4-successCount').textContent = e4State.successCount;
@@ -2910,17 +3497,17 @@ function e4UpdateUI() {
   const inst = document.getElementById('e4-instruction');
   inst.classList.remove('success', 'error');
   if (e4State.uebungADone) {
-    inst.textContent = '🎉 Übung A geschafft! Starte jetzt das Verständnisquiz unten.';
+    inst.textContent = T('e4.inst.done');
     inst.classList.add('success');
   } else if (e4State.step3Locked) {
     // wird im Klick-Handler gesetzt
   } else if (!e4State.step1OK) {
-    inst.textContent = 'Schritt 1: Drehe das Gehäuse (am Rand des Kompasses drehen), bis die Nordmarke (rotes Dreieck oben) in dieselbe Richtung zeigt wie die rote Magnetnadel.';
+    inst.textContent = T('e4.inst.step1');
   } else if (!e4State.step2OK) {
-    inst.textContent = 'Schritt 2: Drehe die Kompassscheibe (innen drehen), bis das N der Skala auf die rote Spitze der Magnetnadel zeigt.';
+    inst.textContent = T('e4.inst.step2');
     inst.classList.add('success');
   } else {
-    inst.textContent = '✓ Kompass ausgerichtet! Schritt 3: In welcher Himmelsrichtung liegt das blaue Ziel (📍)? Klicke auf die richtige Richtung unten.';
+    inst.textContent = T('e4.inst.step3');
     inst.classList.add('success');
   }
 }
@@ -2935,6 +3522,26 @@ function e4StartRound() {
   document.getElementById('e4-finalBanner').style.display = 'none';
   e4UpdateAll();
 }
+function e4Relabel() {
+  if (!e4Initialized) return;
+  if (e4State.step3Locked) {
+    // gesperrter Zustand: Feedback-Text neu setzen
+    const inst = document.getElementById('e4-instruction');
+    const dirFull = e4State.targetDir ? e4State.targetDir.full[state.lang] : '';
+    const name = e4State.targetDir ? e4State.targetDir.name : '';
+    if (inst.classList.contains('error')) {
+      inst.textContent = T('e4.fb.wrong').replace('{full}', dirFull).replace('{name}', name);
+    } else if (inst.classList.contains('success') && !e4State.uebungADone) {
+      inst.textContent = T('e4.fb.correct').replace('{full}', dirFull).replace('{name}', name);
+    }
+  }
+  if (e4State.uebungADone) {
+    const banner = document.getElementById('e4-finalBanner');
+    banner.textContent = T('e4.fb.final').replace('{s}', e4State.successCount).replace('{t}', e4State.totalRounds);
+  }
+  e4UpdateUI();
+  e4UpdateCompleteBtn();
+}
 function e4ResetDirectionButtons() {
   document.querySelectorAll('#e4-directions .e4-dir-btn').forEach(b => {
     b.classList.remove('correct', 'wrong'); b.disabled = true;
@@ -2946,24 +3553,25 @@ function e4HandleDirectionClick(dir, btn) {
   const correct = dir.name === e4State.targetDir.name;
   const inst = document.getElementById('e4-instruction');
   inst.classList.remove('success', 'error');
+  const dirFull = e4State.targetDir.full[state.lang];
   if (correct) {
     btn.classList.add('correct');
     e4State.successCount++;
-    inst.textContent = `✓ Richtig! Das Ziel liegt im ${e4State.targetDir.full} (${e4State.targetDir.name}).`;
+    inst.textContent = T('e4.fb.correct').replace('{full}', dirFull).replace('{name}', e4State.targetDir.name);
     inst.classList.add('success');
     document.getElementById('e4-successCount').textContent = e4State.successCount;
     if (e4State.round >= e4State.totalRounds) {
       e4State.uebungADone = true;
       const banner = document.getElementById('e4-finalBanner');
       banner.style.display = 'block';
-      banner.textContent = `🎯 Übung A geschafft — ${e4State.successCount} von ${e4State.totalRounds} Durchgängen erfolgreich!`;
+      banner.textContent = T('e4.fb.final').replace('{s}', e4State.successCount).replace('{t}', e4State.totalRounds);
       e4UpdateCompleteBtn(); e4UpdateUI();
     } else {
       setTimeout(() => { e4State.round++; e4StartRound(); }, 1400);
     }
   } else {
     btn.classList.add('wrong');
-    inst.textContent = `✗ Leider falsch. Das Ziel lag im ${e4State.targetDir.full} (${e4State.targetDir.name}). Klicke „Neuer Durchgang" für einen neuen Versuch.`;
+    inst.textContent = T('e4.fb.wrong').replace('{full}', dirFull).replace('{name}', e4State.targetDir.name);
     inst.classList.add('error');
     document.querySelectorAll('#e4-directions .e4-dir-btn').forEach(b => {
       if (b.dataset.dir === e4State.targetDir.name) b.classList.add('correct');
@@ -3050,7 +3658,7 @@ function initE4() {
   e4RenderDirectionButtons();
   e4BindCompass();
   quizE4 = new QuizEngine({
-    hostId: 'quiz-4', fragen: FRAGEN_E4,
+    hostId: 'quiz-4', fragen: () => FRAGEN_E4[state.lang],
     onFinish: () => { e4State.uebungBDone = true; e4UpdateCompleteBtn(); }
   });
   document.getElementById('btnQuizStart-4').addEventListener('click', () => {
@@ -3090,6 +3698,8 @@ function e4Reset() {
    ========================================================================== */
 let e5State = null;
 
+let e5RelabelHook = null;
+function e5Relabel() { if (typeof e5RelabelHook === 'function') e5RelabelHook(); }
 function initE5() {
   document.getElementById('tintin-5').innerHTML = tintinSVG(56);
 
@@ -3275,6 +3885,13 @@ function initE5() {
       progressDots.appendChild(dot);
     });
   }
+  function renderTaskTexts(){
+    const t = tasks[e5State.currentTaskIdx];
+    progressLabel.textContent = T('e5.progressLabel')
+      .replace('{n}', e5State.currentTaskIdx + 1).replace('{t}', tasks.length);
+    document.getElementById('e5-taskQuestion').innerHTML =
+      T('e5.taskQ').replace('{name}', t.name).replace('{place}', t.place);
+  }
   function renderTask(){
     if (e5State.allDone) {
       taskCard.style.display = 'none';
@@ -3286,28 +3903,29 @@ function initE5() {
       if (btn) btn.disabled = false;
       return;
     }
-    const t = tasks[e5State.currentTaskIdx];
-    progressLabel.textContent = `Aufgabe ${e5State.currentTaskIdx + 1} von ${tasks.length}`;
-    taskName.textContent = t.name;
-    taskPlace.textContent = t.place;
+    renderTaskTexts();
     answerInput.value = '';
     feedbackEl.classList.remove('show');
-    showTargetMarker(t.place);
+    showTargetMarker(tasks[e5State.currentTaskIdx].place);
     renderProgressDots();
     renderResultsTable();
     randomizeMagneticField();
   }
+  e5RelabelHook = function(){
+    if (e5State.allDone) { renderResultsTable(); }
+    else { renderTaskTexts(); renderResultsTable(); }
+  };
   function checkAnswer(){
     const raw = answerInput.value.trim().toUpperCase().replace(/\s+/g, '');
-    if (!raw) { showFeedback('Bitte gib eine Himmelsrichtung ein.', 'warn'); return; }
+    if (!raw) { showFeedback(T('e5.fb.empty'), 'warn'); return; }
     if (GERMAN_VARIANTS.has(raw)) {
-      showFeedback('Bitte nur englische Abkürzungen verwenden (z. B. NE statt NO, S statt Süd).', 'warn');
+      showFeedback(T('e5.fb.german'), 'warn');
       answerInput.classList.add('shake');
       setTimeout(() => answerInput.classList.remove('shake'), 400);
       return;
     }
     if (!VALID_DIRECTIONS.has(raw)) {
-      showFeedback('Ungültige Eingabe. Erlaubt: N, NNE, NE, ENE, E, ESE, SE, SSE, S, SSW, SW, WSW, W, WNW, NW, NNW.', 'warn');
+      showFeedback(T('e5.fb.invalid'), 'warn');
       answerInput.classList.add('shake');
       setTimeout(() => answerInput.classList.remove('shake'), 400);
       return;
@@ -3315,21 +3933,23 @@ function initE5() {
     const correct = tasks[e5State.currentTaskIdx].correct;
     if (raw === correct) {
       e5State.answers[e5State.currentTaskIdx] = raw;
-      showFeedback(`Richtig! ${tasks[e5State.currentTaskIdx].place} liegt im ${raw} von Luxembourg-Stadt.`, 'success');
+      showFeedback(T('e5.fb.correct')
+        .replace('{place}', tasks[e5State.currentTaskIdx].place)
+        .replace('{dir}', raw), 'success');
       setTimeout(() => {
         if (e5State.currentTaskIdx < tasks.length - 1) e5State.currentTaskIdx++;
         else                                            e5State.allDone = true;
         renderTask();
       }, 1400);
     } else {
-      showFeedback(`Nicht ganz — ${raw} ist es nicht. Versuche es nochmal.`, 'error');
+      showFeedback(T('e5.fb.wrong').replace('{dir}', raw), 'error');
       answerInput.classList.add('shake');
       setTimeout(() => answerInput.classList.remove('shake'), 400);
     }
   }
   function showHint(){
     const correct = tasks[e5State.currentTaskIdx].correct;
-    showFeedback(`Tipp: Die richtige Richtung beginnt mit „${correct.charAt(0)}".`, 'warn');
+    showFeedback(T('e5.hintTip').replace('{c}', correct.charAt(0)), 'warn');
   }
 
   (function initMapGesture(){
@@ -3495,9 +4115,8 @@ function e5Reset() {
     { name: 'David', place: 'Remich'     },
     { name: 'Emma',  place: 'Longwy'     },
   ];
-  document.getElementById('e5-progressLabel').textContent = `Aufgabe 1 von 5`;
-  document.getElementById('e5-taskName').textContent = tasksMeta[0].name;
-  document.getElementById('e5-taskPlace').textContent = tasksMeta[0].place;
+  document.getElementById('e5-progressLabel').textContent = T('e5.progressLabel').replace('{n}', 1).replace('{t}', 5);
+  document.getElementById('e5-taskQuestion').innerHTML = T('e5.taskQ').replace('{name}', tasksMeta[0].name).replace('{place}', tasksMeta[0].place);
   document.getElementById('e5-answerInput').value = '';
   document.getElementById('e5-feedback').classList.remove('show');
   const villageCoords = { 'Echternach': { x: 549.86, y: 455.17 } };
@@ -3544,13 +4163,13 @@ function e5Reset() {
    NAVIGATION
    ========================================================================== */
 const ETAPPEN = [
-  { id: 1, titel: 'Orientierung' },
-  { id: 2, titel: 'Methoden'     },
-  { id: 3, titel: 'Der Kompass'  },
-  { id: 4, titel: 'Ausrichten'   },
-  { id: 5, titel: 'Karte'        },
+  { id: 1, titel: { de: 'Orientierung', fr: 'Orientation' } },
+  { id: 2, titel: { de: 'Methoden',     fr: 'Méthodes'    } },
+  { id: 3, titel: { de: 'Der Kompass',  fr: 'La boussole' } },
+  { id: 4, titel: { de: 'Ausrichten',   fr: 'Orienter'    } },
+  { id: 5, titel: { de: 'Karte',        fr: 'Carte'       } },
 ];
-const state = { aktuelle: 1, abgeschlossen: new Set(), teacherMode: false };
+const state = { aktuelle: 1, abgeschlossen: new Set(), teacherMode: false, lang: 'de' };
 const navList = document.getElementById('navList');
 
 function renderNav() {
@@ -3574,7 +4193,7 @@ function renderNav() {
     dot.textContent = isFertig ? '✓' : et.id;
     const label = document.createElement('span');
     label.className = 'text-[10px] sm:text-xs ' + (isAktuell ? 'text-ink font-semibold' : 'text-muted');
-    label.textContent = et.titel;
+    label.textContent = et.titel[state.lang];
     btn.appendChild(dot); btn.appendChild(label);
     btn.addEventListener('click', () => { if (isErreichbar) zeigeEtappe(et.id); });
     li.appendChild(btn);
@@ -3686,7 +4305,7 @@ function renderTeacherEtappen() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'tap w-full text-left bg-white border border-sand hover:bg-sand rounded-xl px-4 py-3 font-semibold flex items-center gap-3 transition';
-    b.innerHTML = `<span class="w-7 h-7 rounded-full bg-sage text-white flex items-center justify-center text-sm flex-shrink-0">${et.id}</span> Etappe ${et.id}: ${et.titel}`;
+    b.innerHTML = `<span class="w-7 h-7 rounded-full bg-sage text-white flex items-center justify-center text-sm flex-shrink-0">${et.id}</span> ${T('teacher.stageWord')} ${et.id}: ${et.titel[state.lang]}`;
     b.addEventListener('click', () => {
       state.teacherMode = true;
       document.getElementById('teacherBanner').classList.remove('hidden-stage');
@@ -3720,7 +4339,7 @@ document.getElementById('tintin-1').innerHTML = tintinSVG(56);
 
 const completeBtnE1 = document.querySelector('.btn-complete[data-stage="1"]');
 const quizE1 = new QuizEngine({
-  hostId: 'quiz-1', fragen: FRAGEN_E1,
+  hostId: 'quiz-1', fragen: () => FRAGEN_E1[state.lang],
   onFinish: () => { completeBtnE1.disabled = false; }
 });
 
@@ -3730,6 +4349,7 @@ document.getElementById('btnQuizStart-1').addEventListener('click', () => {
   document.getElementById('quiz-1').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
+setLanguage(state.lang);
 renderNav();
 zeigeEtappe(1);
 
