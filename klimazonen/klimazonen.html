@@ -2387,5 +2387,11 @@ SECT[4].max=0;
 updateTotals();setupTeacherModal();buildNav();show(0);
 window.show=show;window.resetAll=resetAll;
 </script>
-</body>
+<script>
+  fetch("https://appkarikaturanalyse-production.up.railway.app/api/count", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ app: "klimazonen" })
+  }).catch(() => {});
+</script></body>
 </html>
