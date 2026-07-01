@@ -514,5 +514,14 @@
     if (e.key === "Escape") modalSchliessen();
   });
 </script>
+<script>
+  // Zählt eine App-Öffnung im Backend. Läuft einmal beim Laden der Seite.
+  // Fehler werden bewusst ignoriert - der Zähler darf die App NIE blockieren.
+  fetch("https://appkarikaturanalyse-production.up.railway.app/api/count", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ app: "zeitzonen" })
+  }).catch(() => {});
+</script>
 </body>
 </html>
