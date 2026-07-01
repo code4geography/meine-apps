@@ -353,7 +353,11 @@
   }
   .info-box.show{display:block;}
   .cp-footer{margin-top:18px; display:flex; justify-content:flex-end;}
-
+.optional-note{
+    background:#fdf3e7; border-left:5px solid var(--peach-deep);
+    border-radius:10px; padding:12px 16px; margin:6px 0 4px;
+    font-size:0.95rem; display:flex; flex-direction:column; align-items:flex-start; gap:10px;
+  }
   .success-card{
     text-align:center;
     border-top:4px solid var(--done);
@@ -1303,7 +1307,9 @@
       yourNum:"Deine Zahl",
       correctChoice:"✔ Richtig! Gut gemacht.",
       correctInput:(a,u)=>"✔ Richtig! "+a+(u?" "+u:"")+" stimmt genau.",
-      secondFail:"🔄 Zweiter Fehlversuch – du bekommst eine neue Aufgabe. Lies den Hinweis und probiere es gleich noch einmal!",
+    secondFail:"🔄 Zweiter Fehlversuch – du bekommst eine neue Aufgabe. Lies den Hinweis und probiere es gleich noch einmal!",
+      optionalNote:"Diese Etappe ist freiwillig: Du kannst auch weitergehen, ohne alle Aufgaben zu lösen.",
+      skipBtn:"Weiter ohne alle Aufgaben ➜",
       jumpStage:n=>"Etappe "+n,
       jumpToast:n=>"🔓 Sprung zu Etappe "+n+" – vorherige Etappen wurden als erledigt markiert.",
       resetToast:"Fortschritt wurde zurückgesetzt.",
@@ -1333,6 +1339,8 @@
       correctChoice:"✔ Correct ! Bien joué.",
       correctInput:(a,u)=>"✔ Correct ! "+a+(u?" "+u:"")+" est exactement juste.",
       secondFail:"🔄 Deuxième erreur – tu reçois un nouvel exercice. Lis l'indice et réessaie tout de suite !",
+      optionalNote:"Cette étape est facultative : tu peux continuer sans résoudre tous les exercices.",
+      skipBtn:"Continuer sans tout résoudre ➜",
       jumpStage:n=>"Étape "+n,
       jumpToast:n=>"🔓 Saut vers l'étape "+n+" – les étapes précédentes ont été marquées comme terminées.",
       resetToast:"La progression a été réinitialisée.",
@@ -1844,8 +1852,12 @@
       const baseTitle = (opts && opts.title) ? tr(opts.title) : UI[LANG].cpTitle;
       const introText = (opts && opts.intro) ? tr(opts.intro) : UI[LANG].cpIntro(total);
       let html = '<h2>'+baseTitle+'</h2>' +
-        '<p>' + introText + '</p>' +
-        '<div class="cp-progress">';
+        '<p>' + introText + '</p>';
+      if(opts && opts.optional){
+        html += '<p class="optional-note">' + UI[LANG].optionalNote +
+          '<button class="btn btn-ghost cp-skip">' + UI[LANG].skipBtn + '</button></p>';
+      }
+      html += '<div class="cp-progress">';
       for(let i=0;i<total;i++){
         const cls = state.solved[i] ? "done" : (i === state.qIndex ? "current" : "");
         html += '<span class="'+cls+'">'+(i+1)+'</span>';
@@ -1887,6 +1899,8 @@
       }
       const nextBtn = rootEl.querySelector(".cp-next");
       nextBtn.addEventListener("click", next);
+      const skipBtn = rootEl.querySelector(".cp-skip");
+      if(skipBtn){ skipBtn.addEventListener("click", onComplete); }
 
       if(state.solved[state.qIndex]){
         nextBtn.hidden = false;
@@ -2104,6 +2118,21 @@
         {type:"input",q:"Maßstab 1 : 50 000. Du misst auf der Karte 6 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:3,unit:"km",hint1:"Tipp: Erst × 50 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 6 × 50 000 = 300 000 cm = 3000 m = … km"},
         {type:"input",q:"Maßstab 1 : 50 000. Du misst auf der Karte 4 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:2,unit:"km",hint1:"Tipp: Erst × 50 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 4 × 50 000 = 200 000 cm = 2000 m = … km"},
         {type:"input",q:"Maßstab 1 : 50 000. Du misst auf der Karte 10 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:5,unit:"km",hint1:"Tipp: Erst × 50 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 10 × 50 000 = 500 000 cm = 5000 m = … km"}
+      ]},
+      {variants:[
+        {type:"input",q:"Maßstab 1 : 500. Auf dem Plan misst du 4 cm. Wie viele Meter sind das in Wirklichkeit?",answer:20,unit:"m",hint1:"Tipp: Erst × 500 (→ cm in echt), dann cm in m umwandeln (÷ 100).",hint2:"Konkreter Hinweis: 4 cm × 500 = 2000 cm. Und 2000 ÷ 100 = … m"},
+        {type:"input",q:"Maßstab 1 : 500. Auf dem Plan misst du 6 cm. Wie viele Meter sind das in Wirklichkeit?",answer:30,unit:"m",hint1:"Tipp: Erst × 500 (→ cm in echt), dann cm in m umwandeln (÷ 100).",hint2:"Konkreter Hinweis: 6 cm × 500 = 3000 cm. Und 3000 ÷ 100 = … m"},
+        {type:"input",q:"Maßstab 1 : 500. Auf dem Plan misst du 10 cm. Wie viele Meter sind das in Wirklichkeit?",answer:50,unit:"m",hint1:"Tipp: Erst × 500 (→ cm in echt), dann cm in m umwandeln (÷ 100).",hint2:"Konkreter Hinweis: 10 cm × 500 = 5000 cm. Und 5000 ÷ 100 = … m"}
+      ]},
+      {variants:[
+        {type:"input",q:"Maßstab 1 : 10 000. Du misst auf der Karte 5 cm. Wie viele Meter sind das in Wirklichkeit?",answer:500,unit:"m",hint1:"Tipp: Erst × 10 000 (→ cm), dann ÷ 100 (→ m).",hint2:"Konkreter Hinweis: 5 × 10 000 = 50 000 cm. Und 50 000 ÷ 100 = … m"},
+        {type:"input",q:"Maßstab 1 : 10 000. Du misst auf der Karte 3 cm. Wie viele Meter sind das in Wirklichkeit?",answer:300,unit:"m",hint1:"Tipp: Erst × 10 000 (→ cm), dann ÷ 100 (→ m).",hint2:"Konkreter Hinweis: 3 × 10 000 = 30 000 cm. Und 30 000 ÷ 100 = … m"},
+        {type:"input",q:"Maßstab 1 : 10 000. Du misst auf der Karte 7 cm. Wie viele Meter sind das in Wirklichkeit?",answer:700,unit:"m",hint1:"Tipp: Erst × 10 000 (→ cm), dann ÷ 100 (→ m).",hint2:"Konkreter Hinweis: 7 × 10 000 = 70 000 cm. Und 70 000 ÷ 100 = … m"}
+      ]},
+      {variants:[
+        {type:"input",q:"Maßstab 1 : 100 000. Du misst auf der Karte 3 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:3,unit:"km",hint1:"Tipp: Erst × 100 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 3 × 100 000 = 300 000 cm = 3000 m = … km"},
+        {type:"input",q:"Maßstab 1 : 100 000. Du misst auf der Karte 5 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:5,unit:"km",hint1:"Tipp: Erst × 100 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 5 × 100 000 = 500 000 cm = 5000 m = … km"},
+        {type:"input",q:"Maßstab 1 : 100 000. Du misst auf der Karte 8 cm. Wie viele Kilometer sind das in Wirklichkeit?",answer:8,unit:"km",hint1:"Tipp: Erst × 100 000 (→ cm), dann ÷ 100 (→ m), dann ÷ 1000 (→ km).",hint2:"Konkreter Hinweis: 8 × 100 000 = 800 000 cm = 8000 m = … km"}
       ]}
     ],
     fr:[
@@ -2121,6 +2150,21 @@
         {type:"input",q:"Échelle 1 : 50 000. Tu mesures 6 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:3,unit:"km",hint1:"Astuce : d'abord × 50 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 6 × 50 000 = 300 000 cm = 3000 m = … km"},
         {type:"input",q:"Échelle 1 : 50 000. Tu mesures 4 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:2,unit:"km",hint1:"Astuce : d'abord × 50 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 4 × 50 000 = 200 000 cm = 2000 m = … km"},
         {type:"input",q:"Échelle 1 : 50 000. Tu mesures 10 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:5,unit:"km",hint1:"Astuce : d'abord × 50 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 10 × 50 000 = 500 000 cm = 5000 m = … km"}
+      ]},
+      {variants:[
+        {type:"input",q:"Échelle 1 : 500. Sur le plan, tu mesures 4 cm. Combien de mètres cela fait-il en réalité ?",answer:20,unit:"m",hint1:"Astuce : d'abord × 500 (→ cm en réalité), puis convertis les cm en m (÷ 100).",hint2:"Indice concret : 4 cm × 500 = 2000 cm. Et 2000 ÷ 100 = … m"},
+        {type:"input",q:"Échelle 1 : 500. Sur le plan, tu mesures 6 cm. Combien de mètres cela fait-il en réalité ?",answer:30,unit:"m",hint1:"Astuce : d'abord × 500 (→ cm en réalité), puis convertis les cm en m (÷ 100).",hint2:"Indice concret : 6 cm × 500 = 3000 cm. Et 3000 ÷ 100 = … m"},
+        {type:"input",q:"Échelle 1 : 500. Sur le plan, tu mesures 10 cm. Combien de mètres cela fait-il en réalité ?",answer:50,unit:"m",hint1:"Astuce : d'abord × 500 (→ cm en réalité), puis convertis les cm en m (÷ 100).",hint2:"Indice concret : 10 cm × 500 = 5000 cm. Et 5000 ÷ 100 = … m"}
+      ]},
+      {variants:[
+        {type:"input",q:"Échelle 1 : 10 000. Tu mesures 5 cm sur la carte. Combien de mètres cela fait-il en réalité ?",answer:500,unit:"m",hint1:"Astuce : d'abord × 10 000 (→ cm), puis ÷ 100 (→ m).",hint2:"Indice concret : 5 × 10 000 = 50 000 cm. Et 50 000 ÷ 100 = … m"},
+        {type:"input",q:"Échelle 1 : 10 000. Tu mesures 3 cm sur la carte. Combien de mètres cela fait-il en réalité ?",answer:300,unit:"m",hint1:"Astuce : d'abord × 10 000 (→ cm), puis ÷ 100 (→ m).",hint2:"Indice concret : 3 × 10 000 = 30 000 cm. Et 30 000 ÷ 100 = … m"},
+        {type:"input",q:"Échelle 1 : 10 000. Tu mesures 7 cm sur la carte. Combien de mètres cela fait-il en réalité ?",answer:700,unit:"m",hint1:"Astuce : d'abord × 10 000 (→ cm), puis ÷ 100 (→ m).",hint2:"Indice concret : 7 × 10 000 = 70 000 cm. Et 70 000 ÷ 100 = … m"}
+      ]},
+      {variants:[
+        {type:"input",q:"Échelle 1 : 100 000. Tu mesures 3 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:3,unit:"km",hint1:"Astuce : d'abord × 100 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 3 × 100 000 = 300 000 cm = 3000 m = … km"},
+        {type:"input",q:"Échelle 1 : 100 000. Tu mesures 5 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:5,unit:"km",hint1:"Astuce : d'abord × 100 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 5 × 100 000 = 500 000 cm = 5000 m = … km"},
+        {type:"input",q:"Échelle 1 : 100 000. Tu mesures 8 cm sur la carte. Combien de kilomètres cela fait-il en réalité ?",answer:8,unit:"km",hint1:"Astuce : d'abord × 100 000 (→ cm), puis ÷ 100 (→ m), puis ÷ 1000 (→ km).",hint2:"Indice concret : 8 × 100 000 = 800 000 cm = 8000 m = … km"}
       ]}
     ]
   };
@@ -2324,9 +2368,9 @@
     createCheckpoint($("cp1"), CP1, ()=>completeStation(0)),
     createCheckpoint($("cp2"), CP2, ()=>completeStation(1)),
     createCheckpoint($("cp3"), CP3, ()=>completeStation(2)),
-    createCheckpoint($("cp4"), CP4, ()=>completeStation(3)),
+   createCheckpoint($("cp4"), CP4, ()=>completeStation(3), {optional:true}),
     createCheckpoint($("cp5"), CP5, ()=>completeStation(4)),
-    createCheckpoint($("cp6"), CP6, ()=>completeStation(5)),
+    createCheckpoint($("cp6"), CP6, ()=>completeStation(5), {optional:true}),
     createCheckpoint($("cp7"), CP7, ()=>completeStation(6), {
       title:{de:"🏔️ Der Gipfelsturm – sechs Fragen bis zum Ziel!",fr:"🏔️ L'assaut du sommet – six questions avant le but !"},
       intro:{de:"Alle Themen des Lernpfads in einer Challenge. Beantworte alle sechs Fragen richtig und hol dir deine Urkunde!",fr:"Tous les thèmes du parcours en un seul défi. Réponds correctement aux six questions et obtiens ton diplôme !"}
