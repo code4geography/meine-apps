@@ -93,7 +93,7 @@ function Slider({icon,label,value,min,max,onChange,suffix}){
 // ============================================================
 // DAS MODUL
 // ============================================================
-function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', images=[], steps=[], onComplete=null, onClose=null }){
+function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', images=[], steps=[], teacherCode='4711', onComplete=null, onClose=null }){
   const canvasA=useRef(null), canvasB=useRef(null), classifyCanvas=useRef(null), overlay=useRef(null), wrapRef=useRef(null), draggingRef=useRef(false);
   const [layers,setLayers]=useState([]); const [loading,setLoading]=useState(false); const [info,setInfo]=useState(null);
   const [gsd]=useState(defaultGsd);
@@ -117,11 +117,17 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
 
   const [stepIdx,setStepIdx]=useState(0); const [stepsOpen,setStepsOpen]=useState(true); const [helpShown,setHelpShown]=useState(false);
 
+  // NEU: Lehrerzugang. teacher=AUS, teacherModal=zu (öffnet nie automatisch).
+  const [teacher,setTeacher]=useState(false); const [teacherModal,setTeacherModal]=useState(false);
+  const [codeInput,setCodeInput]=useState(''); const [codeErr,setCodeErr]=useState(false);
+  const openTeacher=()=>{ setCodeInput(''); setCodeErr(false); setTeacherModal(true); };
+  const submitCode=()=>{ if(codeInput.trim()===String(teacherCode)){ setTeacher(true); setTeacherModal(false); setCodeInput(''); setCodeErr(false); } else { setCodeErr(true); } };
+  const endTeacher=()=>{ setTeacher(false); setTeacherModal(false); };
+
   const getLayer=useCallback((id)=>layers.find((l)=>l.id===id),[layers]);
   const activeCfg = activeSide==='L'?sideL:sideR;
   const patchSide=(patch)=>{ (activeSide==='L'?setSideL:setSideR)((prev)=>({...prev,...patch})); };
 
-  // GEÄNDERT: Kanäle & Vergleich bleiben leer – nur die Einzelansicht bekommt einen Standard.
   const addLayers=(nl)=>setLayers((prev)=>{
     const all=[...prev,...nl];
     if(!singleId&&all[0])setSingleId(all[0].id);
@@ -177,7 +183,6 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
     ctx.putImageData(img,0,0);
   },[applyBC]);
 
-  // GEÄNDERT: leert die Leinwand, wenn nichts ausgewählt ist (sonst bliebe ein altes Bild stehen).
   const renderSide=useCallback((cv,cfg,sMode)=>{
     if(!cv)return null;
     if(cfg.type==='channels'){ const R=getLayer(cfg.channelMap.R),G=getLayer(cfg.channelMap.G),B=getLayer(cfg.channelMap.B); const base=R||G||B; if(base){drawChannels(cv,R,G,B,cfg.brightness,cfg.contrast,sMode); return base;} const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); return null; }
@@ -298,23 +303,33 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
 
   return (
     <div className="relative w-full max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200 text-slate-700">
-      {/* GEÄNDERT: Banner-Header. Logo = BAT_logo.gif in weißem Eck, volle Bannerhöhe. */}
+      {/* Banner-Header. Logo = BAT_logo.gif in weißem Eck, volle Bannerhöhe. */}
       <div className="relative w-full h-28 bg-gradient-to-r from-sky-600 to-indigo-600 border-b border-slate-200 overflow-hidden">
         <img src="banner.jpg" alt={title} className="absolute inset-0 w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none';}}/>
         <div className="absolute top-0 left-0 h-full bg-white flex items-center px-4 py-2 rounded-br-3xl shadow-md z-10">
           <img src="BAT_logo.jpg" alt="BAT" className="h-full w-auto object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/>
         </div>
+        {/* NEU: dezenter Lehrer-Button (Schloss) */}
+        <button onClick={openTeacher} title="Lehrerzugang" className={`absolute top-3 z-20 p-2 rounded-lg bg-white/85 hover:bg-white transition shadow ${teacher?'text-emerald-600':'text-slate-600'} ${onClose?'right-14':'right-3'}`}><I n={teacher?'fa-lock-open':'fa-lock'} c="text-lg"/></button>
         {onClose&&<button onClick={onClose} className="absolute top-3 right-3 z-20 p-2 rounded-lg bg-white/85 hover:bg-white transition text-slate-600 shadow"><I n="fa-xmark" c="text-lg"/></button>}
       </div>
       <div className="flex flex-col md:flex-row">
         <div className="w-full md:w-72 md:shrink-0 bg-slate-50 md:border-r border-slate-200 p-3 space-y-4 md:max-h-screen md:overflow-y-auto">
           <Section icon={<I n="fa-image"/>} title="Bilder">
-            <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-brand hover:bg-brand-light text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
-            {info&&<p className={`mt-2 text-xs flex items-start gap-1 ${info.type==='ok'?'text-emerald-600':'text-amber-600'}`}>{info.type==='ok'&&<I n="fa-check" c="mt-0.5"/>}{info.text}</p>}
+            {/* NEU: Upload nur im Lehrermodus */}
+            {teacher?
+              <>
+                <label className="w-full flex items-center justify-center gap-2 text-sm font-medium px-3 py-2.5 rounded-lg bg-brand hover:bg-brand-light text-white cursor-pointer transition"><I n="fa-upload"/> {loading?'Lädt…':'Bild auswählen'}<input type="file" accept="image/*" multiple className="hidden" onChange={(e)=>e.target.files.length&&handleUpload(e.target.files)}/></label>
+                {info&&<p className={`mt-2 text-xs flex items-start gap-1 ${info.type==='ok'?'text-emerald-600':'text-amber-600'}`}>{info.type==='ok'&&<I n="fa-check" c="mt-0.5"/>}{info.text}</p>}
+                <p className="mt-2 text-xs text-emerald-600 flex items-center gap-1.5"><I n="fa-lock-open"/> Lehrermodus aktiv</p>
+              </>
+              :
+              <p className="text-xs text-slate-400 leading-snug flex items-start gap-1.5"><I n="fa-circle-info" c="mt-0.5 shrink-0"/> Die Bilder für diese Aufgabe sind bereits geladen. Eigene Bilder kann nur die Lehrkraft hinzufügen.</p>
+            }
           </Section>
           <Section icon={<I n="fa-layer-group"/>} title={`Ebenen (${layers.length})`}>
             {!hasLayers?<p className="text-xs text-slate-400">Noch keine Ebenen.</p>:
-              <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-brand-50 border-brand-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-brand':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span><button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button></li>)}</ul>}
+              <ul className="space-y-1">{layers.map((l)=><li key={l.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg border text-xs transition cursor-pointer ${mode==='single'&&singleId===l.id?'bg-brand-50 border-brand-300':'bg-white border-slate-200 hover:bg-slate-100'}`} onClick={()=>{setMode('single');setSingleId(l.id);}}><I n="fa-eye" c={mode==='single'&&singleId===l.id?'text-brand':'text-slate-400'}/><span className="flex-1 min-w-0 truncate">{l.name}</span><span className="text-slate-400 tabular-nums">{l.w}×{l.h}</span>{teacher&&<button onClick={(e)=>{e.stopPropagation();removeLayer(l.id);}} className="p-0.5 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-500"><I n="fa-trash"/></button>}</li>)}</ul>}
           </Section>
           {hasLayers&&<Section icon={<I n="fa-up-down-left-right"/>} title="Ansicht">
             <div className="grid grid-cols-3 gap-1.5">{[['single','Einzeln'],['channels','Kanäle'],['compare','Vergleich']].map(([m,lbl])=><button key={m} onClick={()=>{setMode(m);clearAll();fitView();}} className={`text-xs px-1 py-1.5 rounded-lg transition ${mode===m?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>{lbl}</button>)}</div>
@@ -387,7 +402,7 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
             <button onClick={()=>setActiveSide('R')} className={`text-xs px-3 py-1.5 rounded-lg transition ${activeSide==='R'?'bg-brand text-white':'bg-white border border-slate-300 hover:bg-slate-100'}`}>Rechts</button>
           </div>}
           <div ref={wrapRef} className="relative w-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-inner select-none" style={{aspectRatio:`${dims.w} / ${dims.h}`}}>
-            {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">Lade ein Bild über „Bild auswählen"</p></div>:
+            {!hasLayers?<div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-2"><I n="fa-image" c="text-4xl"/><p className="text-sm font-medium">Noch kein Bild</p><p className="text-xs">{teacher?'Lade ein Bild über „Bild auswählen"':'Die Bilder werden gerade geladen…'}</p></div>:
             <>
               <div className="absolute inset-0" style={viewStyle}>
                 <canvas ref={canvasA} style={{imageRendering:'pixelated',opacity:opacity/100}} className="absolute inset-0 w-full h-full"/>
@@ -436,6 +451,30 @@ function SatelliteAnalyzer({ title='Bild-Analyse', defaultGsd=10, task='', image
           </div>}
         </div>
       </div>
+
+      {/* NEU: Lehrer-Modal. Öffnet nur per Klick, schließt per X und per Hintergrund-Klick. */}
+      {teacherModal&&<div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 p-4" onClick={()=>setTeacherModal(false)}>
+        <div className="w-full max-w-xs bg-white rounded-2xl shadow-2xl border border-slate-200 p-5" onClick={(e)=>e.stopPropagation()}>
+          <div className="flex items-center gap-2 mb-3 text-slate-700">
+            <I n="fa-chalkboard-user" c="text-brand"/>
+            <h3 className="text-sm font-bold flex-1">Lehrerzugang</h3>
+            <button onClick={()=>setTeacherModal(false)} className="p-1 rounded hover:bg-slate-100 text-slate-400"><I n="fa-xmark"/></button>
+          </div>
+          {teacher?
+            <>
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">Der Lehrermodus ist <b className="text-emerald-600">aktiv</b> – du kannst eigene Bilder hochladen. Beende den Modus, damit Schüler nur mit den vorinstallierten Bildern arbeiten.</p>
+              <button onClick={endTeacher} className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-3 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition"><I n="fa-lock"/> Lehrermodus beenden</button>
+            </>
+            :
+            <>
+              <p className="text-xs text-slate-500 leading-relaxed mb-3">Gib den Code ein, um den Upload eigener Bilder freizuschalten.</p>
+              <input type="password" inputMode="numeric" value={codeInput} onChange={(e)=>{setCodeInput(e.target.value);setCodeErr(false);}} onKeyDown={(e)=>{if(e.key==='Enter')submitCode();}} placeholder="Code" className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm mb-2" autoFocus/>
+              {codeErr&&<p className="text-xs text-rose-600 mb-2 flex items-center gap-1"><I n="fa-circle-exclamation"/> Falscher Code.</p>}
+              <button onClick={submitCode} className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-3 py-2.5 rounded-lg bg-brand hover:bg-brand-light text-white transition"><I n="fa-unlock"/> Freischalten</button>
+            </>
+          }
+        </div>
+      </div>}
     </div>
   );
 }
@@ -513,7 +552,7 @@ function LernApp(){
 
       <div className={`fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-4 bg-black/60 overflow-y-auto ${open?'':'hidden'}`} onClick={()=>setOpen(false)}>
         <div className="w-full my-auto" onClick={(e)=>e.stopPropagation()}>
-          <SatelliteAnalyzer key={resetKey} title="Bild-Analyse" defaultGsd={10} images={bilder} steps={schritte}
+          <SatelliteAnalyzer key={resetKey} title="Bild-Analyse" defaultGsd={10} images={bilder} steps={schritte} teacherCode="4711"
             onComplete={handleComplete} onClose={()=>setOpen(false)}/>
         </div>
       </div>
