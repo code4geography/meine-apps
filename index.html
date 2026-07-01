@@ -378,6 +378,12 @@
       a.className = "app-link";
       a.href = app.datei || "#";
 
+      /* Externe Links (http/https) in neuem Tab öffnen */
+      if (/^https?:\/\//i.test(app.datei || "")) {
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      }
+
       const textWrap = document.createElement("div");
       const titel = document.createElement("div");
       titel.className = "titel";
@@ -444,8 +450,16 @@
       <p>Diese Website verwendet <strong>keine Cookies</strong>, keine
       Analyse-Werkzeuge und keine Tracking-Dienste. Es werden auch keine
       externen Ressourcen (z. B. Schriftarten oder Skripte von Drittanbietern)
-      nachgeladen. Die einzelnen Lernanwendungen laufen vollständig in deinem
+      nachgeladen. Die meisten Lernanwendungen laufen vollständig in deinem
       Browser; dabei eingegebene Daten werden nicht an einen Server übertragen.</p>
+
+      <h4>Externe Anwendung „Karikaturanalyse"</h4>
+      <p>Eine der verlinkten Anwendungen (die KI-gestützte Karikaturanalyse)
+      wird auf einem externen Server (Railway) betrieben und öffnet sich in
+      einem neuen Tab. Anders als die übrigen Apps werden hier eingegebene
+      Texte zur Auswertung an einen Server bzw. einen KI-Dienst übertragen.
+      Bitte gib dort keine personenbezogenen Daten ein. Für diese Anwendung
+      gelten die Datenschutzbestimmungen des jeweiligen Anbieters.</p>
 
       <h4>Hosting und Server-Logs</h4>
       <p>Diese Website wird über <strong>GitHub Pages</strong> bereitgestellt,
