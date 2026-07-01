@@ -398,5 +398,12 @@
         setupToggle('btn-shadow', 'moon-shadow');
 
     </script>
+<script>
+  fetch("https://appkarikaturanalyse-production.up.railway.app/api/count", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ app: "mondphasen" })
+  }).catch(() => {});
+</script>
 </body>
 </html>
